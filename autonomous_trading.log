@@ -1,0 +1,1022 @@
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"error","message":"Error in monitorAndExecute: this.db.all is not a function","stack":"TypeError: this.db.all is not a function\n    at /home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:133:21\n    at new Promise (<anonymous>)\n    at AutonomousTrading.getActiveRules (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:132:16)\n    at AutonomousTrading.monitorAndExecute (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:63:38)\n    at AutonomousTrading.start (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:35:20)\n    at AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:40:42)\n    at SettingsHandlers.handleAutonomousToggle (/home/zakky/work file/4TOOL (Copy)/src/handlers/settingsHandlers.js:266:54)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async CallbackRouter.handleCallbackQuery (/home/zakky/work file/4TOOL (Copy)/src/modules/callbackRouter.js:392:17)\n    at async TelegramBotManager.handleCallbackQuery (/home/zakky/work file/4TOOL (Copy)/src/modules/telegramBot.js:736:9)\n    at async TelegramBot.<anonymous> (/home/zakky/work file/4TOOL (Copy)/src/modules/telegramBot.js:206:17)"}
+{"level":"error","message":"Error in monitorAndExecute: this.db.all is not a function","stack":"TypeError: this.db.all is not a function\n    at /home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:133:21\n    at new Promise (<anonymous>)\n    at AutonomousTrading.getActiveRules (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:132:16)\n    at AutonomousTrading.monitorAndExecute (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:63:38)\n    at Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:40:28)\n    at listOnTimeout (node:internal/timers:581:17)\n    at process.processTimers (node:internal/timers:519:7)"}
+{"level":"error","message":"Error in monitorAndExecute: this.db.all is not a function","stack":"TypeError: this.db.all is not a function\n    at /home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:133:21\n    at new Promise (<anonymous>)\n    at AutonomousTrading.getActiveRules (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:132:16)\n    at AutonomousTrading.monitorAndExecute (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:63:38)\n    at Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:40:28)\n    at listOnTimeout (node:internal/timers:581:17)\n    at process.processTimers (node:internal/timers:519:7)"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"ETELEGRAM","level":"error","message":"Error sending random tokens to autonomous users: ETELEGRAM: 403 Forbidden: bot was blocked by the user","response":{"body":{"description":"Forbidden: bot was blocked by the user","error_code":403,"ok":false},"headers":{"access-control-allow-origin":"*","access-control-expose-headers":"Content-Length,Content-Type,Date,Server,Connection","connection":"keep-alive","content-length":"84","content-type":"application/json","date":"Sun, 20 Jul 2025 06:32:18 GMT","server":"nginx/1.18.0","strict-transport-security":"max-age=31536000; includeSubDomains; preload"},"request":{"headers":{"content-length":761,"content-type":"application/x-www-form-urlencoded"},"method":"POST","uri":{"auth":null,"hash":null,"host":"api.telegram.org","hostname":"api.telegram.org","href":"https://api.telegram.org/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","path":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","pathname":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","port":443,"protocol":"https:","query":null,"search":null,"slashes":true}},"statusCode":403},"stack":"Error: ETELEGRAM: 403 Forbidden: bot was blocked by the user\n    at /home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:299:15\n    at process.processImmediate (node:internal/timers:483:21)\nFrom previous event:\n    at Request.RP$exposed [as then] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:145:61)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:287:8)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:66:48)\n    at async Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:120:17)"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"ETELEGRAM","level":"error","message":"Error sending random tokens to autonomous users: ETELEGRAM: 403 Forbidden: bot was blocked by the user","response":{"body":{"description":"Forbidden: bot was blocked by the user","error_code":403,"ok":false},"headers":{"access-control-allow-origin":"*","access-control-expose-headers":"Content-Length,Content-Type,Date,Server,Connection","connection":"keep-alive","content-length":"84","content-type":"application/json","date":"Sun, 20 Jul 2025 11:27:35 GMT","server":"nginx/1.18.0","strict-transport-security":"max-age=31536000; includeSubDomains; preload"},"request":{"headers":{"content-length":749,"content-type":"application/x-www-form-urlencoded"},"method":"POST","uri":{"auth":null,"hash":null,"host":"api.telegram.org","hostname":"api.telegram.org","href":"https://api.telegram.org/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","path":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","pathname":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","port":443,"protocol":"https:","query":null,"search":null,"slashes":true}},"statusCode":403},"stack":"Error: ETELEGRAM: 403 Forbidden: bot was blocked by the user\n    at /home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:299:15\n    at process.processImmediate (node:internal/timers:483:21)\nFrom previous event:\n    at Request.RP$exposed [as then] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:145:61)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:287:8)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:89:48)\n    at async Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:143:17)"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"ETELEGRAM","level":"error","message":"Error sending random tokens to autonomous users: ETELEGRAM: 403 Forbidden: bot was blocked by the user","response":{"body":{"description":"Forbidden: bot was blocked by the user","error_code":403,"ok":false},"headers":{"access-control-allow-origin":"*","access-control-expose-headers":"Content-Length,Content-Type,Date,Server,Connection","connection":"keep-alive","content-length":"84","content-type":"application/json","date":"Sun, 20 Jul 2025 11:44:37 GMT","server":"nginx/1.18.0","strict-transport-security":"max-age=31536000; includeSubDomains; preload"},"request":{"headers":{"content-length":741,"content-type":"application/x-www-form-urlencoded"},"method":"POST","uri":{"auth":null,"hash":null,"host":"api.telegram.org","hostname":"api.telegram.org","href":"https://api.telegram.org/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","path":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","pathname":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","port":443,"protocol":"https:","query":null,"search":null,"slashes":true}},"statusCode":403},"stack":"Error: ETELEGRAM: 403 Forbidden: bot was blocked by the user\n    at /home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:299:15\n    at process.processImmediate (node:internal/timers:483:21)\nFrom previous event:\n    at Request.RP$exposed [as then] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:145:61)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:287:8)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:89:48)\n    at async Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:143:17)"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"ETELEGRAM","level":"error","message":"Error sending random tokens to autonomous users: ETELEGRAM: 403 Forbidden: bot was blocked by the user","response":{"body":{"description":"Forbidden: bot was blocked by the user","error_code":403,"ok":false},"headers":{"access-control-allow-origin":"*","access-control-expose-headers":"Content-Length,Content-Type,Date,Server,Connection","connection":"keep-alive","content-length":"84","content-type":"application/json","date":"Sun, 20 Jul 2025 11:49:29 GMT","server":"nginx/1.18.0","strict-transport-security":"max-age=31536000; includeSubDomains; preload"},"request":{"headers":{"content-length":783,"content-type":"application/x-www-form-urlencoded"},"method":"POST","uri":{"auth":null,"hash":null,"host":"api.telegram.org","hostname":"api.telegram.org","href":"https://api.telegram.org/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","path":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","pathname":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","port":443,"protocol":"https:","query":null,"search":null,"slashes":true}},"statusCode":403},"stack":"Error: ETELEGRAM: 403 Forbidden: bot was blocked by the user\n    at /home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:299:15\n    at process.processImmediate (node:internal/timers:483:21)\nFrom previous event:\n    at Request.RP$exposed [as then] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:145:61)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:287:8)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:89:48)\n    at async Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:143:17)"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"ETELEGRAM","level":"error","message":"Error sending random tokens to autonomous users: ETELEGRAM: 403 Forbidden: bot was blocked by the user","response":{"body":{"description":"Forbidden: bot was blocked by the user","error_code":403,"ok":false},"headers":{"access-control-allow-origin":"*","access-control-expose-headers":"Content-Length,Content-Type,Date,Server,Connection","connection":"keep-alive","content-length":"84","content-type":"application/json","date":"Sun, 20 Jul 2025 11:56:04 GMT","server":"nginx/1.18.0","strict-transport-security":"max-age=31536000; includeSubDomains; preload"},"request":{"headers":{"content-length":765,"content-type":"application/x-www-form-urlencoded"},"method":"POST","uri":{"auth":null,"hash":null,"host":"api.telegram.org","hostname":"api.telegram.org","href":"https://api.telegram.org/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","path":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","pathname":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","port":443,"protocol":"https:","query":null,"search":null,"slashes":true}},"statusCode":403},"stack":"Error: ETELEGRAM: 403 Forbidden: bot was blocked by the user\n    at /home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:299:15\n    at process.processImmediate (node:internal/timers:483:21)\nFrom previous event:\n    at Request.RP$exposed [as then] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:145:61)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:287:8)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:89:48)\n    at async Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:143:17)"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"ETELEGRAM","level":"error","message":"Error sending random tokens to autonomous users: ETELEGRAM: 403 Forbidden: bot was blocked by the user","response":{"body":{"description":"Forbidden: bot was blocked by the user","error_code":403,"ok":false},"headers":{"access-control-allow-origin":"*","access-control-expose-headers":"Content-Length,Content-Type,Date,Server,Connection","connection":"keep-alive","content-length":"84","content-type":"application/json","date":"Sun, 20 Jul 2025 12:02:47 GMT","server":"nginx/1.18.0","strict-transport-security":"max-age=31536000; includeSubDomains; preload"},"request":{"headers":{"content-length":768,"content-type":"application/x-www-form-urlencoded"},"method":"POST","uri":{"auth":null,"hash":null,"host":"api.telegram.org","hostname":"api.telegram.org","href":"https://api.telegram.org/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","path":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","pathname":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","port":443,"protocol":"https:","query":null,"search":null,"slashes":true}},"statusCode":403},"stack":"Error: ETELEGRAM: 403 Forbidden: bot was blocked by the user\n    at /home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:299:15\n    at process.processImmediate (node:internal/timers:483:21)\nFrom previous event:\n    at Request.RP$exposed [as then] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:145:61)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:287:8)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:89:48)\n    at async Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:143:17)"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"ETELEGRAM","level":"error","message":"Error sending random tokens to autonomous users: ETELEGRAM: 403 Forbidden: bot was blocked by the user","response":{"body":{"description":"Forbidden: bot was blocked by the user","error_code":403,"ok":false},"headers":{"access-control-allow-origin":"*","access-control-expose-headers":"Content-Length,Content-Type,Date,Server,Connection","connection":"keep-alive","content-length":"84","content-type":"application/json","date":"Sun, 20 Jul 2025 12:09:21 GMT","server":"nginx/1.18.0","strict-transport-security":"max-age=31536000; includeSubDomains; preload"},"request":{"headers":{"content-length":769,"content-type":"application/x-www-form-urlencoded"},"method":"POST","uri":{"auth":null,"hash":null,"host":"api.telegram.org","hostname":"api.telegram.org","href":"https://api.telegram.org/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","path":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","pathname":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","port":443,"protocol":"https:","query":null,"search":null,"slashes":true}},"statusCode":403},"stack":"Error: ETELEGRAM: 403 Forbidden: bot was blocked by the user\n    at /home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:299:15\n    at process.processImmediate (node:internal/timers:483:21)\nFrom previous event:\n    at Request.RP$exposed [as then] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:145:61)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:287:8)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:89:48)\n    at async Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:143:17)"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"ETELEGRAM","level":"error","message":"Error sending random tokens to autonomous users: ETELEGRAM: 403 Forbidden: bot was blocked by the user","response":{"body":{"description":"Forbidden: bot was blocked by the user","error_code":403,"ok":false},"headers":{"access-control-allow-origin":"*","access-control-expose-headers":"Content-Length,Content-Type,Date,Server,Connection","connection":"keep-alive","content-length":"84","content-type":"application/json","date":"Sun, 20 Jul 2025 12:14:20 GMT","server":"nginx/1.18.0","strict-transport-security":"max-age=31536000; includeSubDomains; preload"},"request":{"headers":{"content-length":760,"content-type":"application/x-www-form-urlencoded"},"method":"POST","uri":{"auth":null,"hash":null,"host":"api.telegram.org","hostname":"api.telegram.org","href":"https://api.telegram.org/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","path":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","pathname":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","port":443,"protocol":"https:","query":null,"search":null,"slashes":true}},"statusCode":403},"stack":"Error: ETELEGRAM: 403 Forbidden: bot was blocked by the user\n    at /home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:299:15\n    at process.processImmediate (node:internal/timers:483:21)\nFrom previous event:\n    at Request.RP$exposed [as then] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:145:61)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:287:8)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:89:48)\n    at async Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:143:17)"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"ETELEGRAM","level":"error","message":"Error sending random tokens to autonomous users: ETELEGRAM: 403 Forbidden: bot was blocked by the user","response":{"body":{"description":"Forbidden: bot was blocked by the user","error_code":403,"ok":false},"headers":{"access-control-allow-origin":"*","access-control-expose-headers":"Content-Length,Content-Type,Date,Server,Connection","connection":"keep-alive","content-length":"84","content-type":"application/json","date":"Sun, 20 Jul 2025 12:19:21 GMT","server":"nginx/1.18.0","strict-transport-security":"max-age=31536000; includeSubDomains; preload"},"request":{"headers":{"content-length":768,"content-type":"application/x-www-form-urlencoded"},"method":"POST","uri":{"auth":null,"hash":null,"host":"api.telegram.org","hostname":"api.telegram.org","href":"https://api.telegram.org/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","path":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","pathname":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","port":443,"protocol":"https:","query":null,"search":null,"slashes":true}},"statusCode":403},"stack":"Error: ETELEGRAM: 403 Forbidden: bot was blocked by the user\n    at /home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:299:15\n    at process.processImmediate (node:internal/timers:483:21)\nFrom previous event:\n    at Request.RP$exposed [as then] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:145:61)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:287:8)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:89:48)\n    at async Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:143:17)"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"ETELEGRAM","level":"error","message":"Error sending filtered tokens to autonomous users: ETELEGRAM: 403 Forbidden: bot was blocked by the user","response":{"body":{"description":"Forbidden: bot was blocked by the user","error_code":403,"ok":false},"headers":{"access-control-allow-origin":"*","access-control-expose-headers":"Content-Length,Content-Type,Date,Server,Connection","connection":"keep-alive","content-length":"84","content-type":"application/json","date":"Sun, 20 Jul 2025 12:29:58 GMT","server":"nginx/1.18.0","strict-transport-security":"max-age=31536000; includeSubDomains; preload"},"request":{"headers":{"content-length":403,"content-type":"application/x-www-form-urlencoded"},"method":"POST","uri":{"auth":null,"hash":null,"host":"api.telegram.org","hostname":"api.telegram.org","href":"https://api.telegram.org/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","path":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","pathname":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","port":443,"protocol":"https:","query":null,"search":null,"slashes":true}},"statusCode":403},"stack":"Error: ETELEGRAM: 403 Forbidden: bot was blocked by the user\n    at /home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:299:15\n    at process.processImmediate (node:internal/timers:483:21)\nFrom previous event:\n    at Request.RP$exposed [as then] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:145:61)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:287:8)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:99:48)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:153:17)"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"ETELEGRAM","level":"error","message":"Error sending filtered tokens to autonomous users: ETELEGRAM: 403 Forbidden: bot was blocked by the user","response":{"body":{"description":"Forbidden: bot was blocked by the user","error_code":403,"ok":false},"headers":{"access-control-allow-origin":"*","access-control-expose-headers":"Content-Length,Content-Type,Date,Server,Connection","connection":"keep-alive","content-length":"84","content-type":"application/json","date":"Sun, 20 Jul 2025 12:34:58 GMT","server":"nginx/1.18.0","strict-transport-security":"max-age=31536000; includeSubDomains; preload"},"request":{"headers":{"content-length":393,"content-type":"application/x-www-form-urlencoded"},"method":"POST","uri":{"auth":null,"hash":null,"host":"api.telegram.org","hostname":"api.telegram.org","href":"https://api.telegram.org/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","path":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","pathname":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","port":443,"protocol":"https:","query":null,"search":null,"slashes":true}},"statusCode":403},"stack":"Error: ETELEGRAM: 403 Forbidden: bot was blocked by the user\n    at /home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:299:15\n    at process.processImmediate (node:internal/timers:483:21)\nFrom previous event:\n    at Request.RP$exposed [as then] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:145:61)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:287:8)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:99:48)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:153:17)"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"ETELEGRAM","level":"error","message":"Error sending filtered tokens to autonomous users: ETELEGRAM: 403 Forbidden: bot was blocked by the user","response":{"body":{"description":"Forbidden: bot was blocked by the user","error_code":403,"ok":false},"headers":{"access-control-allow-origin":"*","access-control-expose-headers":"Content-Length,Content-Type,Date,Server,Connection","connection":"keep-alive","content-length":"84","content-type":"application/json","date":"Sun, 20 Jul 2025 12:39:57 GMT","server":"nginx/1.18.0","strict-transport-security":"max-age=31536000; includeSubDomains; preload"},"request":{"headers":{"content-length":389,"content-type":"application/x-www-form-urlencoded"},"method":"POST","uri":{"auth":null,"hash":null,"host":"api.telegram.org","hostname":"api.telegram.org","href":"https://api.telegram.org/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","path":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","pathname":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","port":443,"protocol":"https:","query":null,"search":null,"slashes":true}},"statusCode":403},"stack":"Error: ETELEGRAM: 403 Forbidden: bot was blocked by the user\n    at /home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:299:15\n    at process.processImmediate (node:internal/timers:483:21)\nFrom previous event:\n    at Request.RP$exposed [as then] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:145:61)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:287:8)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:99:48)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:153:17)"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"ETELEGRAM","level":"error","message":"Error sending filtered tokens to autonomous users: ETELEGRAM: 403 Forbidden: bot was blocked by the user","response":{"body":{"description":"Forbidden: bot was blocked by the user","error_code":403,"ok":false},"headers":{"access-control-allow-origin":"*","access-control-expose-headers":"Content-Length,Content-Type,Date,Server,Connection","connection":"keep-alive","content-length":"84","content-type":"application/json","date":"Sun, 20 Jul 2025 12:44:58 GMT","server":"nginx/1.18.0","strict-transport-security":"max-age=31536000; includeSubDomains; preload"},"request":{"headers":{"content-length":406,"content-type":"application/x-www-form-urlencoded"},"method":"POST","uri":{"auth":null,"hash":null,"host":"api.telegram.org","hostname":"api.telegram.org","href":"https://api.telegram.org/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","path":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","pathname":"/bot7803310133:AAH-Jw0b267oMC0eJZOzIFXff9wWOGEoYZs/sendMessage","port":443,"protocol":"https:","query":null,"search":null,"slashes":true}},"statusCode":403},"stack":"Error: ETELEGRAM: 403 Forbidden: bot was blocked by the user\n    at /home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:299:15\n    at process.processImmediate (node:internal/timers:483:21)\nFrom previous event:\n    at Request.RP$exposed [as then] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:145:61)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:287:8)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:99:48)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async Timeout._onTimeout (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:153:17)"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"warn","message":"User 6841198310 has blocked the bot. Skipping."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"warn","message":"User 6841198310 has blocked the bot. Skipping."}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"warn","message":"User 6841198310 has blocked the bot. Skipping."}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"warn","message":"User 6841198310 has blocked the bot. Skipping."}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"warn","message":"User 6841198310 has blocked the bot. Skipping."}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"warn","message":"User 6841198310 has blocked the bot. Skipping."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"warn","message":"User 6841198310 has blocked the bot. Skipping."}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"warn","message":"User 6841198310 has blocked the bot. Skipping."}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"warn","message":"User 6841198310 has blocked the bot. Skipping."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"warn","message":"User 6841198310 has blocked the bot. Skipping."}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"warn","message":"User 6841198310 has blocked the bot. Skipping."}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"warn","message":"User 6841198310 has blocked the bot. Skipping."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"warn","message":"User 6841198310 has blocked the bot. Skipping."}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"error","message":"Autobuy failed for user 1: Invalid token address"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"error","message":"Autobuy failed for user 1: Invalid token address"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"error","message":"Autobuy failed for user 1: Invalid token address"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"error","message":"Autobuy failed: Invalid token address for user 1: {\"id\":\"Cdq1WR1d4i2hMrqKUWgZeUbRpkhamGHSvm1f6ATpuray\",\"name\":\"Altcoin\",\"symbol\":\"ALT\",\"icon\":\"https://ipfs.io/ipfs/bafybeif3watbe4rehvjfnpivhdwhai6tzhb5srsbjowdxyws62tyqhd7ca\",\"decimals\":6,\"dev\":\"BSzzpcV1QTFPdtG9LExrPVP9dWBtVsDTfnNGrEn3YdkP\",\"circSupply\":894800997.710419,\"totalSupply\":894800997.710419,\"tokenProgram\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"launchpad\":\"Raydium\",\"metaLaunchpad\":\"raydium-launchlab\",\"partnerConfig\":\"4Bu96XjU84XjPDSpveTVf6LYGCkfW5FK7SNkREWcEfV4\",\"firstPool\":{\"id\":\"Cdq1WR1d4i2hMrqKUWgZeUbRpkhamGHSvm1f6ATpuray\",\"createdAt\":\"2025-07-07T08:47:03Z\"},\"graduatedPool\":\"BJGbPyDARmcgJ7CRwm623nrjF2gpLkpsSwWNsjxubTpG\",\"graduatedAt\":\"2025-07-07T09:07:59Z\",\"holderCount\":95212,\"audit\":{\"mintAuthorityDisabled\":true,\"freezeAuthorityDisabled\":true,\"topHoldersPercentage\":16.683607292281376,\"devBalancePercentage\":0.000005700059469145371,\"devMigrations\":2},\"organicScore\":87.87151526886919,\"organicScoreLabel\":\"high\",\"isVerified\":true,\"cexes\":[\"MEXC\"],\"tags\":[\"community-assist\",\"launchpad\",\"verified\"],\"fdv\":2974775.149571611,\"mcap\":2974775.149571611,\"usdPrice\":0.003324510318141516,\"priceBlockId\":354821334,\"liquidity\":193685.35667736334,\"stats5m\":{\"priceChange\":5.372134479806605,\"holderChange\":-0.4995297314243912,\"liquidityChange\":3.166305962725899,\"volumeChange\":245.77069229549457,\"buyVolume\":10566.3555467121,\"sellVolume\":5076.464534891175,\"buyOrganicVolume\":8279.127924411054,\"sellOrganicVolume\":40.14707676008517,\"numBuys\":33,\"numSells\":48,\"numTraders\":60,\"numOrganicBuyers\":5,\"numNetBuyers\":20},\"stats1h\":{\"priceChange\":-5.029938890778373,\"holderChange\":-0.47248703796621505,\"liquidityChange\":-2.8570531897772513,\"volumeChange\":97.30766764686653,\"buyVolume\":41298.038137421056,\"sellVolume\":46941.66851709371,\"buyOrganicVolume\":13671.960612921324,\"sellOrganicVolume\":23368.362074946417,\"numBuys\":429,\"numSells\":281,\"numTraders\":298,\"numOrganicBuyers\":32,\"numNetBuyers\":151},\"stats6h\":{\"priceChange\":-15.32119806884236,\"holderChange\":-0.6376339709673043,\"liquidityChange\":-7.129320196367768,\"volumeChange\":-76.45069704600313,\"buyVolume\":161905.55853170063,\"sellVolume\":180850.99977394205,\"buyOrganicVolume\":42353.418391535386,\"sellOrganicVolume\":63772.65037336991,\"numBuys\":1544,\"numSells\":1283,\"numTraders\":1042,\"numOrganicBuyers\":95,\"numNetBuyers\":430},\"stats24h\":{\"priceChange\":-24.23033731639744,\"holderChange\":1.2387423309621786,\"liquidityChange\":-2.230581522251908,\"volumeChange\":-76.57264920666039,\"buyVolume\":3114913.633522245,\"sellVolume\":3139223.4829608714,\"buyOrganicVolume\":251397.5754063084,\"sellOrganicVolume\":244294.6944732077,\"numBuys\":15658,\"numSells\":11848,\"numTraders\":4019,\"numOrganicBuyers\":351,\"numNetBuyers\":1510},\"ctLikes\":19,\"smartCtLikes\":6}"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"error","message":"Autobuy failed: Invalid token address for user 1: {\"id\":\"Dz9mQ9NzkBcCsuGPFJ3r1bS4wgqKMHBPiVuniW8Mbonk\",\"name\":\"USELESS COIN\",\"symbol\":\"USELESS\",\"icon\":\"https://ipfs.io/ipfs/bafkreihsdoqkmpr5ryebaduoutyhj3nxco6wdp4s4743l2qrae4sz4hqrm\",\"decimals\":6,\"twitter\":\"https://x.com/theunipcs/status/1921208257399382410\",\"dev\":\"ArfVe1K5gt5zsxzRCWSQeWc1rJSJjZzuuYxmvRh71mMQ\",\"circSupply\":999113932.243487,\"totalSupply\":999113932.243487,\"tokenProgram\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"launchpad\":\"letsbonk.fun\",\"metaLaunchpad\":\"raydium-launchlab\",\"partnerConfig\":\"FfYek5vEz23cMkWsdJwG2oa6EphsvXSHrGpdALN4g6W1\",\"firstPool\":{\"id\":\"Dz9mQ9NzkBcCsuGPFJ3r1bS4wgqKMHBPiVuniW8Mbonk\",\"createdAt\":\"2025-05-10T14:20:53Z\"},\"graduatedPool\":\"Q2sPHPdUWFMg7M7wwrQKLrn619cAucfRsmhVJffodSp\",\"graduatedAt\":\"2025-05-10T14:23:16Z\",\"holderCount\":24746,\"audit\":{\"mintAuthorityDisabled\":true,\"freezeAuthorityDisabled\":true,\"topHoldersPercentage\":19.75945346868512,\"devMigrations\":152},\"organicScore\":96.36781864259629,\"organicScoreLabel\":\"high\",\"isVerified\":true,\"cexes\":[\"KuCoin\",\"MEXC\",\"Gate.io\"],\"tags\":[\"community-assist\",\"launchpad\",\"verified\"],\"fdv\":300854366.3085475,\"mcap\":300854366.3085475,\"usdPrice\":0.3011211800770169,\"priceBlockId\":354821412,\"liquidity\":4498435.979125525,\"stats5m\":{\"priceChange\":-0.20086107230570865,\"holderChange\":0.26742301458670986,\"liquidityChange\":0.17742598109391725,\"volumeChange\":-30.3195961123979,\"buyVolume\":8957.581971257277,\"sellVolume\":32614.29849466668,\"buyOrganicVolume\":892.6560159434671,\"sellOrganicVolume\":19991.237254431602,\"numBuys\":68,\"numSells\":81,\"numTraders\":62,\"numOrganicBuyers\":10,\"numNetBuyers\":26},\"stats1h\":{\"priceChange\":1.1803202016029233,\"holderChange\":0.17001295336787564,\"liquidityChange\":1.9736077178971416,\"volumeChange\":-72.54490450911841,\"buyVolume\":233856.7163182307,\"sellVolume\":215820.94066749825,\"buyOrganicVolume\":90128.48252283971,\"sellOrganicVolume\":126286.05760841293,\"numBuys\":817,\"numSells\":814,\"numTraders\":424,\"numOrganicBuyers\":41,\"numNetBuyers\":175},\"stats6h\":{\"priceChange\":4.882852367455351,\"holderChange\":0.12948126567937202,\"liquidityChange\":9.737630849063654,\"volumeChange\":270.5866392637074,\"buyVolume\":8101273.072813846,\"sellVolume\":8116752.08668541,\"buyOrganicVolume\":2938776.628737221,\"sellOrganicVolume\":2109129.187452644,\"numBuys\":14382,\"numSells\":15776,\"numTraders\":2847,\"numOrganicBuyers\":284,\"numNetBuyers\":1038},\"stats24h\":{\"priceChange\":10.896724992007666,\"holderChange\":1.0866013071895424,\"liquidityChange\":22.576795030571244,\"volumeChange\":168.30623885490527,\"buyVolume\":19543382.256513372,\"sellVolume\":19352777.16370656,\"buyOrganicVolume\":6618763.63515353,\"sellOrganicVolume\":6326048.818195671,\"numBuys\":43308,\"numSells\":42477,\"numTraders\":5931,\"numOrganicBuyers\":769,\"numNetBuyers\":2415},\"ctLikes\":34,\"smartCtLikes\":15}"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Attempting to buy token for user 1: address=\"\", length=0"}
+{"level":"error","message":"Autobuy failed: Invalid token address for user 1: {\"id\":\"4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R\",\"name\":\"Raydium\",\"symbol\":\"RAY\",\"icon\":\"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R/logo.png\",\"decimals\":6,\"dev\":\"Es2gApD6MZBhUPN143xwYfrLt4H3Vr53re7Z6hs7kWGp\",\"circSupply\":267464462.414819,\"totalSupply\":554998359.49193,\"tokenProgram\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"firstPool\":{\"id\":\"AWTtKpyXz71dZaJGLqR2JSGoRY7t86YRui45Ym7rv9NX\",\"createdAt\":\"2024-06-10T06:00:28.246Z\"},\"holderCount\":247606,\"audit\":{\"mintAuthorityDisabled\":true,\"freezeAuthorityDisabled\":true,\"topHoldersPercentage\":77.72293136747555,\"highSingleOwnership\":true},\"organicScore\":96.6291634990889,\"organicScoreLabel\":\"high\",\"isVerified\":true,\"cexes\":[\"Binance\",\"OKX\",\"Upbit\",\"Bitget\",\"Kraken\",\"KuCoin\",\"MEXC\",\"Gate.io\"],\"tags\":[\"birdeye-trending\",\"community\",\"strict\",\"verified\"],\"fdv\":1800440094.1444728,\"mcap\":867666964.5136845,\"usdPrice\":3.244045794644646,\"priceBlockId\":354821922,\"liquidity\":30371193.755035195,\"stats5m\":{\"priceChange\":-0.48194544020855334,\"holderChange\":0.7564690515041893,\"liquidityChange\":-0.32750720411035433,\"volumeChange\":3.5417959680905193,\"buyVolume\":51327.04027885155,\"sellVolume\":149695.6521921262,\"buyOrganicVolume\":142.45726155058577,\"sellOrganicVolume\":3755.3732094266484,\"numBuys\":321,\"numSells\":567,\"numTraders\":131,\"numOrganicBuyers\":10,\"numNetBuyers\":23},\"stats1h\":{\"priceChange\":-0.3198022587969594,\"holderChange\":0.7646697351125437,\"liquidityChange\":-0.1614828777601636,\"volumeChange\":-36.668052291029504,\"buyVolume\":748886.1681941913,\"sellVolume\":815562.3875400021,\"buyOrganicVolume\":16852.053968241173,\"sellOrganicVolume\":13124.634678910086,\"numBuys\":2734,\"numSells\":2240,\"numTraders\":411,\"numOrganicBuyers\":18,\"numNetBuyers\":81},\"stats6h\":{\"priceChange\":1.6156824016378042,\"holderChange\":0.7991271886436822,\"liquidityChange\":1.5715907087061092,\"volumeChange\":16.66779716434626,\"buyVolume\":6419197.832964245,\"sellVolume\":6362520.455784966,\"buyOrganicVolume\":288363.93226789194,\"sellOrganicVolume\":377040.7118487559,\"numBuys\":22521,\"numSells\":17575,\"numTraders\":2577,\"numOrganicBuyers\":131,\"numNetBuyers\":417},\"stats24h\":{\"priceChange\":8.704662079562466,\"holderChange\":0.7921517544573801,\"liquidityChange\":6.777995090037692,\"volumeChange\":139.02739406484417,\"buyVolume\":15959189.191677,\"sellVolume\":15536455.964179546,\"buyOrganicVolume\":662367.4209757639,\"sellOrganicVolume\":825049.7210829,\"numBuys\":67172,\"numSells\":51559,\"numTraders\":6635,\"numOrganicBuyers\":284,\"numNetBuyers\":905},\"ctLikes\":24,\"smartCtLikes\":11}"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Attempting to buy token for user 1: address=\"\", length=0"}
+{"level":"error","message":"Autobuy failed: Invalid token address for user 1: {\"id\":\"9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump\",\"name\":\"Fartcoin\",\"symbol\":\"Fartcoin\",\"icon\":\"https://ipfs.io/ipfs/QmQr3Fz4h1etNsF7oLGMRHiCzhB5y9a7GjyodnF7zLHK1g\",\"decimals\":6,\"dev\":\"HyYNVYmnFmi87NsQqWzLJhUTPBKQUfgfhdbBa554nMFF\",\"circSupply\":999983788.097685,\"totalSupply\":999983788.097685,\"tokenProgram\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"launchpad\":\"pump.fun\",\"firstPool\":{\"id\":\"9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump\",\"createdAt\":\"2024-10-18T06:05:05Z\"},\"graduatedPool\":\"Bzc9NZfMqkXR6fz1DBph7BDf9BroyEf6pnzESP7v5iiw\",\"graduatedAt\":\"2024-10-18T06:09:47Z\",\"holderCount\":170764,\"audit\":{\"mintAuthorityDisabled\":true,\"freezeAuthorityDisabled\":true,\"topHoldersPercentage\":24.7844087012266,\"devMigrations\":200},\"organicScore\":99.45347293950651,\"organicScoreLabel\":\"high\",\"isVerified\":true,\"cexes\":[\"Bitget\",\"Kraken\",\"KuCoin\",\"MEXC\",\"Gate.io\"],\"tags\":[\"community\",\"launchpad\",\"verified\"],\"fdv\":1555133306.7650623,\"mcap\":1555133306.7650623,\"usdPrice\":1.5551585188430541,\"priceBlockId\":354822649,\"liquidity\":25625538.653979093,\"stats5m\":{\"priceChange\":0.4175722112656906,\"holderChange\":0.6507131910880585,\"liquidityChange\":0.796942327560006,\"volumeChange\":-34.57752089244152,\"buyVolume\":470073.28238399705,\"sellVolume\":339261.00252927846,\"buyOrganicVolume\":13158.812671841868,\"sellOrganicVolume\":45529.459832069835,\"numBuys\":913,\"numSells\":751,\"numTraders\":342,\"numOrganicBuyers\":22,\"numNetBuyers\":60},\"stats1h\":{\"priceChange\":-1.6722608365387068,\"holderChange\":0.6542728140804225,\"liquidityChange\":-3.115306849735304,\"volumeChange\":-48.303000550207976,\"buyVolume\":4114386.456662276,\"sellVolume\":5455986.730982356,\"buyOrganicVolume\":335894.7526090404,\"sellOrganicVolume\":494226.0707966619,\"numBuys\":8681,\"numSells\":9373,\"numTraders\":2192,\"numOrganicBuyers\":89,\"numNetBuyers\":530},\"stats6h\":{\"priceChange\":2.053862581931567,\"holderChange\":0.7017585243020745,\"liquidityChange\":1.627882601206419,\"volumeChange\":101.54169218313666,\"buyVolume\":36094267.879843056,\"sellVolume\":36082151.98340119,\"buyOrganicVolume\":4308811.086907458,\"sellOrganicVolume\":6069195.68230852,\"numBuys\":59959,\"numSells\":60099,\"numTraders\":11464,\"numOrganicBuyers\":552,\"numNetBuyers\":2671},\"stats24h\":{\"priceChange\":6.274910973524062,\"holderChange\":0.49197307094769555,\"liquidityChange\":19.93179123904703,\"volumeChange\":62.67725915505732,\"buyVolume\":83180603.1574163,\"sellVolume\":86682733.89202671,\"buyOrganicVolume\":11102018.548874568,\"sellOrganicVolume\":14423543.282319002,\"numBuys\":168262,\"numSells\":169911,\"numTraders\":26423,\"numOrganicBuyers\":1355,\"numNetBuyers\":5506},\"ctLikes\":81,\"smartCtLikes\":38}"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token address for user 1: null, length=0"}
+{"level":"error","message":"Autobuy failed: Invalid token address extracted for user 1: null"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token address for user 1: null, length=0"}
+{"level":"error","message":"Autobuy failed: Invalid token address extracted for user 1: null"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: []"}
+{"level":"error","message":"Autobuy failed: No valid token address extracted for user 1: []"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:111:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: []"}
+{"level":"error","message":"Autobuy failed: No valid token address extracted for user 1: []"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: []"}
+{"level":"error","message":"Autobuy failed: No valid token address extracted for user 1: []"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: []"}
+{"level":"error","message":"Autobuy failed: No valid token address extracted for user 1: []"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: []"}
+{"level":"error","message":"Autobuy failed: No valid token address extracted for user 1: []"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: []"}
+{"level":"error","message":"Autobuy failed: No valid token address extracted for user 1: []"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"HiXEDzPvyJ5bf3T1H57sFuJ7UYuba7dVFcMBqpeFbonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: HiXEDzPvyJ5bf3T1H57sFuJ7UYuba7dVFcMBqpeFbonk"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr\"]"}
+{"level":"info","message":"Autobuy successful for user 1: J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"CreiuhfwdWCN5mJbMJtA9bBpYQrQF2tCBuZwSPWfpump\"]"}
+{"level":"info","message":"Autobuy successful for user 1: CreiuhfwdWCN5mJbMJtA9bBpYQrQF2tCBuZwSPWfpump"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"HMptQAHGhxX94hbRrNUYRPgAGxHGg2M7sy6adNmbJ76y\"]"}
+{"level":"info","message":"Autobuy successful for user 1: HMptQAHGhxX94hbRrNUYRPgAGxHGg2M7sy6adNmbJ76y"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY\"]"}
+{"level":"info","message":"Autobuy successful for user 1: ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm\"]"}
+{"level":"info","message":"Autobuy successful for user 2: EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"CtzPWv73Sn1dMGVU3ZtLv9yWSyUAanBni19YWDaznnkn\"]"}
+{"level":"info","message":"Autobuy successful for user 2: CtzPWv73Sn1dMGVU3ZtLv9yWSyUAanBni19YWDaznnkn"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at runNextTicks (node:internal/process/task_queues:64:3)\n    at listOnTimeout (node:internal/timers:545:9)\n    at process.processTimers (node:internal/timers:519:7)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:111:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"8MxjSs3kEPmfiqKN1S4o3PABp198uYyx4gLF1TvZbonk\"]"}
+{"level":"info","message":"Autobuy successful for user 2: 8MxjSs3kEPmfiqKN1S4o3PABp198uYyx4gLF1TvZbonk"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"CreiuhfwdWCN5mJbMJtA9bBpYQrQF2tCBuZwSPWfpump\"]"}
+{"level":"info","message":"Autobuy successful for user 2: CreiuhfwdWCN5mJbMJtA9bBpYQrQF2tCBuZwSPWfpump"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"2NvY1Jty92b7ypbHGv28XvNezzMygDPSFR5gqVM8bonk\"]"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:115:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async SettingsHandlers.handleAutonomousToggle (/home/zakky/work file/4TOOL (Copy)/src/handlers/settingsHandlers.js:266:25)\n    at async CallbackRouter.handleCallbackQuery (/home/zakky/work file/4TOOL (Copy)/src/modules/callbackRouter.js:392:17)\n    at async TelegramBotManager.handleCallbackQuery (/home/zakky/work file/4TOOL (Copy)/src/modules/telegramBot.js:735:9)\n    at async TelegramBot.<anonymous> (/home/zakky/work file/4TOOL (Copy)/src/modules/telegramBot.js:205:17)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm\"]"}
+{"level":"info","message":"Autobuy successful for user 2: 2NvY1Jty92b7ypbHGv28XvNezzMygDPSFR5gqVM8bonk"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn\"]"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"LAYER4xPpTCb3QL8S9u41EAhAX7mhBn8Q6xMTwY2Yzc\"]"}
+{"level":"info","message":"Autobuy successful for user 1: pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS\"]"}
+{"level":"info","message":"Autobuy successful for user 2: KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS"}
+{"level":"error","message":"Autobuy failed for user 1: Cannot read properties of null (reading 'publicKey')"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"BDWvvvKUS9c3C4Rz1w9tk5uD519CzD2f6n7zBk2Bbonk\"]"}
+{"level":"info","message":"Autobuy successful for user 2: BDWvvvKUS9c3C4Rz1w9tk5uD519CzD2f6n7zBk2Bbonk"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY\"]"}
+{"level":"info","message":"Autobuy successful for user 2: ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:115:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump"}
+{"code":"EFATAL","level":"error","message":"Failed to send autobuy success notification: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:192:60)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:115:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv\"]"}
+{"level":"info","message":"Autobuy successful for user 2: 2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:115:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC\"]"}
+{"level":"info","message":"Autobuy successful for user 1: HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY\"]"}
+{"level":"info","message":"Autobuy successful for user 2: ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:115:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"Ey59PH7Z4BFU4HjyKnyMdWt5GGN76KazTAwQihoUXRnk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: Ey59PH7Z4BFU4HjyKnyMdWt5GGN76KazTAwQihoUXRnk"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"14FPjGgzeQzJkyM5yXig5mfSFj5FcfkBAGh3r6sfbonk\"]"}
+{"level":"info","message":"Autobuy successful for user 2: 14FPjGgzeQzJkyM5yXig5mfSFj5FcfkBAGh3r6sfbonk"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:115:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"2fSTec6ByDMo3V8MMehsGGgkBjNNh7ZfARAKcdqsbonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 2fSTec6ByDMo3V8MMehsGGgkBjNNh7ZfARAKcdqsbonk"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"14FPjGgzeQzJkyM5yXig5mfSFj5FcfkBAGh3r6sfbonk\"]"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:115:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS\"]"}
+{"level":"info","message":"Autobuy successful for user 1: KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"51qe22pZ83u65tpXsRYUXjDiSphF5FXVVuP6d8rPbonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 51qe22pZ83u65tpXsRYUXjDiSphF5FXVVuP6d8rPbonk"}
+{"code":"EFATAL","level":"error","message":"Failed to send autobuy success notification: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:192:60)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:115:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"32H8ZLmaXQMQ57NNMB2KeW2yewzdFGMKwXLcgfc9bonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 32H8ZLmaXQMQ57NNMB2KeW2yewzdFGMKwXLcgfc9bonk"}
+{"code":"EFATAL","level":"error","message":"Failed to send autobuy success notification: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:192:60)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"LAYER4xPpTCb3QL8S9u41EAhAX7mhBn8Q6xMTwY2Yzc\"]"}
+{"level":"info","message":"Autobuy successful for user 1: LAYER4xPpTCb3QL8S9u41EAhAX7mhBn8Q6xMTwY2Yzc"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82\"]"}
+{"level":"info","message":"Autobuy successful for user 1: ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"9tqjeRS1swj36Ee5C1iGiwAxjQJNGAVCzaTLwFY8bonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 9tqjeRS1swj36Ee5C1iGiwAxjQJNGAVCzaTLwFY8bonk"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"9tqjeRS1swj36Ee5C1iGiwAxjQJNGAVCzaTLwFY8bonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 9tqjeRS1swj36Ee5C1iGiwAxjQJNGAVCzaTLwFY8bonk"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn\"]"}
+{"level":"info","message":"Autobuy successful for user 1: pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"27U6sAYSDUJLpeCTTL5gW2wSwLGNRZRZKWJEqTWGbonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 27U6sAYSDUJLpeCTTL5gW2wSwLGNRZRZKWJEqTWGbonk"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"METAewgxyPbgwsseH8T16a39CQ5VyVxZi9zXiDPY18m\"]"}
+{"level":"info","message":"Autobuy successful for user 1: METAewgxyPbgwsseH8T16a39CQ5VyVxZi9zXiDPY18m"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"71Jvq4Epe2FCJ7JFSF7jLXdNk1Wy4Bhqd9iL6bEFELvg\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 71Jvq4Epe2FCJ7JFSF7jLXdNk1Wy4Bhqd9iL6bEFELvg"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm\"]"}
+{"level":"info","message":"Autobuy successful for user 1: EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY\"]"}
+{"level":"info","message":"Autobuy successful for user 1: ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"Dz9mQ9NzkBcCsuGPFJ3r1bS4wgqKMHBPiVuniW8Mbonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: Dz9mQ9NzkBcCsuGPFJ3r1bS4wgqKMHBPiVuniW8Mbonk"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"6opdPfd5dbkaxihfV9PQ4hudTqDgwxKqC9GKuvc4bonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 6opdPfd5dbkaxihfV9PQ4hudTqDgwxKqC9GKuvc4bonk"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263\"]"}
+{"level":"info","message":"Autobuy successful for user 1: DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm\"]"}
+{"level":"info","message":"Autobuy successful for user 1: EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN\"]"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm\"]"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Autobuy successful for user 1: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82\"]"}
+{"level":"info","message":"Autobuy successful for user 2: ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82"}
+{"level":"error","message":"Autobuy failed for user 1: Cannot read properties of null (reading 'publicKey')"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"74t4eVw5zA6i378d7Ed4e6p6Q38oXr1ttJZ4pQCtj8pk\"]"}
+{"level":"info","message":"Autobuy successful for user 2: 74t4eVw5zA6i378d7Ed4e6p6Q38oXr1ttJZ4pQCtj8pk"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump\"]"}
+{"level":"info","message":"Autobuy successful for user 2: 9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:115:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC\"]"}
+{"level":"info","message":"Autobuy successful for user 1: HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC"}
+{"code":"EFATAL","level":"error","message":"Failed to send autobuy success notification: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:192:60)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"5ypxFmuJUTsSkAeKRuRs4xSxkb4vWbjMLT3GY7ckpump\"]"}
+{"level":"info","message":"Autobuy successful for user 2: 5ypxFmuJUTsSkAeKRuRs4xSxkb4vWbjMLT3GY7ckpump"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC\"]"}
+{"level":"info","message":"Autobuy successful for user 1: HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"DdcvRiEs4k2fXbHqeJBS5jgGD93rj1wu6u8WTL4vmBLV\"]"}
+{"level":"info","message":"Autobuy successful for user 2: DdcvRiEs4k2fXbHqeJBS5jgGD93rj1wu6u8WTL4vmBLV"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"6AJcP7wuLwmRYLBNbi825wgguaPsWzPBEHcHndpRpump\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 6AJcP7wuLwmRYLBNbi825wgguaPsWzPBEHcHndpRpump"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"74t4eVw5zA6i378d7Ed4e6p6Q38oXr1ttJZ4pQCtj8pk\"]"}
+{"level":"info","message":"Autobuy successful for user 2: 74t4eVw5zA6i378d7Ed4e6p6Q38oXr1ttJZ4pQCtj8pk"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN\"]"}
+{"level":"info","message":"Autobuy successful for user 2: 6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"vRseBFqTy9QLmmo5qGiwo74AVpdqqMTnxPqWoWMpump\"]"}
+{"level":"info","message":"Autobuy successful for user 1: vRseBFqTy9QLmmo5qGiwo74AVpdqqMTnxPqWoWMpump"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at runNextTicks (node:internal/process/task_queues:64:3)\n    at process.processTimers (node:internal/timers:516:9)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:115:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"DBRiDgJAMsM95moTzJs7M9LnkGErpbv9v6CUR1DXnUu5\"]"}
+{"level":"info","message":"Autobuy successful for user 1: DBRiDgJAMsM95moTzJs7M9LnkGErpbv9v6CUR1DXnUu5"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:115:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv"}
+{"code":"EFATAL","level":"error","message":"Failed to send autobuy success notification: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:192:60)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"code":"EFATAL","level":"error","message":"Error sending Telegram message: EFATAL: AggregateError","stack":"Error: EFATAL: AggregateError\n    at new RequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/errors.js:14:15)\n    at plumbing.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:87:29)\n    at Request.RP$callback [as _callback] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:46:31)\n    at self.callback (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:183:22)\n    at Request.emit (node:events:524:28)\n    at Request.onRequestError (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:869:8)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:101:11)\n    at TLSSocket.socketErrorListener (node:_http_client:504:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:169:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:128:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)\n    at plumbing.init (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/lib/plumbing.js:36:28)\n    at Request.RP$initInterceptor [as init] (/home/zakky/work file/4TOOL (Copy)/node_modules/request-promise-core/configure/request2.js:41:27)\n    at new Request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/request.js:125:8)\n    at request (/home/zakky/work file/4TOOL (Copy)/node_modules/@cypress/request/index.js:53:10)\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:286:12)\nFrom previous event:\n    at TelegramBot._request (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:300:15)\n    at TelegramBot.sendMessage (/home/zakky/work file/4TOOL (Copy)/node_modules/node-telegram-bot-api/src/telegram.js:915:17)\n    at AutonomousTrading.sendRandomTokensToAutonomousUsers (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousTrading.js:127:52)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AutonomousService.startAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:75:13)\n    at async AutonomousService.checkAllUsersAutonomousMode (/home/zakky/work file/4TOOL (Copy)/src/services/autonomousService.js:52:21)"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"6AJcP7wuLwmRYLBNbi825wgguaPsWzPBEHcHndpRpump\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 6AJcP7wuLwmRYLBNbi825wgguaPsWzPBEHcHndpRpump"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"9wK8yN6iz1ie5kEJkvZCTxyN1x5sTdNfx8yeMY8Ebonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 9wK8yN6iz1ie5kEJkvZCTxyN1x5sTdNfx8yeMY8Ebonk"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"8ZHE4ow1a2jjxuoMfyExuNamQNALv5ekZhsBn5nMDf5e\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 8ZHE4ow1a2jjxuoMfyExuNamQNALv5ekZhsBn5nMDf5e"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr\"]"}
+{"level":"info","message":"Autobuy successful for user 1: J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn\"]"}
+{"level":"info","message":"Autobuy successful for user 2: pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263\"]"}
+{"level":"info","message":"Autobuy successful for user 2: DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"EuU9Vh37eKDdUnZkUfMZLGCcBqwFYpr1E6X3ZwUxhvgm\"]"}
+{"level":"info","message":"Autobuy successful for user 2: EuU9Vh37eKDdUnZkUfMZLGCcBqwFYpr1E6X3ZwUxhvgm"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"DGAPvWgW8Nw8vpALxRMYWCCJBpaEchobmbwxsrFMbonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: DGAPvWgW8Nw8vpALxRMYWCCJBpaEchobmbwxsrFMbonk"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263\"]"}
+{"level":"info","message":"Autobuy successful for user 2: DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS\"]"}
+{"level":"info","message":"Autobuy successful for user 1: KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"9GtvcnDUvGsuibktxiMjLQ2yyBq5akUahuBs8yANbonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 9GtvcnDUvGsuibktxiMjLQ2yyBq5akUahuBs8yANbonk"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"EtZFFYibEKAQbR4UB1VoQFscpkTYxbMdB1bssbAybonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: EtZFFYibEKAQbR4UB1VoQFscpkTYxbMdB1bssbAybonk"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"DGKj2gcKkrYnJYLGN89d1yStpx7r6yPkR166opx2bonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: DGKj2gcKkrYnJYLGN89d1yStpx7r6yPkR166opx2bonk"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"27U6sAYSDUJLpeCTTL5gW2wSwLGNRZRZKWJEqTWGbonk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 27U6sAYSDUJLpeCTTL5gW2wSwLGNRZRZKWJEqTWGbonk"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"2XRaedoTu7puFa41Maasw1gdYffG1TTu8s31u76NWkTz\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 2XRaedoTu7puFa41Maasw1gdYffG1TTu8s31u76NWkTz"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"31k88G5Mq7ptbRDf3AM13HAq6wRQHXHikR8hik7wPygk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 31k88G5Mq7ptbRDf3AM13HAq6wRQHXHikR8hik7wPygk"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"31k88G5Mq7ptbRDf3AM13HAq6wRQHXHikR8hik7wPygk\"]"}
+{"level":"info","message":"Autobuy successful for user 1: 31k88G5Mq7ptbRDf3AM13HAq6wRQHXHikR8hik7wPygk"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"Ey59PH7Z4BFU4HjyKnyMdWt5GGN76KazTAwQihoUXRnk\"]"}
+{"level":"info","message":"Autobuy successful for user 2: Ey59PH7Z4BFU4HjyKnyMdWt5GGN76KazTAwQihoUXRnk"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"9tqjeRS1swj36Ee5C1iGiwAxjQJNGAVCzaTLwFY8bonk\"]"}
+{"level":"info","message":"Autobuy successful for user 2: 9tqjeRS1swj36Ee5C1iGiwAxjQJNGAVCzaTLwFY8bonk"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN\"]"}
+{"level":"info","message":"Autobuy successful for user 2: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 2: [\"2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv\"]"}
+{"level":"info","message":"Autobuy successful for user 2: 2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv"}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"No active autonomous strategy rules found for user 3. Automatically turning off autonomous mode."}
+{"level":"error","message":"Error sending autonomous mode disabled notification: EFATAL: AggregateError"}
+{"level":"info","message":"No active autonomous strategy rules found for user 21. Automatically turning off autonomous mode."}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous strategy rules found for user 1. Automatically turning off autonomous mode."}
+{"level":"info","message":"No active autonomous strategy rules found for user 1. Automatically turning off autonomous mode."}

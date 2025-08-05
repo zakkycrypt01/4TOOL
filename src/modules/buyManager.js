@@ -1,0 +1,383 @@
+const { LAMPORTS_PER_SOL, Keypair } = require('@solana/web3.js');
+const bs58 = require('bs58');
+const crypto = require('crypto');
+const TokenAnalysis = require('./tokenAnalysis');
+
+class BuyManager {
+    constructor(config, tradingExecution, db, manualManagementService) {
+        this.config = config;
+        this.tradingExecution = tradingExecution;
+        this.db = db;
+        this.manualManagementService = manualManagementService;
+        this.pendingBuyAmount = new Map(); // Store pending buy amounts for users
+        this.tokenAnalysis = new TokenAnalysis();
+    }
+
+    async initiateBuy(chatId, telegramId, bot) {
+        try {
+            const user = await this.db.getUserByTelegramId(telegramId);
+            const activeWallet = await this.db.getActiveWallet(user.id);
+
+            if (!activeWallet) {
+                await bot.sendMessage(chatId, 'Please create or import a wallet first to buy tokens.');
+                return;
+            }
+
+            await bot.sendMessage(chatId, 'Please paste or scan the token address you want to buy:');
+            this.pendingBuyAmount.set(telegramId, { status: 'waiting_for_address' });
+        } catch (error) {
+            console.error('Error initiating buy:', error);
+            await bot.sendMessage(chatId, 'Sorry, something went wrong while initiating the buy process.');
+        }
+    }
+
+    async confirmBuy(chatId, telegramId, tokenAddress, bot) {
+        try {
+            // Store the token address for the next step
+            this.pendingBuyAmount.set(telegramId, {
+                status: 'waiting_for_amount',
+                tokenAddress
+            });
+
+            const message = `
+*🛒 Buy ${tokenAddress}*
+
+Please enter the amount of SOL you want to spend:
+
+*Quick Amounts:*`;
+
+            const keyboard = {
+                inline_keyboard: [
+                    [
+                        { text: '0.1 SOL', callback_data: 'buy_amount_0.1' },
+                        { text: '0.5 SOL', callback_data: 'buy_amount_0.5' },
+                        { text: '1 SOL', callback_data: 'buy_amount_1' }
+                    ],
+                    [
+                        { text: '2 SOL', callback_data: 'buy_amount_2' },
+                        { text: '5 SOL', callback_data: 'buy_amount_5' },
+                        { text: '10 SOL', callback_data: 'buy_amount_10' }
+                    ],
+                    [
+                        { text: '✏️ Custom Amount', callback_data: `custom_buy_${tokenAddress}` }
+                    ],
+                    [
+                        { text: '❌ Cancel', callback_data: 'cancel_buy' }
+                    ]
+                ]
+            };
+
+            await bot.sendMessage(chatId, message, {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard
+            });
+        } catch (error) {
+            console.error('Error confirming buy:', error);
+            await bot.sendMessage(chatId, 'Sorry, something went wrong while confirming the buy.');
+        }
+    }
+
+    async processBuyAmount(chatId, telegramId, amount, bot) {
+        try {
+            const pendingBuy = this.pendingBuyAmount.get(telegramId);
+            if (!pendingBuy || pendingBuy.status !== 'waiting_for_amount') {
+                throw new Error('No pending buy found');
+            }
+
+            // Convert amount to number and validate
+            const solAmount = parseFloat(amount);
+            if (isNaN(solAmount) || solAmount <= 0) {
+                throw new Error('Invalid amount. Please enter a positive number.');
+            }
+
+            // Store the amount for execution
+            this.pendingBuyAmount.set(telegramId, {
+                ...pendingBuy,
+                status: 'ready_to_execute',
+                amount: solAmount
+            });
+
+            const message = `
+*🛒 Confirm Buy Order*
+
+*Token:* \`${pendingBuy.tokenAddress}\`
+*Amount:* ${solAmount} SOL
+
+Please confirm your order:`;
+
+            const keyboard = {
+                inline_keyboard: [
+                    [
+                        { text: '✅ Confirm Buy', callback_data: `confirm_buy_execute_${solAmount}` },
+                        { text: '❌ Cancel', callback_data: 'cancel_buy' }
+                    ]
+                ]
+            };
+
+            await bot.sendAndStoreMessage(chatId, message, {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard
+            });
+        } catch (error) {
+            console.error('Error processing buy amount:', error);
+            await bot.sendAndStoreMessage(chatId, `Sorry, couldn't process the buy: ${error.message}`);
+            this.clearPendingBuy(telegramId);
+        }
+    }
+
+    async executeBuy(chatId, telegramId, amount, bot) {
+        try {
+            const pendingBuy = this.pendingBuyAmount.get(telegramId);
+            if (!pendingBuy || pendingBuy.status !== 'ready_to_execute') {
+                throw new Error('No pending buy found or buy not ready to execute');
+            }
+
+            // Convert amount to number and validate
+            const solAmount = parseFloat(amount);
+            if (isNaN(solAmount) || solAmount <= 0) {
+                throw new Error('Invalid amount. Please enter a positive number.');
+            }
+
+            const user = await this.db.getUserByTelegramId(telegramId);
+            const activeWallet = await this.db.getActiveWallet(user.id);
+
+            if (!activeWallet) {
+                const message = `
+*⚠️ No Active Wallet Found*
+
+Please create or import a wallet first to start trading.`;
+
+                const keyboard = {
+                    inline_keyboard: [
+                        [
+                            { text: '👛 Create Wallet', callback_data: 'create_wallet' },
+                            { text: '📥 Import Wallet', callback_data: 'import_wallet' }
+                        ],
+                        [
+                            { text: '◀️ Back to Trade', callback_data: 'trade' }
+                        ]
+                    ]
+                };
+
+                await bot.sendAndStoreMessage(chatId, message, {
+                    parse_mode: 'Markdown',
+                    reply_markup: keyboard
+                });
+                return;
+            }
+
+            // Decrypt the private key
+            const decryptedKey = this.decryptPrivateKey(activeWallet.encrypted_private_key, telegramId.toString());
+            
+            // Convert the decrypted key to Uint8Array
+            let keypair;
+            try {
+                // The decrypted key should be in base64 format
+                const secretKey = Buffer.from(decryptedKey, 'base64');
+                if (secretKey.length !== 64) {
+                    throw new Error('Invalid private key length');
+                }
+                keypair = Keypair.fromSecretKey(secretKey);
+            } catch (error) {
+                console.error('Error creating keypair:', error);
+                throw new Error('Invalid wallet key format');
+            }
+
+            // Set the wallet in trading execution
+            this.tradingExecution.setUserWallet(keypair);
+
+            // Show processing message
+            await bot.sendAndStoreMessage(chatId, `
+*🔄 Processing Buy Order*
+
+Please wait while we process your order...`, {
+                parse_mode: 'Markdown'
+            });
+
+            // Execute the buy
+            const result = await this.tradingExecution.executeBuy(
+                user.id,
+                pendingBuy.tokenAddress,
+                solAmount
+            );
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to execute buy');
+            }
+
+            // Trigger manual management monitoring for this token
+            if (this.manualManagementService) {
+                try {
+                    await this.manualManagementService.addTokenToMonitoring(
+                        user.id,
+                        pendingBuy.tokenAddress,
+                        result.tokenPrice,
+                        result.tokensReceived
+                    );
+                } catch (err) {
+                    console.error('Error adding token to manual management monitoring:', err);
+                }
+            }
+
+            // Format success message
+            const message = `
+*✅ Buy Order Executed Successfully!*
+
+*Token:* ${result.name} (${result.symbol})
+*Amount:* ${result.tokensReceived.toFixed(6)} ${result.symbol}
+*Price:* ${result.tokenPrice.toFixed(6)} SOL
+*Total Cost:* ${solAmount} SOL
+
+*Fees:*
+• Bot Fee: ${result.botFee.toFixed(4)} SOL
+• Network Fee: ${result.networkFee.toFixed(4)} SOL
+
+*Transaction:* [View on Solscan](https://solscan.io/tx/${result.signature})
+
+*Price Impact:* ${result.priceImpact.toFixed(2)}%`;
+
+            await bot.sendAndStoreMessage(chatId, message, {
+                parse_mode: 'Markdown',
+                disable_web_page_preview: true
+            });
+
+            // Clear the pending buy
+            this.clearPendingBuy(telegramId);
+        } catch (error) {
+            console.error('Error executing buy:', error);
+            
+            // Format error message based on error type
+            let errorMessage;
+            if (error.message.includes('Transaction expired')) {
+                errorMessage = `
+*⚠️ Transaction Expired*
+
+The transaction has expired. Please try your buy order again.`;
+            } else if (error.message.includes('Insufficient SOL balance')) {
+                errorMessage = `
+*⚠️ Insufficient Balance*
+
+You don't have enough SOL to complete this transaction. Please ensure you have enough SOL to cover:
+• Transaction amount
+• Network fees
+• Bot fees`;
+            } else {
+                errorMessage = `
+*⚠️ Transaction Failed*
+
+Sorry, we couldn't complete your buy order:
+${error.message}`;
+            }
+
+            await bot.sendAndStoreMessage(chatId, errorMessage, {
+                parse_mode: 'Markdown'
+            });
+            
+            this.clearPendingBuy(telegramId);
+        }
+    }
+
+    /**
+     * Handles custom buy callback action, e.g. _<tokenAddress>
+     * Prompts user to enter a custom amount for the specified token.
+     */
+    async handleCustomBuyCallback(chatId, telegramId, tokenAddress, bot) {
+        try {
+            // Store the token address and set status to waiting for custom amount
+            this.pendingBuyAmount.set(telegramId, {
+                status: 'waiting_for_custom_amount',
+                tokenAddress
+            });
+
+            const message = `\n*🛒 Buy ${tokenAddress}*\n\nPlease enter the custom amount of SOL you want to spend:`;
+            const keyboard = {
+                inline_keyboard: [
+                    [
+                        { text: '❌ Cancel', callback_data: 'cancel_buy' }
+                    ]
+                ]
+            };
+            await bot.sendMessage(chatId, message, {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard
+            });
+        } catch (error) {
+            console.error('Error handling custom buy callback:', error);
+            await bot.sendMessage(chatId, 'Sorry, something went wrong while handling custom buy.');
+        }
+    }
+
+    /**
+     * Processes custom buy amount after user input when status is 'waiting_for_custom_amount'.
+     */
+    async processCustomBuyAmount(chatId, telegramId, amount, bot) {
+        try {
+            const pendingBuy = this.pendingBuyAmount.get(telegramId);
+            if (!pendingBuy || pendingBuy.status !== 'waiting_for_custom_amount') {
+                throw new Error('No pending custom buy found');
+            }
+
+            // Convert amount to number and validate
+            const solAmount = parseFloat(amount);
+            if (isNaN(solAmount) || solAmount <= 0) {
+                throw new Error('Invalid amount. Please enter a positive number.');
+            }
+
+            // Store the amount for execution
+            this.pendingBuyAmount.set(telegramId, {
+                ...pendingBuy,
+                status: 'ready_to_execute',
+                amount: solAmount
+            });
+
+            const message = `\n*🛒 Confirm Buy Order*\n\n*Token:* \`${pendingBuy.tokenAddress}\`\n*Amount:* ${solAmount} SOL\n\nPlease confirm your order:`;
+            const keyboard = {
+                inline_keyboard: [
+                    [
+                        { text: '✅ Confirm Buy', callback_data: `confirm_buy_execute_${pendingBuy.tokenAddress}_${solAmount}` },
+                        { text: '❌ Cancel', callback_data: 'cancel_buy' }
+                    ]
+                ]
+            };
+            await bot.sendAndStoreMessage(chatId, message, {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard
+            });
+        } catch (error) {
+            console.error('Error processing custom buy amount:', error);
+            await bot.sendAndStoreMessage(chatId, `Sorry, couldn't process the custom buy: ${error.message}`);
+            this.clearPendingBuy(telegramId);
+        }
+    }
+
+    decryptPrivateKey(encryptedData, password) {
+        try {
+            const [ivHex, encrypted] = encryptedData.split(':');
+            if (!ivHex || !encrypted) {
+                throw new Error('Invalid encrypted data format');
+            }
+
+            const iv = Buffer.from(ivHex, 'hex');
+            const key = crypto.scryptSync(password, 'salt', 32);
+            const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+            
+            let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+            decrypted += decipher.final('utf8');
+            
+            return decrypted;
+        } catch (error) {
+            console.error('Error decrypting private key:', error);
+            throw new Error('Failed to decrypt private key');
+        }
+    }
+
+    hasPendingBuy(telegramId) {
+        return this.pendingBuyAmount.has(telegramId);
+    }
+
+    clearPendingBuy(telegramId) {
+        this.pendingBuyAmount.delete(telegramId);
+    }
+}
+
+module.exports = BuyManager;
