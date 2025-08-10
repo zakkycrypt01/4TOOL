@@ -54,7 +54,8 @@ class RuleEngine {
     }
 
     async getRuleCriteria(ruleId) {
-        const query = 'SELECT * FROM rule_criteria WHERE rule_id = ?';
+        // Use the same rule_conditions table as the rest of the application
+        const query = 'SELECT * FROM rule_conditions WHERE rule_id = ?';
         return new Promise((resolve, reject) => {
             this.db.all(query, [ruleId], (err, rows) => {
                 if (err) reject(err);
@@ -64,51 +65,74 @@ class RuleEngine {
     }
 
     async getRuleMetrics(ruleId) {
-        const query = 'SELECT * FROM rule_metrics WHERE rule_id = ?';
-        return new Promise((resolve, reject) => {
-            this.db.all(query, [ruleId], (err, rows) => {
-                if (err) reject(err);
-                resolve(rows);
-            });
-        });
+        // For now, return empty array since we're not using separate metrics table
+        return [];
     }
 
     async evaluateCriteria(criteria, tokenData) {
         for (const criterion of criteria) {
-            const value = JSON.parse(criterion.value);
-            const secondaryValue = criterion.secondary_value ? JSON.parse(criterion.secondary_value) : null;
+            try {
+                let value;
+                // For category and timeframe conditions, the value is a string, not JSON
+                if (criterion.condition_type === 'category' || criterion.condition_type === 'discovery_category' || 
+                    criterion.condition_type === 'timeframe' || criterion.condition_type === 'discovery_timeframe') {
+                    value = criterion.condition_value;
+                } else {
+                    value = JSON.parse(criterion.condition_value);
+                }
+                const operator = criterion.operator || 'equals';
 
-            switch (criterion.criteria_type) {
-                case 'category':
-                    if (!this.evaluateCategory(value, tokenData.category)) {
-                        return false;
-                    }
-                    break;
-                case 'market_cap':
-                    if (!this.evaluateNumeric(criterion.operator, tokenData.marketCap, value, secondaryValue)) {
-                        return false;
-                    }
-                    break;
-                case 'price':
-                    if (!this.evaluateNumeric(criterion.operator, tokenData.price, value, secondaryValue)) {
-                        return false;
-                    }
-                    break;
-                case 'liquidity':
-                    if (!this.evaluateNumeric(criterion.operator, tokenData.liquidity, value, secondaryValue)) {
-                        return false;
-                    }
-                    break;
-                case 'num_buys':
-                    if (!this.evaluateNumeric(criterion.operator || '>=', tokenData.numBuys || tokenData.num_buys, value.min, secondaryValue)) {
-                        return false;
-                    }
-                    break;
-                case 'num_sells':
-                    if (!this.evaluateNumeric(criterion.operator || '>=', tokenData.numSells || tokenData.num_sells, value.min, secondaryValue)) {
-                        return false;
-                    }
-                    break;
+                switch (criterion.condition_type) {
+                    case 'category':
+                    case 'discovery_category':
+                        if (!this.evaluateCategory(value, tokenData.category)) {
+                            return false;
+                        }
+                        break;
+                    case 'market_cap':
+                    case 'discovery_market_cap':
+                        if (!this.evaluateNumericRange(operator, tokenData.marketCap, value)) {
+                            return false;
+                        }
+                        break;
+                    case 'price':
+                    case 'discovery_price':
+                        if (!this.evaluateNumericRange(operator, tokenData.price, value)) {
+                            return false;
+                        }
+                        break;
+                    case 'liquidity':
+                    case 'discovery_liquidity':
+                        if (!this.evaluateNumericRange(operator, tokenData.liquidity, value)) {
+                            return false;
+                        }
+                        break;
+                    case 'volume':
+                    case 'discovery_volume':
+                        if (!this.evaluateNumericRange(operator, tokenData.volume, value)) {
+                            return false;
+                        }
+                        break;
+                    case 'timeframe':
+                    case 'discovery_timeframe':
+                        // Timeframe is typically used for change calculations
+                        // Since we're evaluating static token data, we'll skip timeframe conditions
+                        // They should be handled in the change evaluation phase
+                        break;
+                    case 'num_buys':
+                        if (!this.evaluateNumericRange(operator, tokenData.numBuys || tokenData.num_buys, value)) {
+                            return false;
+                        }
+                        break;
+                    case 'num_sells':
+                        if (!this.evaluateNumericRange(operator, tokenData.numSells || tokenData.num_sells, value)) {
+                            return false;
+                        }
+                        break;
+                }
+            } catch (error) {
+                console.error('Error evaluating criterion:', criterion, error);
+                return false;
             }
         }
         return true;
@@ -152,6 +176,23 @@ class RuleEngine {
                 return actual >= expected && actual <= secondaryValue;
             default:
                 return false;
+        }
+    }
+
+    evaluateNumericRange(operator, actual, value) {
+        // Handle both single values and range objects
+        if (typeof value === 'object' && value !== null) {
+            // Range object with min/max
+            if (value.min !== undefined && value.min !== null && actual < Number(value.min)) {
+                return false;
+            }
+            if (value.max !== undefined && value.max !== null && actual > Number(value.max)) {
+                return false;
+            }
+            return true;
+        } else {
+            // Single value with operator
+            return this.evaluateNumeric(operator, actual, Number(value));
         }
     }
 

@@ -58,14 +58,17 @@ class TokenDataService {
             const response = await axios.get(url, { headers: { 'Accept': 'application/json' } });
             // Jupiter returns an array; find the token with exact mint match
             if (Array.isArray(response.data) && response.data.length > 0) {
-                const token = response.data.find(t => t.address === tokenAddress || t.mint === tokenAddress) || response.data[0];
+                const token = response.data.find(t => t.id === tokenAddress || t.address === tokenAddress || t.mint === tokenAddress) || response.data[0];
                 return {
                     price: token.usdPrice,
-                    address: token.address || token.mint,
+                    address: token.id, // Jupiter uses 'id' as the token address
                     symbol: token.symbol,
                     name: token.name,
-                    marketCap: token.marketCap,
-                    category: token.category
+                    marketCap: token.mcap, // Jupiter uses 'mcap' for market cap
+                    category: token.tags ? token.tags[0] : null, // Use first tag as category
+                    volume24h: token.stats24h ? (token.stats24h.buyVolume + token.stats24h.sellVolume) : null,
+                    liquidity: token.liquidity,
+                    volume: token.stats24h ? (token.stats24h.buyVolume + token.stats24h.sellVolume) : null
                 };
             }
             return null;
@@ -81,12 +84,17 @@ class TokenDataService {
         return {
             price: data?.price,
             marketCap: data?.marketCap,
-            volume: undefined, 
+            volume: data?.volume24h || data?.volume, 
             priceChange: undefined, 
             volumeChange: undefined,
-            liquidity: undefined, 
+            liquidity: data?.liquidity, 
             category: data?.category
         };
+    }
+
+    async getTokenLiquidity(tokenAddress) {
+        const data = await this.getTokenData(tokenAddress);
+        return data?.liquidity || 0;
     }
 
     /**
@@ -124,18 +132,29 @@ class TokenDataService {
                 // Check ALL conditions - token must pass every single one
                 for (const cond of conditions) {
                     try {
-                        const value = JSON.parse(cond.condition_value);
+                        let value;
+                        // For category and timeframe conditions, the value is a string, not JSON
+                        if (cond.condition_type === 'category' || cond.condition_type === 'discovery_category' || 
+                            cond.condition_type === 'timeframe' || cond.condition_type === 'discovery_timeframe') {
+                            value = cond.condition_value;
+                        } else {
+                            value = JSON.parse(cond.condition_value);
+                        }
                         let conditionPassed = true;
                         
                         switch (cond.condition_type) {
                             case 'category':
-                                if (!token.category || token.category.toLowerCase() !== value.toLowerCase()) {
+                            case 'discovery_category':
+                                // Jupiter uses 'tags' instead of 'category'
+                                const tokenCategory = token.tags ? token.tags[0] : token.category;
+                                if (!tokenCategory || tokenCategory.toLowerCase() !== value.toLowerCase()) {
                                     conditionPassed = false;
                                 }
                                 break;
-                            case 'market_cap': {
-                                // Support both marketCap and market_cap from API
-                                const cap = token.marketCap ?? token.market_cap;
+                            case 'market_cap':
+                            case 'discovery_market_cap': {
+                                // Jupiter uses 'mcap' for market cap
+                                const cap = token.mcap ?? token.marketCap ?? token.market_cap;
                                 if (cap === undefined || cap === null) { 
                                     conditionPassed = false; 
                                     break; 
@@ -149,17 +168,69 @@ class TokenDataService {
                                     else if (!cond.operator && cap > Number(value)) conditionPassed = false; // fallback: treat as max
                                 }
                                 if (!conditionPassed) {
-                                    console.log(`[TokenDataService] Token ${token.symbol || token.address || token.mint} filtered out by market_cap condition:`, cond, 'Token market cap:', cap);
+                                    console.log(`[TokenDataService] Token ${token.symbol || token.id || token.address} filtered out by ${cond.condition_type} condition:`, cond, 'Token market cap:', cap);
                                 }
                                 break;
                             }
                             case 'price':
+                            case 'discovery_price':
                                 if (token.usdPrice === undefined || token.usdPrice === null) { 
                                     conditionPassed = false; 
                                     break; 
                                 }
                                 if (cond.operator === '>=') { if (token.usdPrice < value) conditionPassed = false; }
                                 if (cond.operator === '<=') { if (token.usdPrice > value) conditionPassed = false; }
+                                break;
+                            case 'volume':
+                            case 'discovery_volume': {
+                                // Jupiter provides volume data in stats24h
+                                const volume = token.stats24h ? (token.stats24h.buyVolume + token.stats24h.sellVolume) : (token.volume24h ?? token.volume);
+                                if (volume === undefined || volume === null) {
+                                    // If volume data is not available, we'll skip this condition for now
+                                    console.log(`[TokenDataService] Volume data not available for token ${token.symbol || token.id || token.address}, skipping volume condition`);
+                                    break;
+                                }
+                                if (typeof value === 'object') {
+                                    if (value.min !== undefined && value.min !== null && volume < Number(value.min)) conditionPassed = false;
+                                    if (value.max !== undefined && value.max !== null && volume > Number(value.max)) conditionPassed = false;
+                                } else {
+                                    if (cond.operator === '>=') { if (volume < Number(value)) conditionPassed = false; }
+                                    else if (cond.operator === '<=') { if (volume > Number(value)) conditionPassed = false; }
+                                    else if (!cond.operator && volume < Number(value)) conditionPassed = false; // fallback: treat as min
+                                }
+                                if (!conditionPassed) {
+                                    console.log(`[TokenDataService] Token ${token.symbol || token.id || token.address} filtered out by ${cond.condition_type} condition:`, cond, 'Token volume:', volume);
+                                }
+                                break;
+                            }
+                            case 'liquidity':
+                            case 'discovery_liquidity': {
+                                // Jupiter provides liquidity data directly
+                                const liquidity = token.liquidity;
+                                if (liquidity === undefined || liquidity === null) {
+                                    // If liquidity data is not available, we'll skip this condition for now
+                                    console.log(`[TokenDataService] Liquidity data not available for token ${token.symbol || token.id || token.address}, skipping liquidity condition`);
+                                    break;
+                                }
+                                if (typeof value === 'object') {
+                                    if (value.min !== undefined && value.min !== null && liquidity < Number(value.min)) conditionPassed = false;
+                                    if (value.max !== undefined && value.max !== null && liquidity > Number(value.max)) conditionPassed = false;
+                                } else {
+                                    if (cond.operator === '>=') { if (liquidity < Number(value)) conditionPassed = false; }
+                                    else if (cond.operator === '<=') { if (liquidity > Number(value)) conditionPassed = false; }
+                                    else if (!cond.operator && liquidity < Number(value)) conditionPassed = false; // fallback: treat as min
+                                }
+                                if (!conditionPassed) {
+                                    console.log(`[TokenDataService] Token ${token.symbol || token.id || token.address} filtered out by ${cond.condition_type} condition:`, cond, 'Token liquidity:', liquidity);
+                                }
+                                break;
+                            }
+                            case 'timeframe':
+                            case 'discovery_timeframe':
+                                // Timeframe is typically used for change calculations (price change, volume change)
+                                // Since we're filtering static token data, we'll skip timeframe conditions
+                                // They should be handled in the rule evaluation phase
+                                console.log(`[TokenDataService] Timeframe condition skipped for static filtering:`, cond);
                                 break;
                             // Add more condition types as needed
                         }
