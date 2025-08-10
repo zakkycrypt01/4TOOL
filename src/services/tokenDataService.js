@@ -56,26 +56,88 @@ class TokenDataService {
         try {
             const url = `https://lite-api.jup.ag/tokens/v2/search?query=${tokenAddress}`;
             const response = await axios.get(url, { headers: { 'Accept': 'application/json' } });
+            
             // Jupiter returns an array; find the token with exact mint match
             if (Array.isArray(response.data) && response.data.length > 0) {
-                const token = response.data.find(t => t.id === tokenAddress || t.address === tokenAddress || t.mint === tokenAddress) || response.data[0];
-                return {
-                    price: token.usdPrice,
-                    address: token.id, // Jupiter uses 'id' as the token address
-                    symbol: token.symbol,
-                    name: token.name,
-                    marketCap: token.mcap, // Jupiter uses 'mcap' for market cap
-                    category: token.tags ? token.tags[0] : null, // Use first tag as category
-                    volume24h: token.stats24h ? (token.stats24h.buyVolume + token.stats24h.sellVolume) : null,
-                    liquidity: token.liquidity,
-                    volume: token.stats24h ? (token.stats24h.buyVolume + token.stats24h.sellVolume) : null
-                };
+                // First try to find exact match
+                let token = response.data.find(t => 
+                    t.id === tokenAddress || 
+                    t.address === tokenAddress || 
+                    t.mint === tokenAddress
+                );
+                
+                // If no exact match, try partial match or use first result
+                if (!token) {
+                    token = response.data.find(t => 
+                        t.id?.toLowerCase().includes(tokenAddress.toLowerCase()) ||
+                        t.address?.toLowerCase().includes(tokenAddress.toLowerCase()) ||
+                        t.mint?.toLowerCase().includes(tokenAddress.toLowerCase())
+                    ) || response.data[0];
+                }
+                
+                if (token) {
+                    return {
+                        price: token.usdPrice,
+                        address: token.id, // Jupiter uses 'id' as the token address
+                        symbol: token.symbol,
+                        name: token.name,
+                        marketCap: token.mcap, // Jupiter uses 'mcap' for market cap
+                        category: token.tags ? token.tags[0] : null, // Use first tag as category
+                        volume24h: token.stats24h ? (token.stats24h.buyVolume + token.stats24h.sellVolume) : null,
+                        liquidity: token.liquidity,
+                        volume: token.stats24h ? (token.stats24h.buyVolume + token.stats24h.sellVolume) : null
+                    };
+                }
             }
-            return null;
+            
+            // If Jupiter fails, try alternative sources
+            return await this.getAlternativeTokenData(tokenAddress);
         } catch (error) {
             console.error('Error fetching Jupiter data:', error);
-            return null;
+            // Try alternative sources on Jupiter failure
+            return await this.getAlternativeTokenData(tokenAddress);
         }
+    }
+
+    async getAlternativeTokenData(tokenAddress) {
+        try {
+            // Try DexScreener as alternative
+            const dexscreenerUrl = `https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`;
+            const response = await axios.get(dexscreenerUrl, { 
+                headers: { 'Accept': 'application/json' },
+                timeout: 5000 
+            });
+            
+            if (response.data && response.data.pairs && response.data.pairs.length > 0) {
+                const pair = response.data.pairs[0];
+                return {
+                    price: pair.priceUsd,
+                    address: tokenAddress,
+                    symbol: pair.baseToken?.symbol || 'UNKNOWN',
+                    name: pair.baseToken?.name || 'Unknown Token',
+                    marketCap: null,
+                    category: null,
+                    volume24h: pair.volume24h,
+                    liquidity: pair.liquidity?.usd,
+                    volume: pair.volume24h
+                };
+            }
+        } catch (error) {
+            console.error('Error fetching alternative token data:', error);
+        }
+        
+        // Final fallback - return basic info with token address
+        return {
+            price: 0,
+            address: tokenAddress,
+            symbol: tokenAddress.slice(0, 8) + '...',
+            name: 'Unknown Token',
+            marketCap: null,
+            category: null,
+            volume24h: null,
+            liquidity: null,
+            volume: null
+        };
     }
 
     async getTokenMetrics(tokenAddress, timeframe = '1h') {
