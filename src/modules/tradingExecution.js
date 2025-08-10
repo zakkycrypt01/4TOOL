@@ -503,64 +503,24 @@ class TradingExecution {
             const axios = require('axios');
             const url = `https://lite-api.jup.ag/tokens/v2/search?query=${tokenAddress}`;
             const resp = await axios.get(url, { headers: { 'Accept': 'application/json' } });
-            
             if (Array.isArray(resp.data) && resp.data.length > 0) {
-                // First try to find exact match
-                let meta = resp.data.find(t => 
-                    t.id === tokenAddress || 
-                    t.address === tokenAddress || 
-                    t.mint === tokenAddress
-                );
-                
-                // If no exact match, try partial match or use first result
-                if (!meta) {
-                    meta = resp.data.find(t => 
-                        t.id?.toLowerCase().includes(tokenAddress.toLowerCase()) ||
-                        t.address?.toLowerCase().includes(tokenAddress.toLowerCase()) ||
-                        t.mint?.toLowerCase().includes(tokenAddress.toLowerCase())
-                    ) || resp.data[0];
-                }
-                
-                if (meta) {
-                    return {
-                        name: meta.name || 'Unknown Token',
-                        symbol: meta.symbol || 'UNKNOWN',
-                        decimals: meta.decimals || 9
-                    };
-                }
+                const meta = resp.data[0];
+                return {
+                    name: meta.name || 'Unknown Token',
+                    symbol: meta.symbol || 'UNKNOWN',
+                    decimals: meta.decimals || 9
+                };
             }
-            
-            // If Jupiter fails, try DexScreener as fallback
-            try {
-                const dexscreenerUrl = `https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`;
-                const dexscreenerResp = await axios.get(dexscreenerUrl, { 
-                    headers: { 'Accept': 'application/json' },
-                    timeout: 5000 
-                });
-                
-                if (dexscreenerResp.data && dexscreenerResp.data.pairs && dexscreenerResp.data.pairs.length > 0) {
-                    const pair = dexscreenerResp.data.pairs[0];
-                    return {
-                        name: pair.baseToken?.name || 'Unknown Token',
-                        symbol: pair.baseToken?.symbol || 'UNKNOWN',
-                        decimals: pair.baseToken?.decimals || 9
-                    };
-                }
-            } catch (dexscreenerError) {
-                console.error('Error fetching DexScreener data:', dexscreenerError);
-            }
-            
-            // Final fallback with more informative naming
             return {
-                name: `Token (${tokenAddress.slice(0, 8)}...)`,
-                symbol: tokenAddress.slice(0, 6) + '...' + tokenAddress.slice(-4),
+                name: 'Unknown Token',
+                symbol: 'UNKNOWN',
                 decimals: 9
             };
         } catch (error) {
             console.error('Error getting token info:', error);
             return {
-                name: `Token (${tokenAddress.slice(0, 8)}...)`,
-                symbol: tokenAddress.slice(0, 6) + '...' + tokenAddress.slice(-4),
+                name: 'Unknown Token',
+                symbol: 'UNKNOWN',
                 decimals: 9
             };
         }

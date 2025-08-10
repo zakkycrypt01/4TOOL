@@ -78,44 +78,28 @@ Please create or import a wallet first to view your portfolio.`;
                         let marketCap = null;
                         let volume24h = null;
                         let name = 'Unknown Token';
-                        
                         try {
-                            // Try TokenDataService first (more reliable)
-                            const meta2 = await tokenDataService.getTokenData(t.mint);
-                            if (meta2) {
-                                if (meta2.symbol && meta2.symbol !== 'UNKNOWN') symbol = meta2.symbol;
-                                if (meta2.name && meta2.name !== 'Unknown Token') name = meta2.name;
-                                if (meta2.price) price = meta2.price;
-                                if (meta2.marketCap) marketCap = meta2.marketCap;
-                                if (meta2.volume24h) volume24h = meta2.volume24h;
-                            }
-                            
-                            // If TokenDataService didn't provide good data, try MarketDataService
-                            if (symbol === 'Unknown Token' || name === 'Unknown Token') {
-                                const meta = await marketDataService.getTokenData(t.mint);
-                                if (meta) {
-                                    if (meta.symbol && symbol === 'Unknown Token') symbol = meta.symbol;
-                                    if (meta.name && name === 'Unknown Token') name = meta.name;
-                                    if (meta.price && !price) price = meta.price;
-                                    if (meta.marketCap && !marketCap) marketCap = meta.marketCap;
-                                    if (meta.volume24h && !volume24h) volume24h = meta.volume24h;
+                            // Prefer MarketDataService for richer data
+                            const meta = await marketDataService.getTokenData(t.mint);
+                            if (meta) {
+                                if (meta.symbol) symbol = meta.symbol;
+                                if (meta.name) name = meta.name;
+                                if (meta.price) price = meta.price;
+                                if (meta.marketCap) marketCap = meta.marketCap;
+                                if (meta.volume24h) volume24h = meta.volume24h;
+                            } else {
+                                // Fallback to TokenDataService
+                                const meta2 = await tokenDataService.getTokenData(t.mint);
+                                if (meta2) {
+                                    if (meta2.symbol) symbol = meta2.symbol;
+                                    if (meta2.name) name = meta2.name;
+                                    if (meta2.price) price = meta2.price;
+                                    if (meta2.marketCap) marketCap = meta2.marketCap;
                                 }
                             }
-                        } catch (e) { 
-                            console.error('Token meta fetch error for', t.mint, ':', e); 
-                        }
-                        
-                        // Create a more informative fallback
-                        if (symbol === 'Unknown Token' && name === 'Unknown Token') {
-                            // Use a shortened version of the mint address as symbol
-                            symbol = t.mint.slice(0, 6) + '...' + t.mint.slice(-4);
-                            name = `Token (${t.mint.slice(0, 8)}...)`;
-                        } else if (symbol === 'Unknown Token') {
-                            symbol = name;
-                        } else if (name === 'Unknown Token') {
-                            name = symbol;
-                        }
-                        
+                        } catch (e) { console.error('Token meta fetch error:', e); }
+                        // Use token name as symbol if available, otherwise use symbol, fallback to mint slice
+                        symbol = name || symbol || (t.mint.slice(0, 4) + '...');
                         allHoldings[t.mint] = { amount: 0, symbol, price, marketCap, volume24h, name };
                     }
                     allHoldings[t.mint].amount += t.amount;
@@ -279,44 +263,28 @@ Please create or import a wallet first to view your portfolio.`;
                         let marketCap = null;
                         let volume24h = null;
                         let name = 'Unknown Token';
-                        
                         try {
-                            // Try TokenDataService first (more reliable)
-                            const meta2 = await tokenDataService.getTokenData(t.mint);
-                            if (meta2) {
-                                if (meta2.symbol && meta2.symbol !== 'UNKNOWN') symbol = meta2.symbol;
-                                if (meta2.name && meta2.name !== 'Unknown Token') name = meta2.name;
-                                if (meta2.price) price = meta2.price;
-                                if (meta2.marketCap) marketCap = meta2.marketCap;
-                                if (meta2.volume24h) volume24h = meta2.volume24h;
-                            }
-                            
-                            // If TokenDataService didn't provide good data, try MarketDataService
-                            if (symbol === 'Unknown Token' || name === 'Unknown Token') {
-                                const meta = await marketDataService.getTokenData(t.mint);
-                                if (meta) {
-                                    if (meta.symbol && symbol === 'Unknown Token') symbol = meta.symbol;
-                                    if (meta.name && name === 'Unknown Token') name = meta.name;
-                                    if (meta.price && !price) price = meta.price;
-                                    if (meta.marketCap && !marketCap) marketCap = meta.marketCap;
-                                    if (meta.volume24h && !volume24h) volume24h = meta.volume24h;
+                            // Prefer MarketDataService for richer data
+                            const meta = await marketDataService.getTokenData(t.mint);
+                            if (meta) {
+                                if (meta.symbol) symbol = meta.symbol;
+                                if (meta.name) name = meta.name;
+                                if (meta.price) price = meta.price;
+                                if (meta.marketCap) marketCap = meta.marketCap;
+                                if (meta.volume24h) volume24h = meta.volume24h;
+                            } else {
+                                // Fallback to TokenDataService
+                                const meta2 = await tokenDataService.getTokenData(t.mint);
+                                if (meta2) {
+                                    if (meta2.symbol) symbol = meta2.symbol;
+                                    if (meta2.name) name = meta2.name;
+                                    if (meta2.price) price = meta2.price;
+                                    if (meta2.marketCap) marketCap = meta2.marketCap;
                                 }
                             }
-                        } catch (e) { 
-                            console.error('Token meta fetch error for', t.mint, ':', e); 
-                        }
-                        
-                        // Create a more informative fallback
-                        if (symbol === 'Unknown Token' && name === 'Unknown Token') {
-                            // Use a shortened version of the mint address as symbol
-                            symbol = t.mint.slice(0, 6) + '...' + t.mint.slice(-4);
-                            name = `Token (${t.mint.slice(0, 8)}...)`;
-                        } else if (symbol === 'Unknown Token') {
-                            symbol = name;
-                        } else if (name === 'Unknown Token') {
-                            name = symbol;
-                        }
-                        
+                        } catch (e) {}
+                        // Use token name as symbol if available, otherwise use symbol, fallback to mint slice
+                        symbol = name || symbol || (t.mint.slice(0, 4) + '...');
                         allHoldings[t.mint] = { amount: 0, symbol, price, marketCap, volume24h, name };
                     }
                     allHoldings[t.mint].amount += t.amount;

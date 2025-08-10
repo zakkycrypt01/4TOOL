@@ -67,54 +67,19 @@ class FileExportService {
                 // Process SPL tokens
                 for (const t of walletBalance.tokens) {
                     if (!allHoldings[t.mint]) {
-                        let symbol = t.mint.slice(0, 6) + '...' + t.mint.slice(-4);
+                        let symbol = t.mint.slice(0, 4) + '...';
                         let price = 0;
-                        let name = `Token (${t.mint.slice(0, 8)}...)`;
+                        let name = symbol;
                         
                         try {
-                            // Try Jupiter first
                             const axios = require('axios');
                             const url = `https://lite-api.jup.ag/tokens/v2/search?query=${t.mint}`;
                             const resp = await axios.get(url, { headers: { 'Accept': 'application/json' } });
-                            
                             if (Array.isArray(resp.data) && resp.data.length > 0) {
-                                // First try to find exact match
-                                let meta = resp.data.find(token => 
-                                    token.id === t.mint || 
-                                    token.address === t.mint || 
-                                    token.mint === t.mint
-                                );
-                                
-                                // If no exact match, try partial match or use first result
-                                if (!meta) {
-                                    meta = resp.data.find(token => 
-                                        token.id?.toLowerCase().includes(t.mint.toLowerCase()) ||
-                                        token.address?.toLowerCase().includes(t.mint.toLowerCase()) ||
-                                        token.mint?.toLowerCase().includes(t.mint.toLowerCase())
-                                    ) || resp.data[0];
-                                }
-                                
-                                if (meta) {
-                                    if (meta.symbol && meta.symbol !== 'UNKNOWN') symbol = meta.symbol;
-                                    if (meta.name && meta.name !== 'Unknown Token') name = meta.name;
-                                    if (meta.usdPrice) price = meta.usdPrice;
-                                }
-                            }
-                            
-                            // If Jupiter didn't provide good data, try DexScreener
-                            if (symbol === t.mint.slice(0, 6) + '...' + t.mint.slice(-4) || name === `Token (${t.mint.slice(0, 8)}...)`) {
-                                const dexscreenerUrl = `https://api.dexscreener.com/latest/dex/tokens/${t.mint}`;
-                                const dexscreenerResp = await axios.get(dexscreenerUrl, { 
-                                    headers: { 'Accept': 'application/json' },
-                                    timeout: 5000 
-                                });
-                                
-                                if (dexscreenerResp.data && dexscreenerResp.data.pairs && dexscreenerResp.data.pairs.length > 0) {
-                                    const pair = dexscreenerResp.data.pairs[0];
-                                    if (pair.baseToken?.symbol) symbol = pair.baseToken.symbol;
-                                    if (pair.baseToken?.name) name = pair.baseToken.name;
-                                    if (pair.priceUsd) price = pair.priceUsd;
-                                }
+                                const meta = resp.data[0];
+                                if (meta.symbol) symbol = meta.symbol;
+                                if (meta.name) name = meta.name;
+                                if (meta.usdPrice) price = meta.usdPrice;
                             }
                         } catch (e) {
                             console.error(`Error fetching token data for ${t.mint}:`, e);
