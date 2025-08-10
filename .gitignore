@@ -13,4 +13,4 @@ yarn-debug.log*
 yarn-error.log*
 
 /db
-autonomous_trading.logautonomous_trading.log
+autonomous_trading.log
