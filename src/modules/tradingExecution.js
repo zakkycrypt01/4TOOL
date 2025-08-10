@@ -252,6 +252,66 @@ class TradingExecution {
         }
     }
 
+    async verifyTransactionSuccess(signature, tokenAddress) {
+        try {
+            console.log(`[verifyTransactionSuccess] Verifying transaction: ${signature}`);
+            
+            // Get transaction details
+            const transaction = await this.connection.getTransaction(signature, {
+                commitment: 'confirmed',
+                maxSupportedTransactionVersion: 0
+            });
+
+            if (!transaction) {
+                throw new Error('Transaction not found on blockchain');
+            }
+
+            if (transaction.meta && transaction.meta.err) {
+                throw new Error(`Transaction failed on blockchain: ${JSON.stringify(transaction.meta.err)}`);
+            }
+
+            // Verify that the transaction actually transferred tokens
+            if (transaction.meta && transaction.meta.postTokenBalances) {
+                const tokenTransfers = transaction.meta.postTokenBalances.filter(
+                    balance => balance.mint === tokenAddress
+                );
+                
+                if (tokenTransfers.length === 0) {
+                    throw new Error('No token transfer detected in transaction');
+                }
+
+                // Check if any token balance increased (indicating successful buy)
+                const preBalances = transaction.meta.preTokenBalances || [];
+                const postBalances = transaction.meta.postTokenBalances || [];
+                
+                let tokenReceived = false;
+                for (const postBalance of postBalances) {
+                    if (postBalance.mint === tokenAddress) {
+                        const preBalance = preBalances.find(b => 
+                            b.accountIndex === postBalance.accountIndex && 
+                            b.mint === tokenAddress
+                        );
+                        
+                        if (!preBalance || parseFloat(postBalance.uiTokenAmount.uiAmount) > parseFloat(preBalance.uiTokenAmount.uiAmount)) {
+                            tokenReceived = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!tokenReceived) {
+                    throw new Error('No tokens were received in the transaction');
+                }
+            }
+
+            console.log(`[verifyTransactionSuccess] Transaction verified successfully: ${signature}`);
+            return true;
+        } catch (error) {
+            console.error(`[verifyTransactionSuccess] Verification failed: ${error.message}`);
+            throw new Error(`Transaction verification failed: ${error.message}`);
+        }
+    }
+
     async executeBuy(userId, tokenAddress, solAmount) {
         try {
             if (!this.userWallet) {
@@ -288,6 +348,9 @@ class TradingExecution {
             if (!signature) {
                 throw new Error('Failed to execute transaction');
             }
+
+            // Additional verification: Check if transaction was actually successful
+            await this.verifyTransactionSuccess(signature, tokenAddress);
 
             // Calculate fees
             const botFee = solAmount * 0.01; // 1% bot fee

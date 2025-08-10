@@ -548,6 +548,9 @@ Please enter the token address you want to analyze:`;
             );
 
             if (result.success) {
+                // Additional verification: Double-check transaction success
+                await this.verifyBuyTransaction(result.signature, params.tokenAddress, user.id);
+
                 const message = `
 *✅ Buy Order Executed*
 
@@ -1062,6 +1065,72 @@ Choose your preferred trail threshold:`;
                 state: 'awaiting_custom_buy_amount',
                 data: { tokenAddress }
             });
+        }
+    }
+
+    async verifyBuyTransaction(signature, tokenAddress, userId) {
+        try {
+            console.log(`[verifyBuyTransaction] Verifying buy transaction for user ${userId}, signature: ${signature}`);
+            
+            // Wait a bit for transaction to be fully confirmed
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Get transaction details
+            const { Connection } = require('@solana/web3.js');
+            const connection = new Connection(process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com');
+            
+            const transaction = await connection.getTransaction(signature, {
+                commitment: 'confirmed',
+                maxSupportedTransactionVersion: 0
+            });
+
+            if (!transaction) {
+                throw new Error('Transaction not found on blockchain');
+            }
+
+            if (transaction.meta && transaction.meta.err) {
+                throw new Error(`Transaction failed on blockchain: ${JSON.stringify(transaction.meta.err)}`);
+            }
+
+            // Verify that tokens were actually received
+            if (transaction.meta && transaction.meta.postTokenBalances) {
+                const tokenTransfers = transaction.meta.postTokenBalances.filter(
+                    balance => balance.mint === tokenAddress
+                );
+                
+                if (tokenTransfers.length === 0) {
+                    throw new Error('No token transfer detected in transaction');
+                }
+
+                // Check if any token balance increased (indicating successful buy)
+                const preBalances = transaction.meta.preTokenBalances || [];
+                const postBalances = transaction.meta.postTokenBalances || [];
+                
+                let tokenReceived = false;
+                for (const postBalance of postBalances) {
+                    if (postBalance.mint === tokenAddress) {
+                        const preBalance = preBalances.find(b => 
+                            b.accountIndex === postBalance.accountIndex && 
+                            b.mint === tokenAddress
+                        );
+                        
+                        if (!preBalance || parseFloat(postBalance.uiTokenAmount.uiAmount) > parseFloat(preBalance.uiTokenAmount.uiAmount)) {
+                            tokenReceived = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!tokenReceived) {
+                    throw new Error('No tokens were received in the transaction');
+                }
+            }
+
+            console.log(`[verifyBuyTransaction] Buy transaction verified successfully for user ${userId}`);
+            return true;
+        } catch (error) {
+            console.error(`[verifyBuyTransaction] Buy transaction verification failed for user ${userId}: ${error.message}`);
+            throw new Error(`Buy transaction verification failed: ${error.message}`);
         }
     }
 }

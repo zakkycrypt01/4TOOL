@@ -1020,3 +1020,20 @@
 {"level":"info","message":"Starting autonomous trading..."}
 {"level":"info","message":"No active autonomous strategy rules found for user 1. Automatically turning off autonomous mode."}
 {"level":"info","message":"No active autonomous strategy rules found for user 1. Automatically turning off autonomous mode."}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous strategy rules found for user 1. Automatically turning off autonomous mode."}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"BxL2Z6M96m5YiJRjTAbphHjE1Ldt1Eg8Vd4vNVBdpump\"]"}
+{"level":"error","message":"Autobuy failed for user 1: Transaction verification failed: failed to get transaction: Invalid params: invalid type: map, expected a string."}
+{"level":"info","message":"Autonomous trading stopped"}
+{"level":"info","message":"Starting autonomous trading..."}
+{"level":"info","message":"No active autonomous trading strategy found"}
+{"level":"info","message":"[AUTOBUY DEBUG] Raw message for address extraction:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Message hex:"}
+{"level":"info","message":"[AUTOBUY DEBUG] Extracted token addresses for user 1: [\"T1Hf5w9772oCkp8cnhoSdKdfjsKieVGEnDuNJeEpump\"]"}
+{"level":"info","message":"[verifyAutonomousBuySuccess] Verifying autonomous buy for user 1, signature: E9NxtXVJet1tJLierScKmdQdMTCqh41ngD9PAKWGPDdwV4nxztLxrXoUEwtvQbftt7ua2BeneEFdrFcSEXi7EdJ"}
+{"level":"info","message":"[verifyAutonomousBuySuccess] Autonomous buy verified successfully for user 1"}
+{"level":"info","message":"Autobuy successful for user 1: T1Hf5w9772oCkp8cnhoSdKdfjsKieVGEnDuNJeEpump"}
