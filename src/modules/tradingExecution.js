@@ -318,7 +318,18 @@ class TradingExecution {
                 throw new Error('User wallet not set');
             }
             // Validate input
-            if (!tokenAddress || typeof tokenAddress !== 'string' || tokenAddress.length < 32) {
+            if (!tokenAddress || typeof tokenAddress !== 'string') {
+                throw new Error('Invalid token address');
+            }
+            
+            // Validate Solana address format using base58 decode
+            try {
+                const bs58 = require('bs58');
+                const decoded = bs58.decode(tokenAddress);
+                if (decoded.length !== 32) {
+                    throw new Error('Invalid token address');
+                }
+            } catch (error) {
                 throw new Error('Invalid token address');
             }
             if (isNaN(solAmount) || solAmount <= 0) {
@@ -642,23 +653,31 @@ class TradingExecution {
      */
     async handleCustomBuyInput(userId, callbackData) {
         try {
+            console.log(`[handleCustomBuyInput] Processing callback data: ${callbackData}`);
+            
             // Remove the 'custom_buy_' prefix
             const prefix = 'custom_buy_';
             if (!callbackData.startsWith(prefix)) {
                 throw new Error('Invalid custom buy callback data');
             }
             const data = callbackData.slice(prefix.length);
+            console.log(`[handleCustomBuyInput] Data after prefix removal: ${data}`);
+            
             // Support both 'custom_buy_<tokenAddress>_<solAmount>' and 'custom_buy_<solAmount>'
             const parts = data.split('_');
+            console.log(`[handleCustomBuyInput] Split parts:`, parts);
+            
             let tokenAddress, solAmountStr;
             if (parts.length === 2) {
                 // Format: custom_buy_<tokenAddress>_<solAmount>
                 tokenAddress = parts[0];
                 solAmountStr = parts[1];
+                console.log(`[handleCustomBuyInput] Using 2-part format - tokenAddress: ${tokenAddress}, solAmountStr: ${solAmountStr}`);
             } else if (parts.length === 1) {
                 // Format: custom_buy_<solAmount> (tokenAddress must be set elsewhere)
                 solAmountStr = parts[0];
                 tokenAddress = this.lastTokenAddress || null;
+                console.log(`[handleCustomBuyInput] Using 1-part format - tokenAddress: ${tokenAddress}, solAmountStr: ${solAmountStr}`);
             } else {
                 // Fallback to old logic
                 const lastUnderscore = data.lastIndexOf('_');
@@ -667,11 +686,16 @@ class TradingExecution {
                 }
                 tokenAddress = data.slice(0, lastUnderscore);
                 solAmountStr = data.slice(lastUnderscore + 1);
+                console.log(`[handleCustomBuyInput] Using fallback format - tokenAddress: ${tokenAddress}, solAmountStr: ${solAmountStr}`);
             }
+            
             const solAmount = parseFloat(solAmountStr);
+            console.log(`[handleCustomBuyInput] Parsed values - tokenAddress: ${tokenAddress}, solAmount: ${solAmount}`);
+            
             if (!tokenAddress || isNaN(solAmount) || solAmount <= 0) {
                 throw new Error('Invalid token address or amount');
             }
+            
             // Execute the buy
             return await this.executeBuy(userId, tokenAddress, solAmount);
         } catch (error) {
