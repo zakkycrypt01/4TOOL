@@ -1556,6 +1556,11 @@ ${selections}
     }
 
     async createAutonomousStrategyConditions(ruleId, ruleData) {
+        // Store buy amount for autonomous trading
+        if (ruleData.buyAmount) {
+            await this.db.createRuleCondition(ruleId, 'buy_amount', JSON.stringify(ruleData.buyAmount));
+        }
+
         // Store discovery rules (token selection criteria)
         if (ruleData.marketCap) {
             await this.db.createRuleCondition(ruleId, 'discovery_market_cap', JSON.stringify(ruleData.marketCap.value));

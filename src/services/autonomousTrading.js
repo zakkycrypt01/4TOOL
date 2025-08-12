@@ -348,7 +348,7 @@ class AutonomousTrading {
                 const opportunities = await this.findTradingOpportunities(rule, userId);
                 
                 for (const opportunity of opportunities) {
-                    if (await this.validateOpportunity(opportunity, portfolio, strategySettings.params)) {
+                    if (await this.validateOpportunity(opportunity, portfolio, strategySettings.params, rule)) {
                         const tradeResult = await this.executeTrade(opportunity, rule, strategySettings.params);
                         
                         if (tradeResult.success) {
@@ -380,8 +380,8 @@ class AutonomousTrading {
     }
 
     async getActiveRules(userId) {
-        // Use DatabaseManager's getRulesByUserId and filter for is_active and type 'autonomous_strategy'
-        const rules = await this.db.getRulesByUserId(userId);
+        // Use the new getRulesWithConditions method to get rules with their conditions
+        const rules = await this.db.getRulesWithConditions(userId);
         return rules.filter(r => r.is_active && r.type === 'autonomous_strategy');
     }
 
@@ -514,7 +514,7 @@ class AutonomousTrading {
         return opportunities;
     }
 
-    async validateOpportunity(opportunity, portfolio, strategyParams) {
+    async validateOpportunity(opportunity, portfolio, strategyParams, rule) {
         try {
             const { token } = opportunity;
             
@@ -529,9 +529,17 @@ class AutonomousTrading {
                 return false;
             }
 
+            // Get the buy amount from the rule conditions
+            let buyAmount = null;
+            if (rule.conditions && rule.conditions.buy_amount) {
+                buyAmount = rule.conditions.buy_amount.value; // Use the fixed amount set in the rule
+            } else {
+                // Fallback to percentage-based calculation if no buy amount is set
+                buyAmount = portfolio.totalValue * strategyParams.maxPositionSize;
+            }
+
             // Check if we have enough balance
-            const positionSize = portfolio.totalValue * strategyParams.maxPositionSize;
-            if (positionSize > liquidity * 0.1) { // Don't take more than 10% of liquidity
+            if (buyAmount > liquidity * 0.1) { // Don't take more than 10% of liquidity
                 return false;
             }
 
@@ -545,13 +553,21 @@ class AutonomousTrading {
     async executeTrade(opportunity, rule, strategyParams) {
         try {
             const { token } = opportunity;
-            const portfolio = await this.getPortfolioValue();
-            const positionSize = portfolio.totalValue * strategyParams.maxPositionSize;
+            
+            // Get the buy amount from the rule conditions
+            let buyAmount = null;
+            if (rule.conditions && rule.conditions.buy_amount) {
+                buyAmount = rule.conditions.buy_amount.value; // Use the fixed amount set in the rule
+            } else {
+                // Fallback to percentage-based calculation if no buy amount is set
+                const portfolio = await this.getPortfolioValue();
+                buyAmount = portfolio.totalValue * strategyParams.maxPositionSize;
+            }
 
             // Execute the trade
             const tradeResult = await this.tradingExecution.executeBuy(
                 token.address,
-                positionSize,
+                buyAmount,
                 strategyParams.maxSlippage || 1
             );
 
@@ -559,7 +575,7 @@ class AutonomousTrading {
                 // Record the position
                 this.activePositions.set(token.address, {
                     entryPrice: tradeResult.price,
-                    size: positionSize,
+                    size: buyAmount,
                     timestamp: Date.now(),
                     ruleId: rule.id
                 });
@@ -567,9 +583,10 @@ class AutonomousTrading {
                 // Log the trade
                 this.logger.info('Autonomous trade executed:', {
                     token: token.address,
-                    size: positionSize,
+                    size: buyAmount,
                     price: tradeResult.price,
-                    ruleId: rule.id
+                    ruleId: rule.id,
+                    buyAmountSource: rule.conditions && rule.conditions.buy_amount ? 'rule_setting' : 'percentage_based'
                 });
 
                 return tradeResult;

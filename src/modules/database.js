@@ -603,6 +603,49 @@ class DatabaseManager {
         return stmt.all(userId);
     }
 
+    async getRulesWithConditions(userId) {
+        const stmt = this.db.prepare(`
+            SELECT r.*, rc.condition_type, rc.condition_value, rc.operator
+            FROM rules r
+            LEFT JOIN rule_conditions rc ON r.id = rc.rule_id
+            WHERE r.user_id = ? AND r.is_active = 1
+            ORDER BY r.created_at DESC
+        `);
+        const results = stmt.all(userId);
+        
+        // Group conditions by rule
+        const rulesMap = new Map();
+        for (const row of results) {
+            if (!rulesMap.has(row.id)) {
+                rulesMap.set(row.id, {
+                    id: row.id,
+                    user_id: row.user_id,
+                    name: row.name,
+                    description: row.description,
+                    type: row.type,
+                    is_active: row.is_active,
+                    created_at: row.created_at,
+                    updated_at: row.updated_at,
+                    last_check_at: row.last_check_at,
+                    success_count: row.success_count,
+                    failure_count: row.failure_count,
+                    conditions: {}
+                });
+            }
+            
+            if (row.condition_type) {
+                const rule = rulesMap.get(row.id);
+                try {
+                    rule.conditions[row.condition_type] = JSON.parse(row.condition_value);
+                } catch (e) {
+                    rule.conditions[row.condition_type] = row.condition_value;
+                }
+            }
+        }
+        
+        return Array.from(rulesMap.values());
+    }
+
     async getRuleById(ruleId) {
         const stmt = this.db.prepare('SELECT * FROM rules WHERE id = ?');
         return stmt.get(ruleId);
