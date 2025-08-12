@@ -68,11 +68,14 @@ class TokenAnalysis {
 
     getRiskLevel(score) {
         if (!score) return this.riskLevels.LOW;
-        // Use the actual risk level from the API response
-        const riskLevel = score.riskLevel || score_normalised;
-        if (riskLevel >= 80) return this.riskLevels.EXTREME;
-        if (riskLevel >= 60) return this.riskLevels.HIGH;
-        if (riskLevel >= 40) return this.riskLevels.MEDIUM;
+        // RugCheck API uses inverted scoring: lower numbers = higher risk
+        // Score of 0-20 = Extreme Risk
+        // Score of 21-40 = High Risk  
+        // Score of 41-60 = Medium Risk
+        // Score of 61-100 = Low Risk
+        if (score <= 20) return this.riskLevels.EXTREME;
+        if (score <= 40) return this.riskLevels.HIGH;
+        if (score <= 60) return this.riskLevels.MEDIUM;
         return this.riskLevels.LOW;
     }
 
@@ -82,7 +85,7 @@ class TokenAnalysis {
         return `${icon} ${risk.name}: ${risk.description}`;
     }
 
-    formatTokenInfo(tokenData) {
+    async formatTokenInfo(tokenData) {
         try {
             const {
                 mint,
@@ -91,11 +94,15 @@ class TokenAnalysis {
                 token,
                 tokenMeta,
                 topHolders,
-                riskScore = 0,
-                riskWarnings = [],
                 risks = [],
+                score = 0,
                 score_normalised = 0,
-                markets = []
+                markets = [],
+                totalHolders = 0,
+                price = 0,
+                totalMarketLiquidity = 0,
+                graphInsidersDetected = 0,
+                insiderNetworks = []
             } = tokenData;
 
             // Calculate total percentage held by top holders
@@ -104,44 +111,121 @@ class TokenAnalysis {
             // Get the first market's LP data if available
             const lpData = markets[0]?.lp;
             
-            // Calculate actual supply by dividing by decimals
-            const actualSupply = token?.supply ? Number(token.supply) / Math.pow(10, token.decimals || 0) : 0;
+            // Enhanced supply calculation with better accuracy
+            const rawSupply = token?.supply ? Number(token.supply) : 0;
+            const decimals = token?.decimals || 9;
+            const actualSupply = rawSupply / Math.pow(10, decimals);
             
-            // Calculate market cap using token price and actual supply
-            const marketCap = lpData ? (actualSupply * lpData.basePrice) : 0;
+            // Round supply to match UI display (989M instead of 988.80M)
+            const displaySupply = Math.round(actualSupply / 1000000) * 1000000; // Round to nearest million
             
-            // Get total liquidity from LP data
-            const totalLiquidity = lpData?.lpLockedUSD || 0;
+            // Enhanced price calculation - use the most accurate price available
+            let accuratePrice = 0;
+            if (lpData?.quotePrice) {
+                accuratePrice = lpData.quotePrice; // Use token price (quote price) as primary source
+            } else if (price) {
+                accuratePrice = price; // Fallback to API price
+            } else if (lpData?.basePrice) {
+                // If we only have base price (SOL price), we need to calculate token price
+                // This would require additional data, so we'll use the API price as fallback
+                accuratePrice = price;
+            }
+            
+            // Enhanced market cap calculation
+            let marketCap = 0;
+            if (accuratePrice && actualSupply) {
+                marketCap = actualSupply * accuratePrice;
+            }
+            
+            // Enhanced liquidity calculation - aggregate from all sources
+            let totalLiquidity = 0;
+            let liquidityBreakdown = [];
+            
+            // Add LP locked liquidity
+            if (lpData?.lpLockedUSD) {
+                totalLiquidity += lpData.lpLockedUSD;
+                liquidityBreakdown.push(`LP: ${this.formatPrice(lpData.lpLockedUSD)}`);
+            }
+            
+            // Add total market liquidity
+            if (totalMarketLiquidity) {
+                totalLiquidity += totalMarketLiquidity;
+                liquidityBreakdown.push(`Market: ${this.formatPrice(totalMarketLiquidity)}`);
+            }
+            
+            // Add stable liquidity if available
+            if (tokenData.totalStableLiquidity) {
+                totalLiquidity += tokenData.totalStableLiquidity;
+                liquidityBreakdown.push(`Stable: ${this.formatPrice(tokenData.totalStableLiquidity)}`);
+            }
+            
+            // Calculate circulating supply (exclude locked tokens)
+            let circulatingSupply = actualSupply;
+            if (lpData?.lpLocked) {
+                const lockedTokens = lpData.lpLocked / Math.pow(10, decimals);
+                circulatingSupply = Math.max(0, actualSupply - lockedTokens);
+            }
+            
+            // Calculate fully diluted market cap
+            const fullyDilutedMarketCap = accuratePrice ? (actualSupply * accuratePrice) : 0;
+            
+            // Calculate circulating market cap
+            const circulatingMarketCap = accuratePrice ? (circulatingSupply * accuratePrice) : 0;
 
-            // Format the message with a more modern and professional layout
+            // Enhanced risk analysis
+            const riskWarnings = [];
+            
+            // Check for high holder concentration
+            if (totalTopHolderPercentage > 80) {
+                riskWarnings.push(`🔴 **HIGH CONCENTRATION**: ${this.formatPercentage(totalTopHolderPercentage)} of supply held by top holders`);
+            } else if (totalTopHolderPercentage > 60) {
+                riskWarnings.push(`🟡 **MEDIUM CONCENTRATION**: ${this.formatPercentage(totalTopHolderPercentage)} of supply held by top holders`);
+            }
+            
+            // Check for insider networks
+            if (graphInsidersDetected > 0) {
+                riskWarnings.push(`🔴 **INSIDER NETWORKS**: ${graphInsidersDetected} insider networks detected`);
+            }
+            
+            // Check for low holder count
+            if (totalHolders < 100) {
+                riskWarnings.push(`🟡 **LOW HOLDER COUNT**: Only ${totalHolders} holders`);
+            }
+            
+            // Check for creator selling
+            if (!creatorBalance) {
+                riskWarnings.push(`🔴 **CREATOR SOLD**: Creator has sold their tokens`);
+            }
+            
+            // Check for active mint authority
+            if (token?.mintAuthority) {
+                riskWarnings.push(`🔴 **ACTIVE MINT**: Mint authority is still active - can create more tokens`);
+            }
+
+            // Format the message with enhanced risk analysis and accurate market data
             const message = `🔹 *${this.escapeMarkdown(tokenMeta?.name || 'Unknown Token')}* (${this.escapeMarkdown(tokenMeta?.symbol || 'N/A')})
 📍 \`${mint}\`
 
 ⚠️ *Risk Analysis*
 • Risk Score: ${score_normalised}/100
-• Risk Level: ${this.getRiskLevel(riskScore)}
+• Risk Level: ${this.getRiskLevel(score_normalised)}
 ${risks?.length > 0 ? `• Risk Factors: ${risks.length} identified` : ''}
-${riskWarnings?.length > 0 ? `• Warnings: ${riskWarnings.length} found` : ''}
+${risks?.length > 0 ? risks.map(risk => `  ${this.formatRiskFactor(risk)}`).join('\n') : ''}
 
 📊 *Token Overview*
-• Supply: ${this.formatNumber(actualSupply)}
+• Supply: ${this.formatNumber(displaySupply)}
+• Token Price: ${this.formatPrice(accuratePrice)}
 • Market Cap: ${this.formatPrice(marketCap)}
-• Total Liquidity: ${this.formatPrice(totalLiquidity)}
-• Creator: ${this.formatAddress(creator)}
-• Creator Balance: ${creatorBalance ? '💎 HOLDING' : '💸 SOLD'}
+• Circulating Supply: ${this.formatNumber(circulatingSupply)}
+• Circulating Market Cap: ${this.formatPrice(circulatingMarketCap)}
 • Mint Authority: ${token?.mintAuthority ? '✅ Active' : '❌ Disabled'}
-• Decimals: ${token?.decimals || 'N/A'}
+• Decimals: ${decimals}
 
-💧 *Liquidity Information*
-${lpData ? `• Total Liquidity: ${this.formatPrice(lpData.lpLockedUSD)}
-• Token Price: ${this.formatPrice(lpData.basePrice)}
-• LP Tokens Locked: ${this.formatNumber(lpData.lpLocked)}
-• Locked Percentage: ${this.formatPercentage(lpData.lpLockedPct)}` : '• No liquidity pool data available'}
 
 👥 *Top Holders*
 • Total Concentration: ${this.formatPercentage(totalTopHolderPercentage)}
 ${topHolders?.slice(0, 3).map((holder, index) => 
-    `${index + 1}\\. ${this.formatAddress(holder.address)} • ${this.formatPercentage(holder.pct)}`
+    `${index + 1}\. ${this.formatAddress(holder.address)} • ${this.formatPercentage(holder.pct)}`
 ).join('\n') || 'No holder data available'}
 
 📝 *Metadata*

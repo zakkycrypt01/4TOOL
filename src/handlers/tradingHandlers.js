@@ -412,7 +412,7 @@ Please enter the token address you want to analyze:`;
             const report = await this.rugCheck.getTokenReport(tokenAddress);
             
             // Format the token information using the new TokenAnalysis module
-            const message = this.tokenAnalysis.formatTokenInfo(report);
+            const message = await this.tokenAnalysis.formatTokenInfo(report);
             const keyboard = this.tokenAnalysis.getActionButtons(tokenAddress);
 
             // Check if message is too long for Telegram (max 4096 characters)
@@ -449,7 +449,7 @@ Please enter the token address you want to analyze:`;
             const report = await this.rugCheck.getTokenReport(tokenAddress);
             
             // Format the token information using the new TokenAnalysis module
-            const message = this.tokenAnalysis.formatTokenInfo(report);
+            const message = await this.tokenAnalysis.formatTokenInfo(report);
             const keyboard = this.tokenAnalysis.getActionButtons(tokenAddress);
 
             await this.sendAndStoreMessage(chatId, message, {

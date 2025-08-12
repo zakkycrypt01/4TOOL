@@ -245,6 +245,12 @@ class TradingExecution {
                     error: 'Insufficient SOL balance to execute this transaction. Please ensure you have enough SOL to cover the transaction amount plus fees.'
                 };
             }
+            if (error.message && error.message.includes('insufficient lamports')) {
+                return {
+                    success: false,
+                    error: 'Insufficient SOL balance. The transaction requires more SOL than available in your wallet. Please ensure you have enough SOL to cover the transaction amount plus network fees.'
+                };
+            }
             return {
                 success: false,
                 error: `Transaction failed: ${error.message}`
@@ -317,25 +323,23 @@ class TradingExecution {
             if (!this.userWallet) {
                 throw new Error('User wallet not set');
             }
-            // Validate input
+            // Basic input validation (only check if tokenAddress exists and is a string)
             if (!tokenAddress || typeof tokenAddress !== 'string') {
-                throw new Error('Invalid token address');
-            }
-            
-            // Validate Solana address format using base58 decode
-            try {
-                const bs58 = require('bs58');
-                const decoded = bs58.decode(tokenAddress);
-                if (decoded.length !== 32) {
-                    throw new Error('Invalid token address');
-                }
-            } catch (error) {
-                throw new Error('Invalid token address');
+                throw new Error('Token address is required');
             }
             if (isNaN(solAmount) || solAmount <= 0) {
                 throw new Error('Invalid SOL amount');
             }
             console.log(`[executeBuy] userId: ${userId}, tokenAddress: ${tokenAddress}, solAmount: ${solAmount}`);
+
+            // Check wallet balance before attempting transaction
+            const balance = await this.connection.getBalance(this.userWallet.publicKey);
+            const balanceInSol = balance / 1e9;
+            console.log(`[executeBuy] Wallet balance: ${balanceInSol} SOL (${balance} lamports)`);
+            
+            if (balanceInSol < solAmount + 0.01) { // Add 0.01 SOL buffer for fees
+                throw new Error(`Insufficient SOL balance. You have ${balanceInSol.toFixed(6)} SOL but need at least ${(solAmount + 0.01).toFixed(6)} SOL (including fees).`);
+            }
 
             // Convert SOL amount to lamports
             const amountInLamports = Math.floor(solAmount * 1e9);
@@ -358,6 +362,11 @@ class TradingExecution {
 
             if (!signature) {
                 throw new Error('Failed to execute transaction');
+            }
+
+            // Check if signature is an error object
+            if (typeof signature === 'object' && signature.success === false) {
+                throw new Error(signature.error || 'Transaction failed');
             }
 
             // Additional verification: Check if transaction was actually successful
@@ -426,6 +435,11 @@ class TradingExecution {
 
             if (!signature) {
                 throw new Error('Failed to execute sell transaction');
+            }
+
+            // Check if signature is an error object
+            if (typeof signature === 'object' && signature.success === false) {
+                throw new Error(signature.error || 'Sell transaction failed');
             }
 
             // Calculate received SOL and fees
@@ -692,8 +706,8 @@ class TradingExecution {
             const solAmount = parseFloat(solAmountStr);
             console.log(`[handleCustomBuyInput] Parsed values - tokenAddress: ${tokenAddress}, solAmount: ${solAmount}`);
             
-            if (!tokenAddress || isNaN(solAmount) || solAmount <= 0) {
-                throw new Error('Invalid token address or amount');
+            if (isNaN(solAmount) || solAmount <= 0) {
+                throw new Error('Invalid amount');
             }
             
             // Execute the buy
