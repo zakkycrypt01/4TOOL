@@ -155,26 +155,8 @@ class AutonomousTrading {
                             const keypair = Keypair.fromSecretKey(secretKey);
                             this.tradingExecution.setUserWallet(keypair);
                             // --- BUY AMOUNT LOGIC ---
-                            let autobuyAmount = 0.0001; // Default fallback
-                            try {
-                                const userStrategies = await this.db.getUserStrategies(user.id);
-                                if (userStrategies && userStrategies.length > 0) {
-                                    for (const strat of userStrategies) {
-                                        let params = strat.params;
-                                        if (typeof params === 'string') {
-                                            try { params = JSON.parse(params); } catch (e) { params = {}; }
-                                        }
-                                        if (params && (params.buyAmount || params.tradeAmount)) {
-                                            autobuyAmount = parseFloat(params.buyAmount || params.tradeAmount);
-                                            if (!isNaN(autobuyAmount) && autobuyAmount > 0) break;
-                                            else autobuyAmount = 0.0001;
-                                        }
-                                    }
-                                }
-                            } catch (e) {
-                                this.logger.warn(`Error checking user strategies for buy amount: ${e.message}`);
-                                autobuyAmount = 0.0001;
-                            }
+                            // Use the new method to get buy amount from rules with proper fallback
+                            const autobuyAmount = await this.getBuyAmountFromRules(user.id);
                             // --- END BUY AMOUNT LOGIC ---
                             // --- EXTRACT ADDRESS FROM MESSAGE ---
                             this.logger.info('[AUTOBUY DEBUG] Raw message for address extraction:', JSON.stringify(message));
@@ -531,11 +513,13 @@ class AutonomousTrading {
 
             // Get the buy amount from the rule conditions
             let buyAmount = null;
-            if (rule.conditions && rule.conditions.buy_amount) {
-                buyAmount = rule.conditions.buy_amount.value; // Use the fixed amount set in the rule
+            if (rule.conditions && rule.conditions.buy_amount && rule.conditions.buy_amount.value) {
+                buyAmount = parseFloat(rule.conditions.buy_amount.value); // Use the fixed amount set in the rule
+                this.logger.info(`Using buy amount from rule ${rule.id}: ${buyAmount} SOL`);
             } else {
                 // Fallback to percentage-based calculation if no buy amount is set
                 buyAmount = portfolio.totalValue * strategyParams.maxPositionSize;
+                this.logger.info(`No rule buy amount set, using percentage-based: ${buyAmount} SOL`);
             }
 
             // Check if we have enough balance
@@ -556,12 +540,14 @@ class AutonomousTrading {
             
             // Get the buy amount from the rule conditions
             let buyAmount = null;
-            if (rule.conditions && rule.conditions.buy_amount) {
-                buyAmount = rule.conditions.buy_amount.value; // Use the fixed amount set in the rule
+            if (rule.conditions && rule.conditions.buy_amount && rule.conditions.buy_amount.value) {
+                buyAmount = parseFloat(rule.conditions.buy_amount.value); // Use the fixed amount set in the rule
+                this.logger.info(`Using buy amount from rule ${rule.id}: ${buyAmount} SOL`);
             } else {
                 // Fallback to percentage-based calculation if no buy amount is set
                 const portfolio = await this.getPortfolioValue();
                 buyAmount = portfolio.totalValue * strategyParams.maxPositionSize;
+                this.logger.info(`No rule buy amount set, using percentage-based: ${buyAmount} SOL`);
             }
 
             // Execute the trade
@@ -714,6 +700,80 @@ Rule: ${tradeData.rule}
         } catch (error) {
             this.logger.error(`[verifyAutonomousBuySuccess] Autonomous buy verification failed for user ${userId}: ${error.message}`);
             throw new Error(`Autonomous buy verification failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Get buy amount from user's active rules, with fallback to default
+     * @param {number} userId - The user ID
+     * @returns {Promise<number>} - The buy amount in SOL
+     */
+    async getBuyAmountFromRules(userId) {
+        try {
+            // Get active autonomous strategy rules for the user
+            const activeRules = await this.getActiveRules(userId);
+            
+            // Check each rule for buy_amount condition
+            for (const rule of activeRules) {
+                if (rule.conditions && rule.conditions.buy_amount && rule.conditions.buy_amount.value) {
+                    const buyAmount = parseFloat(rule.conditions.buy_amount.value);
+                    if (!isNaN(buyAmount) && buyAmount > 0) {
+                        this.logger.info(`Using buy amount from rule ${rule.id}: ${buyAmount} SOL`);
+                        return buyAmount;
+                    }
+                }
+            }
+            
+            // Fallback to checking user strategies (legacy support)
+            const userStrategies = await this.db.getUserStrategies(userId);
+            if (userStrategies && userStrategies.length > 0) {
+                for (const strat of userStrategies) {
+                    let params = strat.params;
+                    if (typeof params === 'string') {
+                        try { params = JSON.parse(params); } catch (e) { params = {}; }
+                    }
+                    if (params && (params.buyAmount || params.tradeAmount)) {
+                        const buyAmount = parseFloat(params.buyAmount || params.tradeAmount);
+                        if (!isNaN(buyAmount) && buyAmount > 0) {
+                            this.logger.info(`Using buy amount from user strategy: ${buyAmount} SOL`);
+                            return buyAmount;
+                        }
+                    }
+                }
+            }
+            
+            // Final fallback to default
+            const defaultAmount = 0.0001;
+            this.logger.info(`No rule-based buy amount found, using default: ${defaultAmount} SOL`);
+            return defaultAmount;
+        } catch (error) {
+            this.logger.error(`Error getting buy amount from rules for user ${userId}:`, error);
+            return 0.0001; // Safe fallback
+        }
+    }
+
+    /**
+     * Check if user has any buy amount rules configured
+     * @param {number} userId - The user ID
+     * @returns {Promise<boolean>} - True if user has buy amount rules, false otherwise
+     */
+    async hasBuyAmountRules(userId) {
+        try {
+            const activeRules = await this.getActiveRules(userId);
+            
+            for (const rule of activeRules) {
+                if (rule.conditions && rule.conditions.buy_amount && rule.conditions.buy_amount.value) {
+                    const buyAmount = parseFloat(rule.conditions.buy_amount.value);
+                    if (!isNaN(buyAmount) && buyAmount > 0) {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        } catch (error) {
+            this.logger.error(`Error checking buy amount rules for user ${userId}:`, error);
+            return false;
         }
     }
 }
