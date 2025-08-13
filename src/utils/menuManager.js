@@ -95,7 +95,7 @@ Please create or import a wallet to get started.`;
 *Autonomous Mode:* ${isAutonomousMode ? '🟢 ON' : '🔴 OFF'}
 
 *Quick Stats:*
-📊 Portfolio Value: $${totalValue.toFixed(2)}
+📊 SOL Portfolio Value: $${totalValue.toFixed(2)}
 💰 SOL Price: ${solPriceDisplay}
 📈 24h Change: 0.00%
 

@@ -24,6 +24,7 @@ const config = {
     database: {
         path: process.env.DATABASE_PATH || './data/bot.db'
     },
+    rpcEndpoint: process.env.SOLANA_RPC_ENDPOINT || 'https://api.mainnet-beta.solana.com',
     rules: {
         checkInterval: 5 * 60 * 1000, // 5 minutes
         maxRulesPerUser: 10,

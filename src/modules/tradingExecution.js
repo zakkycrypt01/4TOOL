@@ -19,10 +19,61 @@ class TradingExecution {
         this.activePositions = new Map();
         this.userWallet = null;
         this.feeManager = new FeeManagement(config);
+        
+        // Rate limiting for Jupiter API
+        this.lastJupiterRequest = 0;
+        this.minRequestInterval = 500; // Minimum 500ms between requests
+        
+        // Circuit breaker for Jupiter API
+        this.jupiterCircuitBreaker = {
+            failureCount: 0,
+            lastFailureTime: 0,
+            isOpen: false,
+            threshold: 5, // Open circuit after 5 failures
+            timeout: 60000 // Close circuit after 1 minute
+        };
     }
 
     setUserWallet(keypair) {
         this.userWallet = keypair;
+    }
+
+    async validateWalletBalance(requiredAmount) {
+        try {
+            if (!this.userWallet) {
+                throw new Error('User wallet not set');
+            }
+            
+            if (!this.connection) {
+                throw new Error('Solana connection not initialized');
+            }
+
+            console.log(`[validateWalletBalance] Checking balance for wallet: ${this.userWallet.publicKey.toString()}`);
+            const balance = await this.connection.getBalance(this.userWallet.publicKey);
+            const balanceInSol = balance / 1e9;
+            
+            console.log(`[validateWalletBalance] Current balance: ${balanceInSol} SOL`);
+            console.log(`[validateWalletBalance] Required amount: ${requiredAmount} SOL`);
+            
+            if (balanceInSol < requiredAmount) {
+                return {
+                    valid: false,
+                    currentBalance: balanceInSol,
+                    requiredAmount: requiredAmount,
+                    shortfall: requiredAmount - balanceInSol
+                };
+            }
+            
+            return {
+                valid: true,
+                currentBalance: balanceInSol,
+                requiredAmount: requiredAmount,
+                excess: balanceInSol - requiredAmount
+            };
+        } catch (error) {
+            console.error('[validateWalletBalance] Error:', error);
+            throw error;
+        }
     }
 
     async executeOrder(orderParams) {
@@ -114,6 +165,128 @@ class TradingExecution {
     }
 
     // ============ JUPITER INTEGRATION ============
+    
+    async makeJupiterRequest(endpoint, params) {
+        const maxRetries = 3;
+        const baseDelay = 1000; // 1 second base delay
+        
+        // Check circuit breaker
+        const now = Date.now();
+        if (this.jupiterCircuitBreaker.isOpen) {
+            if (now - this.jupiterCircuitBreaker.lastFailureTime > this.jupiterCircuitBreaker.timeout) {
+                console.log('[Jupiter] Circuit breaker timeout reached, attempting to close');
+                this.jupiterCircuitBreaker.isOpen = false;
+                this.jupiterCircuitBreaker.failureCount = 0;
+            } else {
+                throw new Error('Jupiter API is temporarily unavailable due to high error rate. Please try again in a minute.');
+            }
+        }
+        
+        // Rate limiting - ensure minimum interval between requests
+        const timeSinceLastRequest = now - this.lastJupiterRequest;
+        if (timeSinceLastRequest < this.minRequestInterval) {
+            const waitTime = this.minRequestInterval - timeSinceLastRequest;
+            console.log(`[Jupiter] Rate limiting: waiting ${waitTime}ms before next request`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+        this.lastJupiterRequest = Date.now();
+        
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                let url, options;
+                
+                if (endpoint === 'quote') {
+                    const { inputMint, outputMint, amount, slippageBps, restrictIntermediateTokens } = params;
+                    url = `https://lite-api.jup.ag/swap/v1/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amount}&slippageBps=${slippageBps}&restrictIntermediateTokens=${restrictIntermediateTokens}`;
+                    console.log(`[Jupiter] Fetching quote from: ${url}`);
+                    
+                    const response = await fetch(url);
+                    
+                    // Check if response is rate limited
+                    if (response.status === 429) {
+                        const retryAfter = response.headers.get('Retry-After') || 5;
+                        console.log(`[Jupiter] Rate limited. Retrying after ${retryAfter} seconds...`);
+                        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+                        continue;
+                    }
+                    
+                    if (!response.ok) {
+                        const text = await response.text();
+                        console.error(`[Jupiter] Quote request failed: ${response.status} - ${text}`);
+                        throw new Error(`HTTP ${response.status}: ${text}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log(`[Jupiter] Quote response:`, data);
+                    
+                    // Reset circuit breaker on success
+                    this.jupiterCircuitBreaker.failureCount = 0;
+                    
+                    return data;
+                    
+                } else if (endpoint === 'swap') {
+                    url = 'https://lite-api.jup.ag/swap/v1/swap';
+                    options = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(params)
+                    };
+                    
+                    console.log(`[Jupiter] Making swap request to: ${url}`);
+                    const response = await fetch(url, options);
+                    
+                    // Check if response is rate limited
+                    if (response.status === 429) {
+                        const retryAfter = response.headers.get('Retry-After') || 5;
+                        console.log(`[Jupiter] Rate limited. Retrying after ${retryAfter} seconds...`);
+                        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+                        continue;
+                    }
+                    
+                    if (!response.ok) {
+                        const text = await response.text();
+                        console.error(`[Jupiter] Swap request failed: ${response.status} - ${text}`);
+                        throw new Error(`HTTP ${response.status}: ${text}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log(`[Jupiter] Swap response:`, data);
+                    
+                    // Reset circuit breaker on success
+                    this.jupiterCircuitBreaker.failureCount = 0;
+                    
+                    return data;
+                }
+                
+            } catch (error) {
+                console.error(`[Jupiter] Attempt ${attempt} failed:`, error.message);
+                
+                // Update circuit breaker on rate limit errors
+                if (error.message.includes('429') || error.message.includes('Rate limit') || error.message.includes('Unexpected token')) {
+                    this.jupiterCircuitBreaker.failureCount++;
+                    this.jupiterCircuitBreaker.lastFailureTime = Date.now();
+                    
+                    if (this.jupiterCircuitBreaker.failureCount >= this.jupiterCircuitBreaker.threshold) {
+                        this.jupiterCircuitBreaker.isOpen = true;
+                        console.log('[Jupiter] Circuit breaker opened due to repeated rate limit errors');
+                        throw new Error('Jupiter API is experiencing high traffic. Please try again in a minute.');
+                    }
+                }
+                
+                if (attempt === maxRetries) {
+                    throw new Error(`Jupiter API request failed after ${maxRetries} attempts: ${error.message}`);
+                }
+                
+                // Exponential backoff
+                const delay = baseDelay * Math.pow(2, attempt - 1);
+                console.log(`[Jupiter] Retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+    }
+    
     async buildJupiterSwap(inputMint, outputMint, amount, userPublicKey, slippageBps = 100) {
         try {
             console.log('Building Jupiter swap with params:', {
@@ -124,36 +297,28 @@ class TradingExecution {
                 slippageBps
             });
 
-            // Get quote from Jupiter
-            const quoteUrl = `https://lite-api.jup.ag/swap/v1/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amount}&slippageBps=${Math.floor(slippageBps)}&restrictIntermediateTokens=true`;
-            console.log('Fetching quote from:', quoteUrl);
-            
-            const quoteResponse = await (await fetch(quoteUrl)).json();
-            console.log('Quote response:', quoteResponse);
+            // Get quote from Jupiter with retry logic
+            const quoteResponse = await this.makeJupiterRequest('quote', {
+                inputMint,
+                outputMint,
+                amount,
+                slippageBps: Math.floor(slippageBps),
+                restrictIntermediateTokens: true
+            });
 
             if (!quoteResponse || quoteResponse.error) {
                 throw new Error(`Failed to get quote: ${quoteResponse?.error || 'Unknown error'}`);
             }
 
-            // Get swap transaction
+            // Get swap transaction with retry logic
             console.log('Getting swap transaction...');
-            const swapResponse = await (
-                await fetch('https://lite-api.jup.ag/swap/v1/swap', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        quoteResponse,
-                        userPublicKey: userPublicKey.toString(),
-                        dynamicComputeUnitLimit: true,
-                        dynamicSlippage: true, // Enable dynamic slippage
-                        prioritizationFeeLamports: 'auto' // Use auto-priority fee
-                    })
-                })
-            ).json();
-
-            console.log('Swap response:', swapResponse);
+            const swapResponse = await this.makeJupiterRequest('swap', {
+                quoteResponse,
+                userPublicKey: userPublicKey.toString(),
+                dynamicComputeUnitLimit: true,
+                dynamicSlippage: true,
+                prioritizationFeeLamports: 'auto'
+            });
 
             if (!swapResponse.swapTransaction) {
                 throw new Error(`Failed to get swap transaction: ${swapResponse.error || 'Unknown error'}`);
@@ -183,7 +348,15 @@ class TradingExecution {
 
         } catch (error) {
             console.error('Jupiter swap error:', error);
-            throw new Error(`Jupiter swap failed: ${error.message}`);
+            
+            // Handle specific Jupiter API errors
+            if (error.message.includes('Rate limit') || error.message.includes('Unexpected token')) {
+                throw new Error('Jupiter API is currently experiencing high traffic. Please try again in a few moments.');
+            } else if (error.message.includes('429')) {
+                throw new Error('Too many requests to Jupiter API. Please wait a moment and try again.');
+            } else {
+                throw new Error(`Jupiter swap failed: ${error.message}`);
+            }
         }
     }
 
@@ -323,6 +496,10 @@ class TradingExecution {
             if (!this.userWallet) {
                 throw new Error('User wallet not set');
             }
+            
+            if (!this.connection) {
+                throw new Error('Solana connection not initialized');
+            }
             // Basic input validation (only check if tokenAddress exists and is a string)
             if (!tokenAddress || typeof tokenAddress !== 'string') {
                 throw new Error('Token address is required');
@@ -332,19 +509,10 @@ class TradingExecution {
             }
             console.log(`[executeBuy] userId: ${userId}, tokenAddress: ${tokenAddress}, solAmount: ${solAmount}`);
 
-            // Check wallet balance before attempting transaction
-            const balance = await this.connection.getBalance(this.userWallet.publicKey);
-            const balanceInSol = balance / 1e9;
-            console.log(`[executeBuy] Wallet balance: ${balanceInSol} SOL (${balance} lamports)`);
-            
-            if (balanceInSol < solAmount + 0.01) { // Add 0.01 SOL buffer for fees
-                throw new Error(`Insufficient SOL balance. You have ${balanceInSol.toFixed(6)} SOL but need at least ${(solAmount + 0.01).toFixed(6)} SOL (including fees).`);
-            }
-
             // Convert SOL amount to lamports
             const amountInLamports = Math.floor(solAmount * 1e9);
 
-            // Build Jupiter swap
+            // Build Jupiter swap first to get accurate fee estimation
             const swapResult = await this.buildJupiterSwap(
                 'So11111111111111111111111111111111111111112', // SOL mint
                 tokenAddress,
@@ -353,15 +521,69 @@ class TradingExecution {
                 0.5 // 0.5% slippage
             );
 
-            if (!swapResult) {
-                throw new Error('Failed to build swap transaction');
+            // Check wallet balance after getting accurate fee estimation
+            console.log(`[executeBuy] Checking balance for wallet: ${this.userWallet.publicKey.toString()}`);
+            const balance = await this.connection.getBalance(this.userWallet.publicKey);
+            const balanceInSol = balance / 1e9;
+            console.log(`[executeBuy] Wallet balance: ${balanceInSol} SOL (${balance} lamports)`);
+            console.log(`[executeBuy] RPC endpoint: ${this.connection._rpcEndpoint}`);
+            
+            // Calculate actual fees from Jupiter response
+            const prioritizationFee = (swapResult.prioritizationFeeLamports || 0) / 1e9;
+            const estimatedNetworkFee = 0.000005; // Base network fee ~5000 lamports
+            const botFee = solAmount * 0.01; // 1% bot fee
+            const totalFees = prioritizationFee + estimatedNetworkFee + botFee;
+            const requiredAmount = solAmount + totalFees;
+            
+            console.log(`[executeBuy] Fee breakdown:`);
+            console.log(`  - Prioritization fee: ${prioritizationFee.toFixed(6)} SOL`);
+            console.log(`  - Estimated network fee: ${estimatedNetworkFee.toFixed(6)} SOL`);
+            console.log(`  - Bot fee: ${botFee.toFixed(6)} SOL`);
+            console.log(`  - Total fees: ${totalFees.toFixed(6)} SOL`);
+            console.log(`[executeBuy] Required amount: ${requiredAmount} SOL (${solAmount} SOL + ${totalFees.toFixed(6)} SOL fees)`);
+            console.log(`[executeBuy] Available balance: ${balanceInSol} SOL`);
+            
+            if (balanceInSol < requiredAmount) {
+                throw new Error(`Insufficient SOL balance. You have ${balanceInSol.toFixed(6)} SOL but need at least ${requiredAmount.toFixed(6)} SOL (including fees).`);
             }
 
-            // Execute the transaction
-            const signature = await this.executeTransaction(this.userWallet, swapResult.transaction);
+            // swapResult is already built above, no need to check again
+
+            // Execute the transaction with retry mechanism
+            let signature;
+            let retryCount = 0;
+            const maxRetries = 3;
+            
+            while (retryCount < maxRetries) {
+                try {
+                    // Double-check balance before each retry
+                    if (retryCount > 0) {
+                        const retryBalance = await this.connection.getBalance(this.userWallet.publicKey);
+                        const retryBalanceInSol = retryBalance / 1e9;
+                        console.log(`[executeBuy] Retry ${retryCount}: Wallet balance: ${retryBalanceInSol} SOL`);
+                        
+                        if (retryBalanceInSol < requiredAmount) {
+                            throw new Error(`Insufficient SOL balance on retry. You have ${retryBalanceInSol.toFixed(6)} SOL but need at least ${requiredAmount.toFixed(6)} SOL.`);
+                        }
+                    }
+                    
+                    signature = await this.executeTransaction(this.userWallet, swapResult.transaction);
+                    break; // Success, exit retry loop
+                } catch (error) {
+                    retryCount++;
+                    console.log(`[executeBuy] Transaction attempt ${retryCount} failed: ${error.message}`);
+                    
+                    if (retryCount >= maxRetries) {
+                        throw error; // Re-throw the last error
+                    }
+                    
+                    // Wait before retry
+                    await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                }
+            }
 
             if (!signature) {
-                throw new Error('Failed to execute transaction');
+                throw new Error('Failed to execute transaction after all retries');
             }
 
             // Check if signature is an error object
@@ -372,8 +594,7 @@ class TradingExecution {
             // Additional verification: Check if transaction was actually successful
             await this.verifyTransactionSuccess(signature, tokenAddress);
 
-            // Calculate fees
-            const botFee = solAmount * 0.01; // 1% bot fee
+            // Calculate fees (reuse botFee from earlier calculation)
             const networkFee = (swapResult.prioritizationFeeLamports || 0) / 1e9; // Convert lamports to SOL
 
             // Deduct and transfer bot fee
@@ -396,9 +617,24 @@ class TradingExecution {
             };
         } catch (error) {
             console.error('Error executing buy:', error);
+            
+            // Provide more specific error messages
+            let errorMessage = error.message;
+            
+            if (error.message.includes('Insufficient SOL balance')) {
+                errorMessage = `Insufficient SOL balance for transaction. Please ensure you have enough SOL to cover the trade amount plus network fees.`;
+            } else if (error.message.includes('Connection')) {
+                errorMessage = `Network connection error. Please try again in a few moments.`;
+            } else if (error.message.includes('Transaction failed')) {
+                errorMessage = `Transaction failed on the Solana network. This could be due to network congestion or insufficient fees.`;
+            } else if (error.message.includes('Failed to build swap')) {
+                errorMessage = `Unable to create swap transaction. The token may not be available for trading or there may be insufficient liquidity.`;
+            }
+            
             return {
                 success: false,
-                error: error.message
+                error: errorMessage,
+                originalError: error.message
             };
         } finally {
             // Clear the user wallet after the transaction
