@@ -67,16 +67,17 @@ class TokenAnalysis {
     }
 
     getRiskLevel(score) {
-        if (!score) return this.riskLevels.LOW;
-        // RugCheck API uses inverted scoring: lower numbers = higher risk
-        // Score of 0-20 = Extreme Risk
-        // Score of 21-40 = High Risk  
-        // Score of 41-60 = Medium Risk
-        // Score of 61-100 = Low Risk
-        if (score <= 20) return this.riskLevels.EXTREME;
-        if (score <= 40) return this.riskLevels.HIGH;
-        if (score <= 60) return this.riskLevels.MEDIUM;
-        return this.riskLevels.LOW;
+        if (score === undefined || score === null) return this.riskLevels.LOW;
+        // RugCheck visual score: lower numbers indicate safer tokens (e.g., 1/100 shown as "Good").
+        // Adjust the mapping accordingly so our textual level matches RugCheck UI semantics.
+        // 0-20   => Low Risk
+        // 21-40  => Medium Risk
+        // 41-60  => High Risk
+        // 61-100 => Extreme Risk
+        if (score <= 20) return this.riskLevels.LOW;
+        if (score <= 40) return this.riskLevels.MEDIUM;
+        if (score <= 60) return this.riskLevels.HIGH;
+        return this.riskLevels.EXTREME;
     }
 
     formatRiskFactor(risk) {
@@ -119,16 +120,24 @@ class TokenAnalysis {
             // Round supply to match UI display (989M instead of 988.80M)
             const displaySupply = Math.round(actualSupply / 1000000) * 1000000; // Round to nearest million
             
-            // Enhanced price calculation - use the most accurate price available
+            // Enhanced price calculation - prefer explicit USD token price fields
+            // Avoid accidentally using the quote asset price (e.g., SOL ~$199) as the token price
             let accuratePrice = 0;
-            if (lpData?.quotePrice) {
-                accuratePrice = lpData.quotePrice; // Use token price (quote price) as primary source
-            } else if (price) {
-                accuratePrice = price; // Fallback to API price
-            } else if (lpData?.basePrice) {
-                // If we only have base price (SOL price), we need to calculate token price
-                // This would require additional data, so we'll use the API price as fallback
-                accuratePrice = price;
+            const priceCandidates = [
+                token?.priceUsd,
+                tokenData.priceUsd,
+                markets?.[0]?.priceUsd,
+                lpData?.priceUsd,
+                lpData?.basePriceUsd,
+                lpData?.tokenPriceUsd,
+                price
+            ].filter((p) => typeof p === 'number' && isFinite(p) && p > 0);
+
+            if (priceCandidates.length > 0) {
+                accuratePrice = priceCandidates[0];
+            } else if (lpData?.basePrice && (lpData?.baseMint === mint || lpData?.baseSymbol === tokenMeta?.symbol)) {
+                // As a last resort, if LP base refers to the token itself, use its base price
+                accuratePrice = lpData.basePrice;
             }
             
             // Enhanced market cap calculation
