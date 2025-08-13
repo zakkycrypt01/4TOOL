@@ -513,10 +513,15 @@ class AutonomousTrading {
 
             // Get the buy amount from the rule conditions
             let buyAmount = null;
-            if (rule.conditions && rule.conditions.buy_amount && rule.conditions.buy_amount.value) {
-                buyAmount = parseFloat(rule.conditions.buy_amount.value); // Use the fixed amount set in the rule
-                this.logger.info(`Using buy amount from rule ${rule.id}: ${buyAmount} SOL`);
-            } else {
+            if (rule.conditions && rule.conditions.buy_amount) {
+                // The buy_amount is stored as { value: number, unit: ' SOL' }
+                const buyAmountData = rule.conditions.buy_amount;
+                if (buyAmountData && buyAmountData.value) {
+                    buyAmount = parseFloat(buyAmountData.value); // Use the fixed amount set in the rule
+                    this.logger.info(`Using buy amount from rule ${rule.id}: ${buyAmount} SOL`);
+                }
+            }
+            if (!buyAmount) {
                 // Fallback to percentage-based calculation if no buy amount is set
                 buyAmount = portfolio.totalValue * strategyParams.maxPositionSize;
                 this.logger.info(`No rule buy amount set, using percentage-based: ${buyAmount} SOL`);
@@ -540,10 +545,15 @@ class AutonomousTrading {
             
             // Get the buy amount from the rule conditions
             let buyAmount = null;
-            if (rule.conditions && rule.conditions.buy_amount && rule.conditions.buy_amount.value) {
-                buyAmount = parseFloat(rule.conditions.buy_amount.value); // Use the fixed amount set in the rule
-                this.logger.info(`Using buy amount from rule ${rule.id}: ${buyAmount} SOL`);
-            } else {
+            if (rule.conditions && rule.conditions.buy_amount) {
+                // The buy_amount is stored as { value: number, unit: ' SOL' }
+                const buyAmountData = rule.conditions.buy_amount;
+                if (buyAmountData && buyAmountData.value) {
+                    buyAmount = parseFloat(buyAmountData.value); // Use the fixed amount set in the rule
+                    this.logger.info(`Using buy amount from rule ${rule.id}: ${buyAmount} SOL`);
+                }
+            }
+            if (!buyAmount) {
                 // Fallback to percentage-based calculation if no buy amount is set
                 const portfolio = await this.getPortfolioValue();
                 buyAmount = portfolio.totalValue * strategyParams.maxPositionSize;
@@ -715,11 +725,15 @@ Rule: ${tradeData.rule}
             
             // Check each rule for buy_amount condition
             for (const rule of activeRules) {
-                if (rule.conditions && rule.conditions.buy_amount && rule.conditions.buy_amount.value) {
-                    const buyAmount = parseFloat(rule.conditions.buy_amount.value);
-                    if (!isNaN(buyAmount) && buyAmount > 0) {
-                        this.logger.info(`Using buy amount from rule ${rule.id}: ${buyAmount} SOL`);
-                        return buyAmount;
+                if (rule.conditions && rule.conditions.buy_amount) {
+                    // The buy_amount is stored as { value: number, unit: ' SOL' }
+                    const buyAmountData = rule.conditions.buy_amount;
+                    if (buyAmountData && buyAmountData.value) {
+                        const buyAmount = parseFloat(buyAmountData.value);
+                        if (!isNaN(buyAmount) && buyAmount > 0) {
+                            this.logger.info(`Using buy amount from rule ${rule.id}: ${buyAmount} SOL`);
+                            return buyAmount;
+                        }
                     }
                 }
             }
@@ -762,10 +776,14 @@ Rule: ${tradeData.rule}
             const activeRules = await this.getActiveRules(userId);
             
             for (const rule of activeRules) {
-                if (rule.conditions && rule.conditions.buy_amount && rule.conditions.buy_amount.value) {
-                    const buyAmount = parseFloat(rule.conditions.buy_amount.value);
-                    if (!isNaN(buyAmount) && buyAmount > 0) {
-                        return true;
+                if (rule.conditions && rule.conditions.buy_amount) {
+                    // The buy_amount is stored as { value: number, unit: ' SOL' }
+                    const buyAmountData = rule.conditions.buy_amount;
+                    if (buyAmountData && buyAmountData.value) {
+                        const buyAmount = parseFloat(buyAmountData.value);
+                        if (!isNaN(buyAmount) && buyAmount > 0) {
+                            return true;
+                        }
                     }
                 }
             }
