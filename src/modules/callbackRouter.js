@@ -535,6 +535,7 @@ class CallbackRouter {
             if (callbackData === 'toggle_all_rules' ||
                 callbackData === 'delete_rules_menu' ||
                 callbackData === 'delete_all_rules' ||
+                callbackData === 'confirm_delete_all_rules' ||
                 callbackData === 'rules_stats' ||
                 callbackData === 'rules_settings' ||
                 callbackData === 'rule_reset' ||
@@ -559,6 +560,10 @@ class CallbackRouter {
                     await this.handlers.ruleHandlers.handleToggleAllRules(chatId, telegramId);
                 } else if (callbackData === 'delete_rules_menu') {
                     await this.handlers.ruleHandlers.handleDeleteRulesMenu(chatId, telegramId);
+                } else if (callbackData === 'delete_all_rules') {
+                    await this.handlers.ruleHandlers.handleDeleteAllRules(chatId, telegramId);
+                } else if (callbackData === 'confirm_delete_all_rules') {
+                    await this.handlers.ruleHandlers.handleConfirmDeleteAllRules(chatId, telegramId);
                 } else if (callbackData.startsWith('delete_rule_')) {
                     const ruleId = callbackData.replace('delete_rule_', '');
                     await this.handlers.ruleHandlers.handleDeleteRule(chatId, telegramId, ruleId);

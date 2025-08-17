@@ -974,6 +974,98 @@ All associated conditions and settings have been removed.`;
         }
     }
 
+    async handleDeleteAllRules(chatId, telegramId) {
+        try {
+            const user = await this.db.getUserByTelegramId(telegramId);
+            const rules = await this.db.getRulesByUserId(user.id);
+
+            if (rules.length === 0) {
+                await this.sendAndStoreMessage(chatId, 'No rules found to delete.');
+                return;
+            }
+
+            const message = `
+*⚠️ Confirm Delete All Rules*
+
+Are you sure you want to delete ALL ${rules.length} trading rules?
+
+This will delete:
+${rules.map(rule => `• ${rule.name} (${rule.is_active ? 'Active' : 'Inactive'})`).join('\n')}
+
+⚠️ *This action cannot be undone!*
+🤖 *Autonomous mode will be automatically disabled.*`;
+
+            const keyboard = {
+                inline_keyboard: [
+                    [
+                        { text: '✅ Yes, Delete All', callback_data: 'confirm_delete_all_rules' },
+                        { text: '❌ Cancel', callback_data: 'delete_rules_menu' }
+                    ]
+                ]
+            };
+
+            await this.sendAndStoreMessage(chatId, message, {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard
+            });
+        } catch (error) {
+            console.error('Error preparing delete all rules:', error);
+            await this.sendAndStoreMessage(chatId, 'Sorry, something went wrong while preparing the deletion.');
+        }
+    }
+
+    async handleConfirmDeleteAllRules(chatId, telegramId) {
+        try {
+            const user = await this.db.getUserByTelegramId(telegramId);
+            const rules = await this.db.getRulesByUserId(user.id);
+
+            if (rules.length === 0) {
+                await this.sendAndStoreMessage(chatId, 'No rules found to delete.');
+                return;
+            }
+
+            const ruleCount = rules.length;
+            
+            // Delete all rules for the user
+            for (const rule of rules) {
+                await this.db.deleteRule(rule.id);
+            }
+
+            // Disable autonomous mode since all rules are deleted
+            await this.db.updateUserSettings(user.id, { autonomous_enabled: false });
+
+            const message = `
+*✅ All Rules Deleted Successfully*
+
+${ruleCount} trading rule${ruleCount > 1 ? 's have' : ' has'} been deleted.
+
+🤖 *Autonomous Mode Disabled*
+
+Autonomous mode has been automatically turned off since no rules remain.
+
+To use autonomous trading again, please create new rules first.`;
+
+            const keyboard = {
+                inline_keyboard: [
+                    [
+                        { text: '➕ Create New Rule', callback_data: 'rules_create' }
+                    ],
+                    [
+                        { text: '◀️ Back to Rules', callback_data: 'rules' }
+                    ]
+                ]
+            };
+
+            await this.sendAndStoreMessage(chatId, message, {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard
+            });
+        } catch (error) {
+            console.error('Error deleting all rules:', error);
+            await this.sendAndStoreMessage(chatId, 'Sorry, something went wrong while deleting all rules.');
+        }
+    }
+
     formatRuleSelections(data) {
         let output = '';
         
