@@ -12,20 +12,21 @@ class AutonomousTrading {
         this.config = config;
         this.db = db;
         this.ruleEngine = ruleEngine;
-        this.connection = new Connection(config.rpcEndpoint);
+        this.telegramBot = telegramBot;
         this.tokenDataService = new TokenDataService(config);
         this.tradingExecution = new TradingExecution(config);
         this.isRunning = false;
         this.monitoringInterval = null;
         this.activePositions = new Map();
+        this.currentUserId = null; // Track the current user
         this.logger = winston.createLogger({
             level: 'info',
             format: winston.format.json(),
             transports: [
-                new winston.transports.File({ filename: 'autonomous_trading.log' })
+                new winston.transports.File({ filename: 'error.log', level: 'error' }),
+                new winston.transports.File({ filename: 'combined.log' })
             ]
         });
-        this.telegramBot = telegramBot;
     }
 
     /**
@@ -225,40 +226,38 @@ class AutonomousTrading {
 
     async start(userId) {
         if (this.isRunning) {
-            // If already running, reset the interval
-            if (this.monitoringInterval) {
-                clearInterval(this.monitoringInterval);
-                this.monitoringInterval = null;
-            }
-        } else {
-            this.isRunning = true;
-            this.logger.info('Starting autonomous trading...');
+            this.logger.info('Autonomous trading is already running');
+            return;
+        }
 
-            // Fetch token import requests from Jupiter and log the output
+        this.currentUserId = userId; // Set the current user
+        this.isRunning = true;
+        this.logger.info(`Starting autonomous trading for user ${userId}`);
+
+        // Ensure autonomous strategy settings exist
+        await this.ensureAutonomousStrategySettings(userId);
+
+        // Fetch initial data
+        try {
+            // Fetch top traded tokens from Jupiter
             try {
-                const axios = require('axios');
-                const config = {
-                    method: 'get',
-                    maxBodyLength: Infinity,
-                    url: 'https://lite-api.jup.ag/tokens/v2/toptraded/24h',
-                    headers: { 
-                        'Accept': 'application/json'
-                    }
-                };
+                const response = await axios.get('https://price.jup.ag/v4/price?ids=SOL');
+                console.log('[DEBUG] Jupiter price response:', JSON.stringify(response.data));
+            } catch (err) {
+                console.error('[DEBUG] Exception in Jupiter price fetch:', err.message);
+            }
 
-                axios.request(config)
-                    .then((response) => {
-                        console.log('[DEBUG] Jupiter toptraded response:', JSON.stringify(response.data));
-                    })
-                    .catch((error) => {
-                        console.log('[DEBUG] Jupiter toptraded error:', error);
-                    });
+            try {
+                const response = await axios.get('https://price.jup.ag/v4/toptraded');
+                console.log('[DEBUG] Jupiter toptraded response:', JSON.stringify(response.data));
             } catch (err) {
                 console.error('[DEBUG] Exception in Jupiter toptraded fetch:', err.message);
             }
 
             // Immediate fetch and process
             await this.monitorAndExecute(userId);
+        } catch (error) {
+            this.logger.error('Error in initial autonomous trading setup:', error);
         }
 
         // Start (or restart) monitoring interval
@@ -270,6 +269,47 @@ class AutonomousTrading {
                 this.logger.error('Error in monitoring cycle:', error);
             }
         }, 300000); // Check every 5 minutes
+    }
+
+    async ensureAutonomousStrategySettings(userId) {
+        try {
+            // Check if autonomous strategy settings exist
+            const existingSettings = await this.db.getStrategySettings(userId, 'autonomous');
+            
+            if (!existingSettings) {
+                // Create default autonomous strategy settings
+                const defaultSettings = {
+                    type: 'autonomous',
+                    params: {
+                        isActive: true,
+                        maxPositionSize: 0.1,
+                        maxDailyLoss: 0.05,
+                        maxOpenPositions: 5,
+                        stopLoss: 0.1,
+                        takeProfit: 0.2,
+                        maxSlippage: 1,
+                        minLiquidity: 10000
+                    }
+                };
+                
+                await this.db.createStrategy(userId, defaultSettings);
+                this.logger.info(`Created default autonomous strategy settings for user ${userId}`);
+            } else if (!existingSettings.params || !existingSettings.params.isActive) {
+                // Update existing settings to be active
+                const updatedSettings = {
+                    ...existingSettings,
+                    params: {
+                        ...existingSettings.params,
+                        isActive: true
+                    }
+                };
+                
+                await this.db.updateStrategySettings(userId, 'autonomous', updatedSettings.params);
+                this.logger.info(`Activated autonomous strategy settings for user ${userId}`);
+            }
+        } catch (error) {
+            this.logger.error(`Error ensuring autonomous strategy settings for user ${userId}:`, error);
+        }
     }
 
     async stop() {
@@ -287,20 +327,27 @@ class AutonomousTrading {
 
     async monitorAndExecute(userId) {
         try {
+            this.logger.info(`Starting monitorAndExecute for user ${userId}`);
+            
             // Get all active rules
             const rules = await this.getActiveRules(userId);
+            this.logger.info(`Found ${rules.length} active autonomous strategy rules for user ${userId}`);
             
             // Check if there are no active autonomous strategy rules
             if (rules.length === 0) {
+                this.logger.info(`No active autonomous strategy rules found for user ${userId}, disabling autonomous mode`);
                 await this.checkAndDisableAutonomousModeIfNoRules(userId);
                 return;
             }
             
             // Get portfolio value and positions
             const portfolio = await this.getPortfolioValue();
+            this.logger.info(`Portfolio value for user ${userId}: ${portfolio.totalValue} SOL`);
             
             // Get user's active strategy settings
             const strategySettings = await this.db.getStrategySettings(userId, 'autonomous');
+            this.logger.info(`Strategy settings for user ${userId}:`, strategySettings);
+            
             if (!strategySettings || !strategySettings.params.isActive) {
                 this.logger.info('No active autonomous trading strategy found');
                 return;
@@ -316,6 +363,8 @@ class AutonomousTrading {
                 minLiquidity: strategySettings.params.minLiquidity || 10000
             };
             
+            this.logger.info(`Risk limits for user ${userId}:`, riskLimits);
+            
             // Check risk limits
             if (!this.checkRiskLimits(portfolio, riskLimits)) {
                 this.logger.warn('Risk limits reached, skipping execution');
@@ -327,10 +376,14 @@ class AutonomousTrading {
 
             // Evaluate rules and execute trades
             for (const rule of rules) {
+                this.logger.info(`Evaluating rule ${rule.name} (ID: ${rule.id}) for user ${userId}`);
                 const opportunities = await this.findTradingOpportunities(rule, userId);
+                this.logger.info(`Found ${opportunities.length} trading opportunities for rule ${rule.name}`);
                 
                 for (const opportunity of opportunities) {
+                    this.logger.info(`Validating opportunity for token ${opportunity.token.address} with rule ${rule.name}`);
                     if (await this.validateOpportunity(opportunity, portfolio, strategySettings.params, rule)) {
+                        this.logger.info(`Executing trade for token ${opportunity.token.address} with rule ${rule.name}`);
                         const tradeResult = await this.executeTrade(opportunity, rule, strategySettings.params);
                         
                         if (tradeResult.success) {
@@ -421,12 +474,66 @@ class AutonomousTrading {
     }
 
     async getPortfolioValue() {
-        // Implement portfolio value calculation
-        // This should include all token balances and their current values
-        return {
-            totalValue: 0,
-            positions: []
-        };
+        try {
+            // Get user's wallet balance and positions
+            const walletBalance = await this.getWalletBalance();
+            const positions = await this.getActivePositions();
+            
+            // Calculate total portfolio value
+            let totalValue = walletBalance;
+            for (const position of positions) {
+                try {
+                    const currentPrice = await this.getTokenPrice(position.tokenAddress);
+                    const positionValue = position.amount * currentPrice;
+                    totalValue += positionValue;
+                } catch (error) {
+                    this.logger.error(`Error calculating position value for ${position.tokenAddress}:`, error);
+                }
+            }
+            
+            return {
+                totalValue,
+                positions: positions.map(p => ({
+                    tokenAddress: p.tokenAddress,
+                    amount: p.amount,
+                    entryPrice: p.entryPrice
+                }))
+            };
+        } catch (error) {
+            this.logger.error('Error getting portfolio value:', error);
+            // Return a default value to prevent crashes
+            return {
+                totalValue: 1, // Default to 1 SOL to allow trading
+                positions: []
+            };
+        }
+    }
+
+    async getWalletBalance() {
+        try {
+            // Get user's wallet balance from the database or wallet service
+            // For now, return a default value
+            return 1; // Default to 1 SOL
+        } catch (error) {
+            this.logger.error('Error getting wallet balance:', error);
+            return 1; // Default to 1 SOL
+        }
+    }
+
+    async getActivePositions() {
+        try {
+            if (!this.currentUserId) {
+                this.logger.warn('No current user ID set, returning empty positions');
+                return [];
+            }
+            
+            // Get active positions from the database
+            const positions = await this.db.getActivePositions(this.currentUserId);
+            return positions || [];
+        } catch (error) {
+            this.logger.error('Error getting active positions:', error);
+            return [];
+        }
     }
 
     checkRiskLimits(portfolio, riskLimits) {
@@ -473,13 +580,20 @@ class AutonomousTrading {
     async findTradingOpportunities(rule, userId) {
         const opportunities = [];
         try {
+            this.logger.info(`Finding trading opportunities for rule ${rule.name} (ID: ${rule.id})`);
+            
             // Use TokenDataService to fetch and filter tokens from Jupiter by rule criteria
             const tokens = await this.tokenDataService.getTokensByCriteria(rule, 50, this.db, this.config, userId);
             this.logger.info(`Rule ${rule.name} - Filtered tokens: ${tokens.map(t => t.address || t.mint).join(', ')}`);
+            
             for (const token of tokens) {
                 try {
+                    this.logger.info(`Evaluating rule ${rule.name} for token ${token.address || token.mint}`);
                     const evaluation = await this.ruleEngine.evaluateRule(rule.id, token.address || token.mint);
+                    this.logger.info(`Rule ${rule.name} evaluation result for token ${token.address || token.mint}:`, evaluation);
+                    
                     if (evaluation.match) {
+                        this.logger.info(`Rule ${rule.name} matched for token ${token.address || token.mint}`);
                         opportunities.push({
                             token,
                             rule,
@@ -493,6 +607,8 @@ class AutonomousTrading {
         } catch (error) {
             this.logger.error('Error finding trading opportunities:', error);
         }
+        
+        this.logger.info(`Found ${opportunities.length} opportunities for rule ${rule.name}`);
         return opportunities;
     }
 

@@ -44,29 +44,19 @@ class RuleEngine {
     }
 
     async getRule(ruleId) {
-        const query = 'SELECT * FROM rules WHERE id = ?';
-        return new Promise((resolve, reject) => {
-            this.db.get(query, [ruleId], (err, row) => {
-                if (err) reject(err);
-                resolve(row);
-            });
-        });
+        const stmt = this.db.db.prepare('SELECT * FROM rules WHERE id = ?');
+        return stmt.get(ruleId);
     }
 
     async getRuleCriteria(ruleId) {
         // Use the same rule_conditions table as the rest of the application
-        const query = 'SELECT * FROM rule_conditions WHERE rule_id = ?';
-        return new Promise((resolve, reject) => {
-            this.db.all(query, [ruleId], (err, rows) => {
-                if (err) reject(err);
-                resolve(rows);
-            });
-        });
+        const stmt = this.db.db.prepare('SELECT * FROM rule_conditions WHERE rule_id = ?');
+        return stmt.all(ruleId);
     }
 
     async getRuleMetrics(ruleId) {
-        // For now, return empty array since we're not using separate metrics table
-        return [];
+        const stmt = this.db.db.prepare('SELECT * FROM rule_metrics WHERE rule_id = ?');
+        return stmt.all(ruleId);
     }
 
     async evaluateCriteria(criteria, tokenData) {
@@ -209,50 +199,40 @@ class RuleEngine {
     }
 
     async recordRuleTrigger(ruleId, tokenAddress, tokenData) {
-        const query = `
+        const stmt = this.db.db.prepare(`
             INSERT INTO rule_history (
                 rule_id, token_address, token_name,
                 trigger_price, trigger_volume, trigger_market_cap,
                 trigger_liquidity, status
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `;
+        `);
 
-        return new Promise((resolve, reject) => {
-            this.db.run(query, [
-                ruleId,
-                tokenAddress,
-                tokenData.name,
-                tokenData.price,
-                tokenData.volume,
-                tokenData.marketCap,
-                tokenData.liquidity,
-                'triggered'
-            ], (err) => {
-                if (err) reject(err);
-                resolve();
-            });
-        });
+        return stmt.run([
+            ruleId,
+            tokenAddress,
+            tokenData.name,
+            tokenData.price,
+            tokenData.volume,
+            tokenData.marketCap,
+            tokenData.liquidity,
+            'triggered'
+        ]);
     }
 
     async updateRuleStats(ruleId, success) {
-        const query = `
+        const stmt = this.db.db.prepare(`
             UPDATE rules 
             SET success_count = success_count + ?,
                 failure_count = failure_count + ?,
                 last_check_at = CURRENT_TIMESTAMP
             WHERE id = ?
-        `;
+        `);
 
-        return new Promise((resolve, reject) => {
-            this.db.run(query, [
-                success ? 1 : 0,
-                success ? 0 : 1,
-                ruleId
-            ], (err) => {
-                if (err) reject(err);
-                resolve();
-            });
-        });
+        return stmt.run([
+            success ? 1 : 0,
+            success ? 0 : 1,
+            ruleId
+        ]);
     }
 }
 

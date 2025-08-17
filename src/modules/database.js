@@ -156,6 +156,51 @@ class DatabaseManager {
             )
         `);
 
+        // Rule history table
+        this.db.exec(`
+            CREATE TABLE IF NOT EXISTS rule_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                rule_id INTEGER NOT NULL,
+                token_address TEXT NOT NULL,
+                token_name TEXT,
+                trigger_price REAL,
+                trigger_volume REAL,
+                trigger_market_cap REAL,
+                trigger_liquidity REAL,
+                status TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (rule_id) REFERENCES rules(id)
+            )
+        `);
+
+        // Rule criteria table
+        this.db.exec(`
+            CREATE TABLE IF NOT EXISTS rule_criteria (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                rule_id INTEGER NOT NULL,
+                criteria_type TEXT NOT NULL,
+                operator TEXT NOT NULL,
+                value TEXT NOT NULL,
+                secondary_value TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (rule_id) REFERENCES rules(id) ON DELETE CASCADE
+            )
+        `);
+
+        // Rule metrics table
+        this.db.exec(`
+            CREATE TABLE IF NOT EXISTS rule_metrics (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                rule_id INTEGER NOT NULL,
+                metric_type TEXT NOT NULL,
+                threshold REAL NOT NULL,
+                timeframe TEXT NOT NULL,
+                direction TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (rule_id) REFERENCES rules(id) ON DELETE CASCADE
+            )
+        `);
+
         // External wallets table for copy trading
         this.db.exec(`
             CREATE TABLE IF NOT EXISTS external_wallets (
@@ -826,27 +871,17 @@ class DatabaseManager {
                 const deleteSettings = this.db.prepare('DELETE FROM rule_settings WHERE rule_id = ?');
                 deleteSettings.run(ruleId);
 
-                // Try to delete from other tables if they exist (with error handling)
-                try {
-                    const deleteCriteria = this.db.prepare('DELETE FROM rule_criteria WHERE rule_id = ?');
-                    deleteCriteria.run(ruleId);
-                } catch (e) {
-                    // Table doesn't exist, ignore
-                }
+                // Delete from rule_criteria table
+                const deleteCriteria = this.db.prepare('DELETE FROM rule_criteria WHERE rule_id = ?');
+                deleteCriteria.run(ruleId);
 
-                try {
-                    const deleteMetrics = this.db.prepare('DELETE FROM rule_metrics WHERE rule_id = ?');
-                    deleteMetrics.run(ruleId);
-                } catch (e) {
-                    // Table doesn't exist, ignore
-                }
+                // Delete from rule_metrics table
+                const deleteMetrics = this.db.prepare('DELETE FROM rule_metrics WHERE rule_id = ?');
+                deleteMetrics.run(ruleId);
 
-                try {
-                    const deleteHistory = this.db.prepare('DELETE FROM rule_history WHERE rule_id = ?');
-                    deleteHistory.run(ruleId);
-                } catch (e) {
-                    // Table doesn't exist, ignore
-                }
+                // Delete from rule_history table
+                const deleteHistory = this.db.prepare('DELETE FROM rule_history WHERE rule_id = ?');
+                deleteHistory.run(ruleId);
 
             // Delete the rule
             const deleteRule = this.db.prepare('DELETE FROM rules WHERE id = ?');
@@ -858,6 +893,102 @@ class DatabaseManager {
         });
 
         transaction();
+    }
+
+    // Rule criteria operations
+    async createRuleCriteria(ruleId, criteriaType, operator, value, secondaryValue = null) {
+        const stmt = this.db.prepare(`
+            INSERT INTO rule_criteria (rule_id, criteria_type, operator, value, secondary_value)
+            VALUES (?, ?, ?, ?, ?)
+        `);
+        return stmt.run(ruleId, criteriaType, operator, value, secondaryValue);
+    }
+
+    async getRuleCriteria(ruleId) {
+        const stmt = this.db.prepare('SELECT * FROM rule_criteria WHERE rule_id = ?');
+        return stmt.all(ruleId);
+    }
+
+    async updateRuleCriteria(criteriaId, criteriaType, operator, value, secondaryValue = null) {
+        const stmt = this.db.prepare(`
+            UPDATE rule_criteria 
+            SET criteria_type = ?, operator = ?, value = ?, secondary_value = ?
+            WHERE id = ?
+        `);
+        return stmt.run(criteriaType, operator, value, secondaryValue, criteriaId);
+    }
+
+    async deleteRuleCriteria(criteriaId) {
+        const stmt = this.db.prepare('DELETE FROM rule_criteria WHERE id = ?');
+        return stmt.run(criteriaId);
+    }
+
+    // Rule metrics operations
+    async createRuleMetrics(ruleId, metricType, threshold, timeframe, direction) {
+        const stmt = this.db.prepare(`
+            INSERT INTO rule_metrics (rule_id, metric_type, threshold, timeframe, direction)
+            VALUES (?, ?, ?, ?, ?)
+        `);
+        return stmt.run(ruleId, metricType, threshold, timeframe, direction);
+    }
+
+    async getRuleMetrics(ruleId) {
+        const stmt = this.db.prepare('SELECT * FROM rule_metrics WHERE rule_id = ?');
+        return stmt.all(ruleId);
+    }
+
+    async updateRuleMetrics(metricsId, metricType, threshold, timeframe, direction) {
+        const stmt = this.db.prepare(`
+            UPDATE rule_metrics 
+            SET metric_type = ?, threshold = ?, timeframe = ?, direction = ?
+            WHERE id = ?
+        `);
+        return stmt.run(metricType, threshold, timeframe, direction, metricsId);
+    }
+
+    async deleteRuleMetrics(metricsId) {
+        const stmt = this.db.prepare('DELETE FROM rule_metrics WHERE id = ?');
+        return stmt.run(metricsId);
+    }
+
+    // Rule history operations
+    async createRuleHistory(ruleId, tokenAddress, tokenName, triggerPrice, triggerVolume, triggerMarketCap, triggerLiquidity, status) {
+        const stmt = this.db.prepare(`
+            INSERT INTO rule_history (
+                rule_id, token_address, token_name, trigger_price, trigger_volume, 
+                trigger_market_cap, trigger_liquidity, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        return stmt.run(ruleId, tokenAddress, tokenName, triggerPrice, triggerVolume, triggerMarketCap, triggerLiquidity, status);
+    }
+
+    async getRuleHistory(ruleId, limit = 50) {
+        const stmt = this.db.prepare(`
+            SELECT * FROM rule_history 
+            WHERE rule_id = ? 
+            ORDER BY created_at DESC 
+            LIMIT ?
+        `);
+        return stmt.all(ruleId, limit);
+    }
+
+    async getRuleHistoryByToken(tokenAddress, limit = 50) {
+        const stmt = this.db.prepare(`
+            SELECT * FROM rule_history 
+            WHERE token_address = ? 
+            ORDER BY created_at DESC 
+            LIMIT ?
+        `);
+        return stmt.all(tokenAddress, limit);
+    }
+
+    async updateRuleHistoryStatus(historyId, status) {
+        const stmt = this.db.prepare(`
+            UPDATE rule_history 
+            SET status = ? 
+            WHERE id = ?
+        `);
+        return stmt.run(status, historyId);
     }
 
     // External wallet operations
@@ -1177,11 +1308,46 @@ class DatabaseManager {
             const stmt = this.db.prepare(
                 'INSERT OR REPLACE INTO sold_tokens (user_id, token_address, sold_at) VALUES (?, ?, ?)' 
             );
-            stmt.run(userId, tokenAddress, Date.now());
-            return true;
+            return stmt.run(userId, tokenAddress, new Date().toISOString());
         } catch (error) {
             console.error('Error marking token as sold:', error);
-            return false;
+            throw error;
+        }
+    }
+
+    getSoldTokens(userId) {
+        try {
+            const stmt = this.db.prepare('SELECT * FROM sold_tokens WHERE user_id = ? ORDER BY sold_at DESC');
+            return stmt.all(userId);
+        } catch (error) {
+            console.error('Error getting sold tokens:', error);
+            return [];
+        }
+    }
+
+    // --- Active positions tracking for autonomous trading ---
+    getActivePositions(userId) {
+        try {
+            const stmt = this.db.prepare(`
+                SELECT 
+                    token_address,
+                    amount,
+                    price as entryPrice,
+                    timestamp as entryTime
+                FROM trades 
+                WHERE user_id = ? 
+                AND side = 'BUY' 
+                AND token_address NOT IN (
+                    SELECT DISTINCT token_address 
+                    FROM trades 
+                    WHERE user_id = ? AND side = 'SELL'
+                )
+                ORDER BY timestamp DESC
+            `);
+            return stmt.all(userId, userId);
+        } catch (error) {
+            console.error('Error getting active positions:', error);
+            return [];
         }
     }
 
