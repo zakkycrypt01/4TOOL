@@ -6,19 +6,25 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js --ignore 'db/*' --ignore 'logs/*'",
-    "test": "jest"
+    "wallet-api": "node wallet-api-server.js",
+    "wallet-api:dev": "nodemon wallet-api-server.js",
+    "test": "jest",
+    "test:wallet": "node test-wallet-holdings.js",
+    "test:integration": "node test-integration.js"
   },
   "dependencies": {
     "@project-serum/anchor": "^0.26.0",
+    "@raydium-io/raydium-sdk-v2": "^0.2.18-alpha",
     "@solana/spl-token": "^0.4.13",
     "@solana/web3.js": "^1.87.6",
     "axios": "^1.6.2",
     "better-sqlite3": "^11.10.0",
     "bs58": "^6.0.0",
     "bull": "^4.16.5",
+    "cors": "^2.8.5",
     "decimal.js": "^10.4.3",
     "dotenv": "^16.3.1",
-    "express": "^5.1.0",
+    "express": "^4.18.2",
     "fs-extra": "^11.3.0",
     "html-pdf-node": "^1.0.8",
     "ioredis": "^5.6.1",

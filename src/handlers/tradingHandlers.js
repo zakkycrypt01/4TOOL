@@ -338,6 +338,20 @@ Please confirm your buy order:`;
         }
     }
 
+    async handleRetryLastBuy(chatId, telegramId) {
+        try {
+            if (!this.buyManager) {
+                await this.sendAndStoreMessage(chatId, 'Buy manager not available. Please try again.');
+                return;
+            }
+
+            await this.buyManager.retryLastFailedOrder(chatId, telegramId, this);
+        } catch (error) {
+            console.error('Error handling retry last buy:', error);
+            await this.sendAndStoreMessage(chatId, 'Sorry, something went wrong while retrying your order. Please try again.');
+        }
+    }
+
     async handleSellToken(chatId, telegramId) {
         try {
             await this.sellManager.initiateSell(chatId, telegramId, this);
@@ -587,11 +601,20 @@ Your buy order has been successfully executed!`;
 
         } catch (error) {
             console.error('Error executing buy:', error);
+            
+            // Check if user has a recent failed order for smart retry option
+            const hasRecentOrder = this.buyManager && this.buyManager.hasRecentFailedOrder(telegramId);
+            
             const message = `\n*❌ Buy Order Failed*\n\n*Error:* ${error.message}\n\nYour buy order could not be completed. Please try again.`;
             const keyboard = {
                 inline_keyboard: [
+                    hasRecentOrder ? [
+                        { text: '🔄 Try Again', callback_data: 'retry_last_buy' },
+                        { text: '🛒 New Order', callback_data: 'buy_token' }
+                    ] : [
+                        { text: '🔄 Try Again', callback_data: 'buy_token' }
+                    ],
                     [
-                        { text: '🔄 Try Again', callback_data: 'buy_token' },
                         { text: '◀️ Back to Trade', callback_data: 'trade' }
                     ]
                 ]
@@ -840,6 +863,11 @@ Choose your preferred trail threshold:`;
 
             if (action === 'buy_token') {
                 await this.handleBuyToken(chatId, telegramId);
+                return;
+            }
+
+            if (action === 'retry_last_buy') {
+                await this.handleRetryLastBuy(chatId, telegramId);
                 return;
             }
 

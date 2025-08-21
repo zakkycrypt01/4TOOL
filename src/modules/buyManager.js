@@ -10,6 +10,7 @@ class BuyManager {
         this.db = db;
         this.manualManagementService = manualManagementService;
         this.pendingBuyAmount = new Map(); // Store pending buy amounts for users
+        this.lastFailedOrder = new Map(); // Store last failed order details for retry
         this.tokenAnalysis = new TokenAnalysis();
     }
 
@@ -126,14 +127,16 @@ Please confirm your order:`;
     }
 
     async executeBuy(chatId, telegramId, amount, bot) {
+        const pendingBuy = this.pendingBuyAmount.get(telegramId);
+        let solAmount;
+        
         try {
-            const pendingBuy = this.pendingBuyAmount.get(telegramId);
             if (!pendingBuy || pendingBuy.status !== 'ready_to_execute') {
                 throw new Error('No pending buy found or buy not ready to execute');
             }
 
             // Convert amount to number and validate
-            const solAmount = parseFloat(amount);
+            solAmount = parseFloat(amount);
             if (isNaN(solAmount) || solAmount <= 0) {
                 throw new Error('Invalid amount. Please enter a positive number.');
             }
@@ -249,13 +252,23 @@ Please wait while we process your order...`, {
         } catch (error) {
             console.error('Error executing buy:', error);
             
+            // Store failed order details for retry functionality if we have the order details
+            if (pendingBuy && solAmount) {
+                this.lastFailedOrder.set(telegramId, {
+                    tokenAddress: pendingBuy.tokenAddress,
+                    amount: solAmount,
+                    timestamp: Date.now()
+                });
+                console.log(`Stored failed order for retry: ${pendingBuy.tokenAddress}, ${solAmount} SOL`);
+            }
+            
             // Format error message based on error type
             let errorMessage;
             if (error.message.includes('Transaction expired')) {
                 errorMessage = `
 *⚠️ Transaction Expired*
 
-The transaction has expired. Please try your buy order again.`;
+The transaction has expired. You can retry with the same details or start a new order.`;
             } else if (error.message.includes('Insufficient SOL balance')) {
                 errorMessage = `
 *⚠️ Insufficient Balance*
@@ -269,11 +282,27 @@ You don't have enough SOL to complete this transaction. Please ensure you have e
 *⚠️ Transaction Failed*
 
 Sorry, we couldn't complete your buy order:
-${error.message}`;
+${error.message}
+
+You can retry with the same details or start a new order.`;
             }
 
+            // Add retry keyboard if order details were stored
+            const keyboard = {
+                inline_keyboard: [
+                    [
+                        { text: '🔄 Retry Same Order', callback_data: 'retry_last_buy' },
+                        { text: '🛒 New Order', callback_data: 'buy_token' }
+                    ],
+                    [
+                        { text: '◀️ Back to Trade', callback_data: 'trade' }
+                    ]
+                ]
+            };
+
             await bot.sendAndStoreMessage(chatId, errorMessage, {
-                parse_mode: 'Markdown'
+                parse_mode: 'Markdown',
+                reply_markup: keyboard
             });
             
             this.clearPendingBuy(telegramId);
@@ -446,6 +475,81 @@ ${error.message}`;
             console.error(`[verifyBuySuccess] Buy verification failed for user ${userId}: ${error.message}`);
             throw new Error(`Buy verification failed: ${error.message}`);
         }
+    }
+
+    /**
+     * Retry the last failed buy order without asking for token address or amount again
+     */
+    async retryLastFailedOrder(chatId, telegramId, bot) {
+        try {
+            const lastOrder = this.lastFailedOrder.get(telegramId);
+            
+            if (!lastOrder) {
+                await bot.sendAndStoreMessage(chatId, 'No previous order found to retry.');
+                return;
+            }
+
+            // Check if the order is not too old (e.g., 1 hour)
+            const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+            if (Date.now() - lastOrder.timestamp > oneHour) {
+                this.lastFailedOrder.delete(telegramId);
+                await bot.sendAndStoreMessage(chatId, 'Previous order expired. Please start a new buy order.');
+                return;
+            }
+
+            // Set up the pending buy with the same parameters
+            this.pendingBuyAmount.set(telegramId, {
+                status: 'ready_to_execute',
+                tokenAddress: lastOrder.tokenAddress,
+                amount: lastOrder.amount
+            });
+
+            // Show confirmation with the same parameters
+            const message = `
+*🔄 Retry Buy Order*
+
+*Token:* \`${lastOrder.tokenAddress}\`
+*Amount:* ${lastOrder.amount} SOL
+
+Retrying your previous order. Please confirm:`;
+
+            const keyboard = {
+                inline_keyboard: [
+                    [
+                        { text: '✅ Confirm Retry', callback_data: `confirm_buy_execute_${lastOrder.amount}` },
+                        { text: '❌ Cancel', callback_data: 'cancel_buy' }
+                    ]
+                ]
+            };
+
+            await bot.sendAndStoreMessage(chatId, message, {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard
+            });
+
+        } catch (error) {
+            console.error('Error retrying last failed order:', error);
+            await bot.sendAndStoreMessage(chatId, 'Sorry, there was an error retrying your order. Please try again.');
+        }
+    }
+
+    /**
+     * Check if user has a recent failed order that can be retried
+     */
+    hasRecentFailedOrder(telegramId) {
+        const lastOrder = this.lastFailedOrder.get(telegramId);
+        if (!lastOrder) return false;
+
+        // Check if order is not older than 1 hour
+        const oneHour = 60 * 60 * 1000;
+        return (Date.now() - lastOrder.timestamp) <= oneHour;
+    }
+
+    /**
+     * Get the last failed order details
+     */
+    getLastFailedOrder(telegramId) {
+        return this.lastFailedOrder.get(telegramId);
     }
 }
 

@@ -1,8 +1,9 @@
 const { Connection, PublicKey, Transaction, VersionedTransaction } = require('@solana/web3.js');
 const { Program, AnchorProvider } = require('@project-serum/anchor');
 const winston = require('winston');
-const { TOKEN_PROGRAM_ID } = require('@solana/spl-token');
+const { TOKEN_PROGRAM_ID, NATIVE_MINT } = require('@solana/spl-token');
 const FeeManagement = require('./feeManagement');
+const RaydiumService = require('../services/raydiumService');
 
 class TradingExecution {
     constructor(config) {
@@ -20,11 +21,18 @@ class TradingExecution {
         this.userWallet = null;
         this.feeManager = new FeeManagement(config);
         
-        // Rate limiting for Jupiter API
+        // Initialize Raydium service
+        this.raydiumService = new RaydiumService(this.connection, config);
+        
+        // Trading provider preference: 'raydium' or 'jupiter'
+        this.tradingProvider = config.tradingProvider || 'raydium';
+        this.enableFallback = config.enableFallback !== false; // Default to true
+        
+        // Rate limiting for Jupiter API (keeping for fallback in buying only)
         this.lastJupiterRequest = 0;
         this.minRequestInterval = 500; // Minimum 500ms between requests
         
-        // Circuit breaker for Jupiter API
+        // Circuit breaker for Jupiter API (keeping for fallback in buying only)
         this.jupiterCircuitBreaker = {
             failureCount: 0,
             lastFailureTime: 0,
@@ -32,6 +40,126 @@ class TradingExecution {
             threshold: 5, // Open circuit after 5 failures
             timeout: 60000 // Close circuit after 1 minute
         };
+    }
+
+    /**
+     * Execute swap with fallback between Raydium and Jupiter
+     * @param {string} inputMint - Input token mint
+     * @param {string} outputMint - Output token mint
+     * @param {number} amount - Amount in smallest units
+     * @param {Object} wallet - Wallet keypair
+     * @param {number} slippageBps - Slippage in basis points
+     * @param {boolean} isSelling - Whether this is a sell operation
+     * @returns {Promise<Object>} Swap result
+     */
+    async executeSwapWithFallback(inputMint, outputMint, amount, wallet, slippageBps = 50, isSelling = false) {
+        // For selling operations, only use Raydium
+        if (isSelling) {
+            console.log(`[executeSwapWithFallback] Selling operation detected - using Raydium only`);
+            
+            // Get input token account for selling
+            let inputTokenAccount = null;
+            if (inputMint !== NATIVE_MINT.toString()) {
+                try {
+                    const tokenAccounts = await this.raydiumService.getTokenAccounts(wallet.publicKey);
+                    const inputAccount = tokenAccounts.find(acc => acc.mint === inputMint);
+                    
+                    if (inputAccount) {
+                        inputTokenAccount = inputAccount.address; // This is already a string
+                        console.log(`[executeSwapWithFallback] Found input token account for selling: ${inputTokenAccount} with balance ${inputAccount.uiAmount}`);
+                    } else {
+                        console.log(`[executeSwapWithFallback] No input token account found for ${inputMint} - this will likely fail`);
+                    }
+                } catch (error) {
+                    console.error(`[executeSwapWithFallback] Error getting token accounts for selling: ${error.message}`);
+                }
+            }
+            
+            const result = await this.raydiumService.executeSwap(
+                inputMint,
+                outputMint,
+                amount,
+                wallet,
+                slippageBps,
+                'h', // High priority
+                inputTokenAccount // Pass the input token account string for selling
+            );
+            
+            if (result.success) {
+                console.log(`[executeSwapWithFallback] Raydium sell swap successful`);
+                return {
+                    ...result,
+                    provider: 'raydium'
+                };
+            } else {
+                throw new Error(`Raydium sell failed: ${result.error || 'Unknown error'}`);
+            }
+        }
+        
+        // For buying operations, use the configured provider order
+        const providers = this.tradingProvider === 'raydium' ? ['raydium', 'jupiter'] : ['jupiter', 'raydium'];
+        
+        for (const provider of providers) {
+            try {
+                console.log(`[executeSwapWithFallback] Attempting swap with ${provider}`);
+                
+                if (provider === 'raydium') {
+                    const result = await this.raydiumService.executeSwap(
+                        inputMint,
+                        outputMint,
+                        amount,
+                        wallet,
+                        slippageBps,
+                        'h' // High priority
+                    );
+                    
+                    if (result.success) {
+                        console.log(`[executeSwapWithFallback] Raydium swap successful`);
+                        return {
+                            ...result,
+                            provider: 'raydium'
+                        };
+                    }
+                } else {
+                    // Jupiter fallback implementation (only for buying)
+                    const swapResult = await this.buildJupiterSwap(
+                        inputMint,
+                        outputMint,
+                        amount,
+                        wallet.publicKey,
+                        slippageBps / 100
+                    );
+                    
+                    if (swapResult) {
+                        const signature = await this.executeTransaction(wallet, swapResult.transaction);
+                        
+                        if (signature && typeof signature === 'string') {
+                            console.log(`[executeSwapWithFallback] Jupiter swap successful`);
+                            return {
+                                success: true,
+                                signatures: [signature],
+                                swapResponse: swapResult,
+                                priorityFee: swapResult.prioritizationFeeLamports || 0,
+                                transactionCount: 1,
+                                provider: 'jupiter'
+                            };
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error(`[executeSwapWithFallback] ${provider} failed:`, error.message);
+                
+                // If this is the last provider and fallback is disabled, throw the error
+                if (!this.enableFallback || provider === providers[providers.length - 1]) {
+                    throw new Error(`All swap providers failed. Last error from ${provider}: ${error.message}`);
+                }
+                
+                console.log(`[executeSwapWithFallback] Trying next provider...`);
+                continue;
+            }
+        }
+        
+        throw new Error('All swap providers failed');
     }
 
     setUserWallet(keypair) {
@@ -512,31 +640,22 @@ class TradingExecution {
             // Convert SOL amount to lamports
             const amountInLamports = Math.floor(solAmount * 1e9);
 
-            // Build Jupiter swap first to get accurate fee estimation
-            const swapResult = await this.buildJupiterSwap(
-                'So11111111111111111111111111111111111111112', // SOL mint
-                tokenAddress,
-                amountInLamports,
-                this.userWallet.publicKey,
-                0.5 // 0.5% slippage
-            );
-
-            // Check wallet balance after getting accurate fee estimation
+            // Check wallet balance first
             console.log(`[executeBuy] Checking balance for wallet: ${this.userWallet.publicKey.toString()}`);
             const balance = await this.connection.getBalance(this.userWallet.publicKey);
             const balanceInSol = balance / 1e9;
             console.log(`[executeBuy] Wallet balance: ${balanceInSol} SOL (${balance} lamports)`);
             console.log(`[executeBuy] RPC endpoint: ${this.connection._rpcEndpoint}`);
             
-            // Calculate actual fees from Jupiter response
-            const prioritizationFee = (swapResult.prioritizationFeeLamports || 0) / 1e9;
+            // Calculate fees with estimates first
+            const estimatedPriorityFee = 0.0005; // 0.0005 SOL default priority fee
             const estimatedNetworkFee = 0.000005; // Base network fee ~5000 lamports
             const botFee = solAmount * 0.01; // 1% bot fee
-            const totalFees = prioritizationFee + estimatedNetworkFee + botFee;
+            const totalFees = estimatedPriorityFee + estimatedNetworkFee + botFee;
             const requiredAmount = solAmount + totalFees;
             
-            console.log(`[executeBuy] Fee breakdown:`);
-            console.log(`  - Prioritization fee: ${prioritizationFee.toFixed(6)} SOL`);
+            console.log(`[executeBuy] Fee breakdown (estimated):`);
+            console.log(`  - Priority fee: ${estimatedPriorityFee.toFixed(6)} SOL`);
             console.log(`  - Estimated network fee: ${estimatedNetworkFee.toFixed(6)} SOL`);
             console.log(`  - Bot fee: ${botFee.toFixed(6)} SOL`);
             console.log(`  - Total fees: ${totalFees.toFixed(6)} SOL`);
@@ -547,44 +666,21 @@ class TradingExecution {
                 throw new Error(`Insufficient SOL balance. You have ${balanceInSol.toFixed(6)} SOL but need at least ${requiredAmount.toFixed(6)} SOL (including fees).`);
             }
 
-            // swapResult is already built above, no need to check again
+            // Execute the swap with fallback
+            const swapResult = await this.executeSwapWithFallback(
+                NATIVE_MINT.toString(), // SOL mint
+                tokenAddress,           // Target token mint
+                amountInLamports,      // Amount in lamports
+                this.userWallet,       // Wallet keypair
+                50                     // 0.5% slippage (50 basis points)
+            );
 
-            // Execute the transaction with retry mechanism
-            let signature;
-            let retryCount = 0;
-            const maxRetries = 3;
-            
-            while (retryCount < maxRetries) {
-                try {
-                    // Double-check balance before each retry
-                    if (retryCount > 0) {
-                        const retryBalance = await this.connection.getBalance(this.userWallet.publicKey);
-                        const retryBalanceInSol = retryBalance / 1e9;
-                        console.log(`[executeBuy] Retry ${retryCount}: Wallet balance: ${retryBalanceInSol} SOL`);
-                        
-                        if (retryBalanceInSol < requiredAmount) {
-                            throw new Error(`Insufficient SOL balance on retry. You have ${retryBalanceInSol.toFixed(6)} SOL but need at least ${requiredAmount.toFixed(6)} SOL.`);
-                        }
-                    }
-                    
-                    signature = await this.executeTransaction(this.userWallet, swapResult.transaction);
-                    break; // Success, exit retry loop
-                } catch (error) {
-                    retryCount++;
-                    console.log(`[executeBuy] Transaction attempt ${retryCount} failed: ${error.message}`);
-                    
-                    if (retryCount >= maxRetries) {
-                        throw error; // Re-throw the last error
-                    }
-                    
-                    // Wait before retry
-                    await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
-                }
+            if (!swapResult.success || !swapResult.signatures || swapResult.signatures.length === 0) {
+                throw new Error(`${swapResult.provider || 'Swap'} failed: No transaction signatures returned`);
             }
 
-            if (!signature) {
-                throw new Error('Failed to execute transaction after all retries');
-            }
+            // Use the first transaction signature as the main signature
+            const signature = swapResult.signatures[0];
 
             // Check if signature is an error object
             if (typeof signature === 'object' && signature.success === false) {
@@ -594,8 +690,9 @@ class TradingExecution {
             // Additional verification: Check if transaction was actually successful
             await this.verifyTransactionSuccess(signature, tokenAddress);
 
-            // Calculate fees (reuse botFee from earlier calculation)
-            const networkFee = (swapResult.prioritizationFeeLamports || 0) / 1e9; // Convert lamports to SOL
+            // Calculate actual fees from the swap result
+            const priorityFee = (swapResult.priorityFee || 500000) / 1e9; // Convert to SOL
+            const networkFee = estimatedNetworkFee; // Use estimated network fee
 
             // Deduct and transfer bot fee
             await this.feeManager.collectFee(botFee, this.userWallet);
@@ -653,56 +750,93 @@ class TradingExecution {
             const decimals = tokenInfo.decimals;
             const amountInTokenUnits = Math.floor(tokenAmount * Math.pow(10, decimals));
 
-            // Build Jupiter swap (Token -> SOL)
-            const swapResult = await this.buildJupiterSwap(
-                tokenAddress, // Input mint (token)
-                'So11111111111111111111111111111111111111112', // Output mint (SOL)
-                amountInTokenUnits,
-                keypair.publicKey,
-                slippageBps / 100 // Convert basis points to percentage
+            console.log(`[executeSell] Selling ${tokenAmount} ${tokenInfo.symbol} (${amountInTokenUnits} token units)`);
+
+            // Execute the swap with fallback (Token -> SOL) - mark as selling operation
+            const swapResult = await this.executeSwapWithFallback(
+                tokenAddress,                           // Input token mint
+                NATIVE_MINT.toString(),                // Output mint (SOL)
+                amountInTokenUnits,                    // Amount in token units
+                keypair,                               // Wallet keypair
+                slippageBps,                           // Slippage in basis points
+                true                                   // isSelling flag - forces Raydium only
             );
 
-            if (!swapResult) {
-                throw new Error('Failed to build sell swap transaction');
+            if (!swapResult.success || !swapResult.signatures || swapResult.signatures.length === 0) {
+                throw new Error(`${swapResult.provider || 'Swap'} sell failed: No transaction signatures returned`);
             }
 
-            // Execute the transaction
-            const signature = await this.executeTransaction(keypair, swapResult.transaction);
-
-            if (!signature) {
-                throw new Error('Failed to execute sell transaction');
-            }
+            // Use the first transaction signature as the main signature
+            const signature = swapResult.signatures[0];
 
             // Check if signature is an error object
             if (typeof signature === 'object' && signature.success === false) {
                 throw new Error(signature.error || 'Sell transaction failed');
             }
 
-            // Calculate received SOL and fees
-            const solReceived = swapResult.outAmount / 1e9; // Convert lamports to SOL
-            const botFee = solReceived * 0.01; // 1% bot fee
-            const networkFee = (swapResult.prioritizationFeeLamports || 0) / 1e9; // Convert lamports to SOL
+            // Calculate received SOL and fees from swap response - Enhanced calculation
+            let outAmount = 0;
+            let priceImpact = 0;
 
-            await this.feeManager.collectFee(botFee, keypair);
+            // Parse output amount from different response formats
+            if (swapResult.swapResponse?.data?.outputAmount) {
+                outAmount = parseInt(swapResult.swapResponse.data.outputAmount);
+                priceImpact = parseFloat(swapResult.swapResponse.data.priceImpactPct || '0');
+            } else if (swapResult.swapResponse?.data?.outAmount) {
+                outAmount = parseInt(swapResult.swapResponse.data.outAmount);
+                priceImpact = parseFloat(swapResult.swapResponse.data.priceImpact || '0');
+            } else if (swapResult.swapResponse?.outAmount) {
+                outAmount = parseInt(swapResult.swapResponse.outAmount);
+                priceImpact = parseFloat(swapResult.swapResponse.priceImpactPct || swapResult.swapResponse.priceImpact || '0');
+            } else {
+                console.warn('[executeSell] Could not parse output amount from swap response, using 0');
+                outAmount = 0;
+            }
+
+            const solReceived = outAmount / 1e9; // Convert lamports to SOL
+            const botFee = solReceived * 0.01; // 1% bot fee
+            const networkFee = (swapResult.priorityFee || 500000) / 1e9; // Convert to SOL
+
+            // Collect bot fee
+            try {
+                await this.feeManager.collectFee(botFee, keypair);
+                console.log(`[executeSell] Bot fee collected: ${botFee.toFixed(4)} SOL`);
+            } catch (feeError) {
+                console.warn(`[executeSell] Warning: Could not collect bot fee: ${feeError.message}`);
+            }
+
+            // Calculate token price (SOL per token)
+            const tokenPrice = amountInTokenUnits > 0 ? outAmount / amountInTokenUnits : 0;
+
+            console.log(`[executeSell] Sell completed successfully:
+                - Tokens sold: ${tokenAmount} ${tokenInfo.symbol}
+                - SOL received: ${solReceived.toFixed(4)} SOL
+                - Token price: ${tokenPrice.toFixed(8)} SOL per token
+                - Price impact: ${priceImpact.toFixed(2)}%
+                - Transaction: ${signature}`);
 
             return {
                 success: true,
                 signature,
                 tokensSold: tokenAmount,
                 solReceived,
-                tokenPrice: swapResult.outAmount / swapResult.inAmount,
-                solPrice: 1, // TODO: Get actual SOL price
+                tokenPrice,
+                solPrice: 1, // SOL is always 1 SOL
                 botFee,
                 networkFee,
                 name: tokenInfo.name,
                 symbol: tokenInfo.symbol,
-                priceImpact: swapResult.priceImpactPct
+                priceImpact: priceImpact,
+                provider: swapResult.provider || 'raydium',
+                transactionCount: swapResult.transactionCount || 1,
+                netSolReceived: solReceived - botFee - networkFee
             };
         } catch (error) {
             console.error('Error executing sell:', error);
             return {
                 success: false,
-                error: error.message
+                error: error.message,
+                provider: 'raydium'
             };
         }
     }

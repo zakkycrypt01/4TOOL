@@ -4,8 +4,12 @@ class PortfolioHandlers {
         this.db = db;
         this.config = config;
         this.fileExportService = require('../services/fileExportService');
+        this.walletHoldingsService = require('../services/walletHoldingsService');
         this.lastMessageIds = new Map();
         this.portfolioCache = new Map(); // { telegramId: { data, timestamp } }
+        
+        // Initialize wallet holdings service
+        this.holdingsService = new this.walletHoldingsService(config);
     }
 
     async handleViewPortfolio(chatId, telegramId) {
@@ -805,6 +809,324 @@ Portfolio rebalancing helps maintain your target allocation across different ass
         } catch (error) {
             console.error('Error in handlePortfolioRebalance:', error);
             await this.sendAndStoreMessage(chatId, 'Sorry, something went wrong while loading portfolio rebalancing.');
+        }
+    }
+
+    /**
+     * Enhanced portfolio view using the comprehensive wallet holdings service
+     */
+    async handleEnhancedViewPortfolio(chatId, telegramId) {
+        try {
+            const user = await this.db.getUserByTelegramId(telegramId);
+            const wallets = await this.db.getWalletsByUserId(user.id);
+
+            if (!wallets || wallets.length === 0) {
+                const message = `
+*No Wallets Found*
+
+Please create or import a wallet first to view your portfolio.`;
+                const keyboard = {
+                    inline_keyboard: [
+                        [
+                            { text: '👛 Create Wallet', callback_data: 'create_wallet' },
+                            { text: '📥 Import Wallet', callback_data: 'import_wallet' }
+                        ],
+                        [
+                            { text: '◀️ Back to Main Menu', callback_data: 'main_menu' }
+                        ]
+                    ]
+                };
+                await this.sendAndStoreMessage(chatId, message, {
+                    parse_mode: 'Markdown',
+                    reply_markup: keyboard
+                });
+                return;
+            }
+
+            // Show loading message
+            const loadingMsg = await this.sendAndStoreMessage(chatId, '🔍 Fetching comprehensive portfolio data...');
+
+            let totalPortfolioValue = 0;
+            let totalHoldings = 0;
+            const allWalletData = [];
+            const consolidatedHoldings = new Map();
+
+            // Process each wallet
+            for (const wallet of wallets) {
+                try {
+                    const holdings = await this.holdingsService.getAllHoldings(wallet.public_key);
+                    allWalletData.push({
+                        wallet: wallet,
+                        holdings: holdings
+                    });
+
+                    totalPortfolioValue += holdings.totalValue.usd || 0;
+                    totalHoldings += holdings.totalHoldings;
+
+                    // Consolidate holdings across wallets
+                    holdings.holdings.forEach(holding => {
+                        const key = holding.mint;
+                        if (consolidatedHoldings.has(key)) {
+                            const existing = consolidatedHoldings.get(key);
+                            existing.balance += holding.balance;
+                            existing.value.usd = (existing.value.usd || 0) + (holding.value.usd || 0);
+                            existing.value.formatted = existing.value.usd ? `$${existing.value.usd.toFixed(2)}` : null;
+                        } else {
+                            consolidatedHoldings.set(key, { ...holding });
+                        }
+                    });
+                } catch (error) {
+                    console.error(`Error fetching holdings for wallet ${wallet.public_key}:`, error.message);
+                    // Continue with other wallets
+                }
+            }
+
+            // Sort consolidated holdings by value
+            const sortedHoldings = Array.from(consolidatedHoldings.values())
+                .sort((a, b) => {
+                    if (a.value.usd && b.value.usd) {
+                        return b.value.usd - a.value.usd;
+                    } else if (a.value.usd) {
+                        return -1;
+                    } else if (b.value.usd) {
+                        return 1;
+                    } else {
+                        return b.balance - a.balance;
+                    }
+                });
+
+            // Build comprehensive portfolio message
+            let message = `*🏦 Enhanced Portfolio Summary*\n\n`;
+            message += `💰 *Total Value:* $${totalPortfolioValue.toFixed(2)}\n`;
+            message += `📊 *Total Holdings:* ${totalHoldings} tokens\n`;
+            message += `👛 *Wallets:* ${wallets.length}\n\n`;
+
+            // Show top holdings
+            message += `*🏆 Top Holdings:*\n`;
+            const topHoldings = sortedHoldings.slice(0, 10);
+            
+            topHoldings.forEach((holding, index) => {
+                const percentage = totalPortfolioValue > 0 ? 
+                    ((holding.value.usd || 0) / totalPortfolioValue * 100).toFixed(1) : '0.0';
+                const verifiedIcon = holding.metadata?.verified ? '✅' : '❌';
+                
+                message += `${index + 1}. ${verifiedIcon} *${holding.symbol}*\n`;
+                message += `   Balance: ${holding.balance.toFixed(6)}\n`;
+                message += `   Value: ${holding.value.formatted || 'N/A'} (${percentage}%)\n\n`;
+            });
+
+            // Portfolio analysis
+            if (sortedHoldings.length > 0) {
+                const analysis = this.analyzePortfolioRisk(sortedHoldings, totalPortfolioValue);
+                message += `*📈 Portfolio Analysis:*\n`;
+                message += `Risk Level: ${analysis.riskLevel}\n`;
+                message += `Diversification: ${analysis.diversificationLevel}\n`;
+                message += `Native SOL: ${analysis.solPercentage.toFixed(1)}%\n`;
+                message += `Stablecoins: ${analysis.stablecoinPercentage.toFixed(1)}%\n\n`;
+            }
+
+            // Wallet breakdown
+            if (allWalletData.length > 1) {
+                message += `*👛 Wallet Breakdown:*\n`;
+                allWalletData.forEach((walletData, index) => {
+                    const shortAddress = `${walletData.wallet.public_key.slice(0, 6)}...${walletData.wallet.public_key.slice(-4)}`;
+                    const walletValue = walletData.holdings.totalValue.formatted || '$0.00';
+                    message += `${index + 1}. ${shortAddress}: ${walletValue}\n`;
+                });
+                message += '\n';
+            }
+
+            const keyboard = {
+                inline_keyboard: [
+                    [
+                        { text: '📊 Detailed Analysis', callback_data: 'portfolio_detailed_analysis' },
+                        { text: '⚖️ Rebalance', callback_data: 'portfolio_rebalance' }
+                    ],
+                    [
+                        { text: '📄 Export Report', callback_data: 'export_portfolio' },
+                        { text: '🔄 Refresh', callback_data: 'enhanced_view_portfolio' }
+                    ],
+                    [
+                        { text: '◀️ Back to Portfolio', callback_data: 'view_portfolio' }
+                    ]
+                ]
+            };
+
+            // Delete loading message and send portfolio data
+            try {
+                await this.bot.deleteMessage(chatId, loadingMsg.message_id);
+            } catch (e) {
+                // Ignore delete errors
+            }
+
+            await this.sendAndStoreMessage(chatId, message, {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard
+            });
+
+        } catch (error) {
+            console.error('Error in handleEnhancedViewPortfolio:', error);
+            await this.sendAndStoreMessage(chatId, '❌ Error fetching enhanced portfolio data. Please try again.');
+        }
+    }
+
+    /**
+     * Analyze portfolio risk and diversification
+     */
+    analyzePortfolioRisk(holdings, totalValue) {
+        let riskScore = 0;
+        let solPercentage = 0;
+        let stablecoinPercentage = 0;
+        let verifiedPercentage = 0;
+
+        holdings.forEach(holding => {
+            const weight = totalValue > 0 ? (holding.value.usd || 0) / totalValue : 0;
+            
+            if (holding.isNative) {
+                solPercentage += weight * 100;
+                riskScore += weight * 0.3; // SOL is moderate risk
+            } else if (holding.tags?.includes('stablecoin')) {
+                stablecoinPercentage += weight * 100;
+                riskScore += weight * 0.1; // Stablecoins are low risk
+            } else if (holding.metadata?.verified) {
+                verifiedPercentage += weight * 100;
+                riskScore += weight * 0.5; // Verified tokens moderate risk
+            } else {
+                riskScore += weight * 0.9; // Unverified tokens high risk
+            }
+        });
+
+        // Calculate diversification score
+        const holdingsCount = holdings.length;
+        const largestHolding = Math.max(...holdings.map(h => 
+            totalValue > 0 ? ((h.value.usd || 0) / totalValue) * 100 : 0
+        ));
+
+        const diversificationScore = Math.min(holdingsCount / 10, 1) - (largestHolding / 100) * 0.5;
+
+        return {
+            riskScore: Math.round(riskScore * 100),
+            riskLevel: riskScore > 0.7 ? 'High 🔴' : riskScore > 0.4 ? 'Medium 🟡' : 'Low 🟢',
+            diversificationScore: Math.round(diversificationScore * 100),
+            diversificationLevel: diversificationScore > 0.7 ? 'Good 🟢' : diversificationScore > 0.4 ? 'Moderate 🟡' : 'Poor 🔴',
+            solPercentage,
+            stablecoinPercentage,
+            verifiedPercentage
+        };
+    }
+
+    /**
+     * Handle detailed portfolio analysis
+     */
+    async handleDetailedAnalysis(chatId, telegramId) {
+        try {
+            const user = await this.db.getUserByTelegramId(telegramId);
+            const wallets = await this.db.getWalletsByUserId(user.id);
+
+            if (!wallets || wallets.length === 0) {
+                await this.sendAndStoreMessage(chatId, '❌ No wallets found for analysis.');
+                return;
+            }
+
+            const loadingMsg = await this.sendAndStoreMessage(chatId, '🔍 Performing detailed portfolio analysis...');
+
+            let message = `*📊 Detailed Portfolio Analysis*\n\n`;
+
+            for (const wallet of wallets) {
+                try {
+                    const holdings = await this.holdingsService.getAllHoldings(wallet.public_key);
+                    const shortAddress = `${wallet.public_key.slice(0, 6)}...${wallet.public_key.slice(-4)}`;
+                    
+                    message += `*Wallet: ${shortAddress}*\n`;
+                    message += `Total Value: ${holdings.totalValue.formatted}\n`;
+                    message += `Holdings Count: ${holdings.totalHoldings}\n\n`;
+
+                    // Risk analysis for this wallet
+                    const analysis = this.analyzePortfolioRisk(holdings.holdings, holdings.totalValue.usd);
+                    message += `Risk Assessment:\n`;
+                    message += `• Risk Level: ${analysis.riskLevel}\n`;
+                    message += `• Diversification: ${analysis.diversificationLevel}\n`;
+                    message += `• SOL Allocation: ${analysis.solPercentage.toFixed(1)}%\n`;
+                    message += `• Stablecoin Allocation: ${analysis.stablecoinPercentage.toFixed(1)}%\n\n`;
+
+                    // Performance metrics
+                    const performanceMetrics = await this.calculatePerformanceMetrics(wallet.public_key);
+                    if (performanceMetrics) {
+                        message += `Performance (24h):\n`;
+                        message += `• P&L: ${performanceMetrics.pnl24h}\n`;
+                        message += `• Change: ${performanceMetrics.change24h}\n\n`;
+                    }
+
+                    message += '─────────────────────\n\n';
+
+                } catch (error) {
+                    console.error(`Error analyzing wallet ${wallet.public_key}:`, error.message);
+                    message += `❌ Error analyzing wallet ${wallet.public_key.slice(0, 8)}...\n\n`;
+                }
+            }
+
+            // Add recommendations
+            message += `*💡 Recommendations:*\n`;
+            message += `• Consider diversifying across more tokens if concentration is high\n`;
+            message += `• Maintain 10-20% in stablecoins for stability\n`;
+            message += `• Only invest in verified tokens for lower risk\n`;
+            message += `• Monitor token performance regularly\n`;
+
+            const keyboard = {
+                inline_keyboard: [
+                    [
+                        { text: '📄 Export Analysis', callback_data: 'export_analysis' },
+                        { text: '🔄 Refresh Analysis', callback_data: 'portfolio_detailed_analysis' }
+                    ],
+                    [
+                        { text: '◀️ Back to Portfolio', callback_data: 'enhanced_view_portfolio' }
+                    ]
+                ]
+            };
+
+            try {
+                await this.bot.deleteMessage(chatId, loadingMsg.message_id);
+            } catch (e) {
+                // Ignore delete errors
+            }
+
+            await this.sendAndStoreMessage(chatId, message, {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard
+            });
+
+        } catch (error) {
+            console.error('Error in handleDetailedAnalysis:', error);
+            await this.sendAndStoreMessage(chatId, '❌ Error performing detailed analysis. Please try again.');
+        }
+    }
+
+    /**
+     * Calculate performance metrics for a wallet
+     */
+    async calculatePerformanceMetrics(walletAddress) {
+        try {
+            // This would ideally fetch historical data
+            // For now, return mock data or implement based on your trade history
+            return {
+                pnl24h: '+$0.00',
+                change24h: '+0.00%'
+            };
+        } catch (error) {
+            console.error('Error calculating performance metrics:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Handle export analysis request
+     */
+    async handleExportAnalysis(chatId, telegramId) {
+        try {
+            await this.sendAndStoreMessage(chatId, '📄 Portfolio analysis export feature coming soon!');
+        } catch (error) {
+            console.error('Error in handleExportAnalysis:', error);
+            await this.sendAndStoreMessage(chatId, '❌ Error exporting analysis.');
         }
     }
 

@@ -2,6 +2,7 @@ const winston = require('winston');
 const DatabaseManager = require('../modules/database');
 const TokenDataService = require('./tokenDataService');
 const TradingService = require('./tradingService');
+const WalletHoldingsService = require('./walletHoldingsService');
 const solanaWeb3 = require('@solana/web3.js');
 const { Connection, PublicKey, LAMPORTS_PER_SOL, clusterApiUrl } = require('@solana/web3.js');
 const { TOKEN_PROGRAM_ID } = require('@solana/spl-token');
@@ -12,6 +13,7 @@ class PortfolioService {
         this.db = new DatabaseManager();
         this.tokenDataService = new TokenDataService(config);
         this.tradingService = new TradingService(config);
+        this.walletHoldingsService = new WalletHoldingsService(config);
         this.logger = winston.createLogger({
             level: 'info',
             format: winston.format.json(),
@@ -294,6 +296,47 @@ class PortfolioService {
 
     async getWalletBalance(walletAddress) {
         try {
+            // Use the new comprehensive wallet holdings service
+            const holdings = await this.walletHoldingsService.getAllHoldings(walletAddress);
+            
+            // Extract SOL balance
+            const solHolding = holdings.holdings.find(h => h.isNative);
+            const solBalance = solHolding ? solHolding.balance : 0;
+            
+            // Extract SPL tokens (exclude SOL)
+            const tokens = holdings.holdings
+                .filter(h => !h.isNative)
+                .map(h => ({
+                    mint: h.mint,
+                    address: h.tokenAccount || h.mint,
+                    amount: h.uiAmount,
+                    decimals: h.decimals,
+                    rawAmount: h.rawBalance,
+                    symbol: h.symbol,
+                    name: h.name,
+                    usdValue: h.value.usd,
+                    price: h.price.usd
+                }));
+
+            return {
+                lamports: solBalance * LAMPORTS_PER_SOL,
+                sol: solBalance,
+                tokens: tokens,
+                totalValue: holdings.totalValue.usd,
+                totalHoldings: holdings.totalHoldings,
+                enhanced: true // Flag to indicate this is using the enhanced service
+            };
+        } catch (error) {
+            this.logger.error('Error fetching enhanced wallet balance:', error);
+            
+            // Fallback to original method if enhanced service fails
+            return this.getWalletBalanceLegacy(walletAddress);
+        }
+    }
+
+    // Keep the original method as a fallback
+    async getWalletBalanceLegacy(walletAddress) {
+        try {
             if (!walletAddress || typeof walletAddress !== 'string') {
                 throw new Error('Invalid wallet address');
             }
@@ -339,6 +382,140 @@ class PortfolioService {
             this.logger.error('Error fetching wallet balance:', error);
             return { lamports: 0, sol: 0, tokens: [] };
         }
+    }
+
+    /**
+     * Get detailed portfolio analysis for a wallet
+     */
+    async getPortfolioAnalysis(walletAddress) {
+        try {
+            const holdings = await this.walletHoldingsService.getAllHoldings(walletAddress);
+            
+            // Calculate portfolio distribution
+            const distribution = this.calculatePortfolioDistribution(holdings.holdings);
+            
+            // Analyze risk profile
+            const riskProfile = this.analyzeRiskProfile(holdings.holdings);
+            
+            return {
+                ...holdings,
+                analysis: {
+                    distribution,
+                    riskProfile,
+                    recommendations: this.generateRecommendations(holdings.holdings, distribution, riskProfile)
+                }
+            };
+        } catch (error) {
+            this.logger.error('Error getting portfolio analysis:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Calculate portfolio distribution by categories
+     */
+    calculatePortfolioDistribution(holdings) {
+        const totalValue = holdings.reduce((sum, h) => sum + (h.value.usd || 0), 0);
+        
+        const distribution = {
+            native: 0,       // SOL
+            stablecoins: 0,  // USDC, USDT, etc.
+            verified: 0,     // Verified tokens
+            unverified: 0    // Unverified/new tokens
+        };
+
+        holdings.forEach(holding => {
+            const percentage = totalValue > 0 ? ((holding.value.usd || 0) / totalValue) * 100 : 0;
+            
+            if (holding.isNative) {
+                distribution.native += percentage;
+            } else if (holding.tags?.includes('stablecoin')) {
+                distribution.stablecoins += percentage;
+            } else if (holding.metadata?.verified) {
+                distribution.verified += percentage;
+            } else {
+                distribution.unverified += percentage;
+            }
+        });
+
+        return distribution;
+    }
+
+    /**
+     * Analyze portfolio risk profile
+     */
+    analyzeRiskProfile(holdings) {
+        const totalValue = holdings.reduce((sum, h) => sum + (h.value.usd || 0), 0);
+        
+        let riskScore = 0;
+        let diversificationScore = 0;
+        
+        // Calculate risk based on token distribution
+        holdings.forEach(holding => {
+            const weight = totalValue > 0 ? (holding.value.usd || 0) / totalValue : 0;
+            
+            // Risk factors
+            if (holding.isNative) {
+                riskScore += weight * 0.3; // SOL is relatively stable
+            } else if (holding.tags?.includes('stablecoin')) {
+                riskScore += weight * 0.1; // Stablecoins are low risk
+            } else if (holding.metadata?.verified) {
+                riskScore += weight * 0.5; // Verified tokens moderate risk
+            } else {
+                riskScore += weight * 0.9; // Unverified tokens high risk
+            }
+        });
+
+        // Calculate diversification (number of holdings vs concentration)
+        const holdingsCount = holdings.length;
+        const largestHolding = Math.max(...holdings.map(h => 
+            totalValue > 0 ? ((h.value.usd || 0) / totalValue) * 100 : 0
+        ));
+
+        diversificationScore = Math.min(holdingsCount / 10, 1) - (largestHolding / 100) * 0.5;
+
+        return {
+            riskScore: Math.round(riskScore * 100),
+            diversificationScore: Math.round(diversificationScore * 100),
+            riskLevel: riskScore > 0.7 ? 'High' : riskScore > 0.4 ? 'Medium' : 'Low',
+            diversificationLevel: diversificationScore > 0.7 ? 'Good' : diversificationScore > 0.4 ? 'Moderate' : 'Poor'
+        };
+    }
+
+    /**
+     * Generate portfolio recommendations
+     */
+    generateRecommendations(holdings, distribution, riskProfile) {
+        const recommendations = [];
+
+        // Diversification recommendations
+        if (riskProfile.diversificationScore < 50) {
+            recommendations.push({
+                type: 'diversification',
+                message: 'Consider diversifying your portfolio across more tokens',
+                priority: 'medium'
+            });
+        }
+
+        // Risk recommendations
+        if (riskProfile.riskScore > 70) {
+            recommendations.push({
+                type: 'risk',
+                message: 'High risk portfolio. Consider adding more stablecoins or verified tokens',
+                priority: 'high'
+            });
+        }
+
+        // Stablecoin recommendations
+        if (distribution.stablecoins < 10) {
+            recommendations.push({
+                type: 'stability',
+                message: 'Consider holding some stablecoins for portfolio stability',
+                priority: 'medium'
+            });
+        }
+
+        return recommendations;
     }
 }
 

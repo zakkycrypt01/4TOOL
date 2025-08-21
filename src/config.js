@@ -34,7 +34,18 @@ const config = {
         maxSlippage: 1, // 1%
         minLiquidity: 10000, // $10,000
         maxGasPrice: 100, // GWEI
-        defaultTimeout: 30000 // 30 seconds
+        defaultTimeout: 30000, // 30 seconds
+        // Trading provider: 'raydium' or 'jupiter'
+        tradingProvider: process.env.TRADING_PROVIDER || 'raydium',
+        // Enable fallback to other provider if primary fails
+        enableFallback: process.env.ENABLE_TRADING_FALLBACK !== 'false',
+        // Raydium specific settings
+        raydium: {
+            defaultSlippageBps: 50, // 0.5% (50 basis points)
+            priorityLevel: process.env.RAYDIUM_PRIORITY_LEVEL || 'h', // 'vh', 'h', 'm'
+            maxTransactionRetries: 3,
+            retryDelay: 1000 // 1 second
+        }
     },
     copyTrading: {
         pollInterval: 10000, // 10 seconds

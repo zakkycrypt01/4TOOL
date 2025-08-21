@@ -17,7 +17,23 @@ function formatSellConfirmation(orderData) {
     const liquidity = orderData.liquidity ? orderData.liquidity.toLocaleString() : 'Unknown';
     const volume24h = orderData.volume24h ? orderData.volume24h.toLocaleString() : 'Unknown';
     
-    return `🔍 Sell Order Confirmation\n\nToken: ${orderData.tokenName}\nAmount to Sell: ${orderData.amount} tokens (${orderData.displayAmount})\nEstimated SOL: ~${orderData.estimatedSOL} SOL\nPrice Impact: ${orderData.priceImpact}%\n\nCurrent Market Data:\n${orderData.marketData}\n\nImportant Warnings:\n1. Verify the token address carefully\n2. Check the price impact before proceeding\n3. Consider market conditions\n4. Transaction fees will be deducted\n\nAre you sure you want to proceed with this sell order?`;
+    return `🔍 Sell Order Confirmation
+
+Token: ${orderData.tokenName}
+Amount to Sell: ${orderData.amount} tokens (${orderData.displayAmount})
+💰 Estimated SOL: ~${orderData.estimatedSOL} SOL
+📊 Price Impact: ${orderData.priceImpact}%
+
+Current Market Data:
+${orderData.marketData}
+
+⚠️ Important Warnings:
+1. Verify the token address carefully
+2. Check the price impact before proceeding  
+3. Consider market conditions
+4. Transaction fees will be deducted
+
+Are you sure you want to proceed with this sell order?`;
 }
 
 function formatSellConfirmationMarkdownV2(orderData) {
@@ -322,21 +338,34 @@ Send the amount as a number (e.g., 100.5)`;
                     'sell'
                 );
 
+                // Get token info for display
+                const tokenInfo = result.symbol ? 
+                    { symbol: result.symbol, name: result.name } : 
+                    await this.tradingExecution.getTokenInfo(tokenAddress);
+
                 const successMessage = `
 *✅ Sell Order Executed Successfully!*
 
 *Transaction Details:*
-• Tokens Sold: ${amount.toFixed(6)} ${result.symbol}
-• SOL Received: ${result.solReceived.toFixed(4)} SOL
-• Price: ${result.tokenPrice.toFixed(8)} SOL per token
-• Bot Fee: ${result.botFee.toFixed(4)} SOL
-• Network Fee: ${result.networkFee.toFixed(6)} SOL
-• Price Impact: ${result.priceImpact.toFixed(2)}%
+• **Tokens Sold:** ${amount.toFixed(6)} ${tokenInfo.symbol || 'tokens'}
+• **SOL Received:** ${result.solReceived.toFixed(4)} SOL
+• **Token Price:** ${result.tokenPrice.toFixed(8)} SOL per token
+• **Price Impact:** ${result.priceImpact.toFixed(2)}%
 
-*Transaction Signature:*
-\`${result.signature}\`
+*Fees:*
+• **Bot Fee:** ${result.botFee.toFixed(4)} SOL
+• **Network Fee:** ${result.networkFee.toFixed(6)} SOL
 
-[View on Solscan](https://solscan.io/tx/${result.signature})`;
+*Transaction Info:*
+• **Signature:** \`${result.signature}\`
+• **Provider:** Raydium
+
+*Performance:*
+• **Net SOL Received:** ${(result.solReceived - result.botFee - result.networkFee).toFixed(4)} SOL
+
+[View on Solscan](https://solscan.io/tx/${result.signature})
+
+Thank you for using 4TOOL Trading Bot! 🚀`;
 
                 await this.safeSendMessage(chatId, successMessage, { parse_mode: 'Markdown' }, 3, telegramId);
 
@@ -398,20 +427,83 @@ Send the amount as a number (e.g., 100.5)`;
 
     async getTokenSellReport(tokenAddress, amount) {
         try {
+            // Get real SOL estimation using Raydium quote
+            const { NATIVE_MINT } = require('@solana/spl-token');
+            const tokenInfo = await this.tradingExecution.getTokenInfo(tokenAddress);
+            const decimals = tokenInfo.decimals;
+            const amountInTokenUnits = Math.floor(amount * Math.pow(10, decimals));
+
+            console.log(`[getTokenSellReport] Getting quote for ${amount} ${tokenInfo.symbol} (${amountInTokenUnits} units)`);
+
+            // Get swap quote from Raydium
+            const swapQuote = await this.tradingExecution.raydiumService.getSwapQuote(
+                tokenAddress,                    // Input token mint
+                NATIVE_MINT.toString(),         // Output mint (SOL)
+                amountInTokenUnits,             // Amount in token units
+                50,                             // 0.5% slippage
+                'V0'                           // Transaction version
+            );
+
+            let estimatedSOL = 0;
+            let priceImpact = 0;
+
+            if (swapQuote && swapQuote.data) {
+                // Parse the output amount from lamports to SOL
+                const outAmount = parseInt(swapQuote.data.outputAmount || swapQuote.data.outAmount || '0');
+                estimatedSOL = outAmount / 1e9; // Convert lamports to SOL
+                
+                // Get price impact if available
+                priceImpact = parseFloat(swapQuote.data.priceImpactPct || swapQuote.data.priceImpact || '0');
+            } else if (swapQuote && swapQuote.outAmount) {
+                // Handle alternative response format
+                const outAmount = parseInt(swapQuote.outAmount || '0');
+                estimatedSOL = outAmount / 1e9;
+                priceImpact = parseFloat(swapQuote.priceImpactPct || '0');
+            }
+
+            // Try to get additional market data
+            let marketData = 'Current market data';
+            let liquidity = 'Unknown';
+            let volume24h = 'Unknown';
+
+            try {
+                // Get token data from Jupiter or other sources if available
+                const axios = require('axios');
+                const response = await axios.get(`https://lite-api.jup.ag/tokens/v2/search?query=${tokenAddress}`, {
+                    timeout: 3000,
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (Array.isArray(response.data) && response.data.length > 0) {
+                    const tokenData = response.data[0];
+                    if (tokenData.usdPrice) {
+                        marketData = `Price: $${parseFloat(tokenData.usdPrice).toFixed(6)}`;
+                    }
+                }
+            } catch (marketError) {
+                console.log('[getTokenSellReport] Could not fetch additional market data:', marketError.message);
+            }
+
+            console.log(`[getTokenSellReport] Estimated SOL: ${estimatedSOL.toFixed(4)}, Price Impact: ${priceImpact.toFixed(2)}%`);
+
             return {
-                estimatedSOL: amount * 0.001, // Mock estimation
-                priceImpact: Math.random() * 5, // Mock price impact
-                marketData: 'Current market data unavailable',
-                liquidity: '$50,000',
-                volume24h: '$100,000',
-                priceTrend: 'Stable'
+                estimatedSOL: estimatedSOL,
+                priceImpact: priceImpact,
+                marketData: marketData,
+                liquidity: liquidity,
+                volume24h: volume24h,
+                priceTrend: 'Checking...'
             };
         } catch (error) {
             console.error('Error getting token sell report:', error);
+            
+            // Fallback to basic estimation if Raydium quote fails
+            const fallbackEstimation = amount * 0.001; // Basic fallback
+            
             return {
-                estimatedSOL: 0,
+                estimatedSOL: fallbackEstimation,
                 priceImpact: 0,
-                marketData: 'Market data unavailable',
+                marketData: 'Market data unavailable (using fallback estimation)',
                 liquidity: 'Unknown',
                 volume24h: 'Unknown',
                 priceTrend: 'Unknown'

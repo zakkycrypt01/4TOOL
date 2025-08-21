@@ -104,7 +104,8 @@ Please create or import a wallet to get started.`;
             const keyboard = {
                 inline_keyboard: [
                     [
-                        { text: '📊 Portfolio', callback_data: 'view_portfolio' }
+                        { text: '📊 Portfolio', callback_data: 'view_portfolio' },
+                        { text: '🔥 Enhanced Portfolio', callback_data: 'enhanced_view_portfolio' }
                     ],
                     [
                         { text: '⚡️ Trade', callback_data: 'trade' },
@@ -267,6 +268,9 @@ Select an action:
                 [
                     { text: '💰 Sell Token', callback_data: 'sell_token' },
                     { text: '📊 View Portfolio', callback_data: 'view_portfolio' }
+                ],
+                [
+                    { text: '🔥 Enhanced Portfolio', callback_data: 'enhanced_view_portfolio' }
                 ],
                 [
                     { text: '◀️ Back to Main Menu', callback_data: 'main_menu' }

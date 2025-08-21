@@ -274,6 +274,18 @@ class CallbackRouter {
                 return;
             }
 
+            // Handle enhanced view portfolio action
+            if (callbackData === 'enhanced_view_portfolio') {
+                await this.handlers.portfolioHandlers.handleEnhancedViewPortfolio(chatId, telegramId);
+                return;
+            }
+
+            // Handle detailed portfolio analysis action
+            if (callbackData === 'portfolio_detailed_analysis') {
+                await this.handlers.portfolioHandlers.handleDetailedAnalysis(chatId, telegramId);
+                return;
+            }
+
             // Handle refresh portfolio action
             if (callbackData === 'refresh_portfolio') {
                 await this.handlers.portfolioHandlers.handleRefreshPortfolio(chatId, telegramId);
@@ -289,6 +301,12 @@ class CallbackRouter {
             // Handle export portfolio action
             if (callbackData === 'export_portfolio') {
                 await this.handlers.portfolioHandlers.handleExportPortfolio(chatId, telegramId);
+                return;
+            }
+
+            // Handle export analysis action
+            if (callbackData === 'export_analysis') {
+                await this.handlers.portfolioHandlers.handleExportAnalysis(chatId, telegramId);
                 return;
             }
 
@@ -354,6 +372,7 @@ class CallbackRouter {
             // Handle trade actions (exclude rules-specific buy_amount callbacks)
             if (callbackData === 'trade' ||
                 callbackData === 'buy_token' ||
+                callbackData === 'retry_last_buy' ||
                 callbackData === 'sell_token' ||
                 callbackData === 'check_token' ||
                 callbackData === 'token_report' ||
