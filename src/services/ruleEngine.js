@@ -1,9 +1,11 @@
 const TokenDataService = require('./tokenDataService');
+const TradingExecution = require('../modules/tradingExecution');
 
 class RuleEngine {
     constructor(db, config) {
         this.db = db;
         this.tokenDataService = new TokenDataService(config);
+        this.tradingExecution = new TradingExecution(config);
         this.isAutonomousMode = false;
     }
 
@@ -29,8 +31,12 @@ class RuleEngine {
                 return { match: false };
             }
 
-            // Record rule trigger
-            await this.recordRuleTrigger(ruleId, tokenAddress, tokenData);
+            // Record rule trigger only if we have valid data
+            if (tokenAddress && tokenData) {
+                await this.recordRuleTrigger(ruleId, tokenAddress, tokenData);
+            } else {
+                console.warn(`Skipping rule history record for rule ${ruleId}: missing tokenAddress or tokenData`);
+            }
 
             return {
                 match: true,
@@ -41,6 +47,112 @@ class RuleEngine {
             console.error('Error evaluating rule:', error);
             throw error;
         }
+    }
+
+    /**
+     * Execute auto-sell based on rule evaluation
+     */
+    async executeAutoSell(ruleId, tokenAddress, userId, sellAmount = null) {
+        try {
+            // Get rule details
+            const rule = await this.getRule(ruleId);
+            if (!rule) {
+                throw new Error(`Rule ${ruleId} not found`);
+            }
+
+            // Get user's wallet
+            const activeWallet = await this.db.getActiveWallet(userId);
+            if (!activeWallet || !activeWallet.encrypted_private_key) {
+                throw new Error('No active wallet found for user');
+            }
+
+            // Get user's telegram ID for decryption
+            const user = await this.db.getUserByTelegramId(userId.toString());
+            if (!user || !user.telegram_id) {
+                throw new Error('User telegram ID not found');
+            }
+
+            // Decrypt private key
+            const BuyManager = require('../modules/buyManager');
+            const buyManager = new BuyManager(this.config, this.tradingExecution, this.db, null);
+            const decryptedKey = buyManager.decryptPrivateKey(activeWallet.encrypted_private_key, user.telegram_id.toString());
+            const secretKey = Buffer.from(decryptedKey, 'base64');
+            
+            if (secretKey.length !== 64) {
+                throw new Error('Invalid private key length');
+            }
+
+            const { Keypair } = require('@solana/web3.js');
+            const keypair = Keypair.fromSecretKey(secretKey);
+            this.tradingExecution.setUserWallet(keypair);
+
+            // If no specific sell amount, sell entire position
+            if (!sellAmount) {
+                // Get token balance
+                const tokenBalance = await this.tradingExecution.getTokenBalance(tokenAddress);
+                if (tokenBalance <= 0) {
+                    throw new Error('No tokens to sell');
+                }
+                sellAmount = tokenBalance;
+            }
+
+            // Execute sell
+            const sellResult = await this.tradingExecution.executeSell(userId, tokenAddress, sellAmount);
+            
+            if (sellResult.success) {
+                // Record successful sell
+                await this.recordAutoSellSuccess(ruleId, tokenAddress, userId, sellAmount, sellResult.signature);
+                
+                // Update rule stats
+                await this.updateRuleStats(ruleId, true);
+                
+                return {
+                    success: true,
+                    signature: sellResult.signature,
+                    amount: sellAmount,
+                    message: `Auto-sell executed successfully for ${tokenAddress}`
+                };
+            } else {
+                // Record failed sell
+                await this.recordAutoSellFailure(ruleId, tokenAddress, userId, sellAmount, sellResult.error);
+                
+                // Update rule stats
+                await this.updateRuleStats(ruleId, false);
+                
+                throw new Error(`Sell execution failed: ${sellResult.error}`);
+            }
+        } catch (error) {
+            console.error('Error executing auto-sell:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Record successful auto-sell
+     */
+    async recordAutoSellSuccess(ruleId, tokenAddress, userId, amount, signature) {
+        const stmt = this.db.db.prepare(`
+            INSERT INTO auto_sell_history (
+                rule_id, user_id, token_address, amount, signature, 
+                status, executed_at
+            ) VALUES (?, ?, ?, ?, ?, 'success', CURRENT_TIMESTAMP)
+        `);
+        
+        return stmt.run([ruleId, userId, tokenAddress, amount, signature]);
+    }
+
+    /**
+     * Record failed auto-sell
+     */
+    async recordAutoSellFailure(ruleId, tokenAddress, userId, amount, error) {
+        const stmt = this.db.db.prepare(`
+            INSERT INTO auto_sell_history (
+                rule_id, user_id, token_address, amount, error_message, 
+                status, executed_at
+            ) VALUES (?, ?, ?, ?, ?, 'failed', CURRENT_TIMESTAMP)
+        `);
+        
+        return stmt.run([ruleId, userId, tokenAddress, amount, error]);
     }
 
     async getRule(ruleId) {
@@ -199,6 +311,21 @@ class RuleEngine {
     }
 
     async recordRuleTrigger(ruleId, tokenAddress, tokenData) {
+        // Validate required parameters
+        if (!ruleId) {
+            throw new Error('Rule ID is required');
+        }
+        
+        if (!tokenAddress) {
+            console.warn('Token address is missing, skipping rule history record');
+            return null;
+        }
+        
+        if (!tokenData) {
+            console.warn('Token data is missing, skipping rule history record');
+            return null;
+        }
+
         const stmt = this.db.db.prepare(`
             INSERT INTO rule_history (
                 rule_id, token_address, token_name,
@@ -210,11 +337,11 @@ class RuleEngine {
         return stmt.run([
             ruleId,
             tokenAddress,
-            tokenData.name,
-            tokenData.price,
-            tokenData.volume,
-            tokenData.marketCap,
-            tokenData.liquidity,
+            tokenData.name || 'Unknown',
+            tokenData.price || 0,
+            tokenData.volume || 0,
+            tokenData.marketCap || 0,
+            tokenData.liquidity || 0,
             'triggered'
         ]);
     }

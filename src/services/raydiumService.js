@@ -91,6 +91,47 @@ class RaydiumService {
     }
 
     /**
+     * Enhanced error handling with exponential backoff and better fallbacks
+     */
+    handleRequestError(error) {
+        this.circuitBreaker.failureCount++;
+        this.circuitBreaker.lastFailureTime = Date.now();
+        
+        // Log detailed error information
+        console.error(`[Raydium] Request failed: ${error.message}`, {
+            error: error.message,
+            stack: error.stack,
+            failureCount: this.circuitBreaker.failureCount,
+            timestamp: new Date().toISOString()
+        });
+
+        // Circuit breaker logic
+        if (this.circuitBreaker.failureCount >= this.circuitBreaker.threshold) {
+            this.circuitBreaker.isOpen = true;
+            console.warn('[Raydium] Circuit breaker opened due to repeated failures');
+            
+            // Auto-reset after timeout
+            setTimeout(() => {
+                this.circuitBreaker.isOpen = false;
+                this.circuitBreaker.failureCount = 0;
+                console.info('[Raydium] Circuit breaker auto-reset after timeout');
+            }, this.circuitBreaker.timeout);
+        }
+    }
+
+    /**
+     * Check circuit breaker status
+     */
+    checkCircuitBreaker() {
+        if (this.circuitBreaker.isOpen) {
+            const timeSinceLastFailure = Date.now() - this.circuitBreaker.lastFailureTime;
+            if (timeSinceLastFailure < this.circuitBreaker.timeout) {
+                throw new Error('Raydium service temporarily unavailable due to repeated failures. Please try again in a few minutes.');
+            }
+        }
+    }
+
+    /**
      * Get swap quote from Raydium
      * @param {string} inputMint - Input token mint address
      * @param {string} outputMint - Output token mint address
@@ -643,18 +684,205 @@ class RaydiumService {
     }
 
     /**
-     * Handle request errors and circuit breaker
+     * Enhanced error handling with exponential backoff and better fallbacks
      */
     handleRequestError(error) {
         this.circuitBreaker.failureCount++;
         this.circuitBreaker.lastFailureTime = Date.now();
         
-        if (this.circuitBreaker.failureCount >= this.circuitBreaker.threshold) {
-            console.log('[Raydium] Circuit breaker opened due to high error rate');
+        // Log detailed error information
+        console.error(`[Raydium] Request failed: ${error.message}`, {
+            error: error.message,
+            stack: error.stack,
+            failureCount: this.circuitBreaker.failureCount,
+            timestamp: new Date().toISOString()
+        });
+
+        // Circuit breaker logic
+        if (this.circuitBreaker.failureCount >= 5) {
             this.circuitBreaker.isOpen = true;
+            console.warn('[Raydium] Circuit breaker opened due to repeated failures');
+            
+            // Auto-reset after 5 minutes
+            setTimeout(() => {
+                this.circuitBreaker.isOpen = false;
+                this.circuitBreaker.failureCount = 0;
+                console.info('[Raydium] Circuit breaker auto-reset after 5 minutes');
+            }, 5 * 60 * 1000);
         }
-        
-        console.error('[Raydium] Request failed:', error.message);
+    }
+
+    /**
+     * Get quote with improved error handling and fallbacks
+     */
+    async getQuote(inputMint, outputMint, amount, slippageBps = 100) {
+        // Check circuit breaker
+        if (this.circuitBreaker.isOpen) {
+            const timeSinceLastFailure = Date.now() - this.circuitBreaker.lastFailureTime;
+            if (timeSinceLastFailure < 5 * 60 * 1000) { // 5 minutes
+                throw new Error('Raydium service temporarily unavailable due to repeated failures. Please try again in a few minutes.');
+            }
+        }
+
+        // Validate inputs
+        if (!inputMint || typeof inputMint !== 'string') {
+            throw new Error(`Invalid input mint address: ${inputMint}`);
+        }
+        if (!outputMint || typeof outputMint !== 'string') {
+            throw new Error(`Invalid output mint address: ${outputMint}`);
+        }
+        if (inputMint === outputMint) {
+            throw new Error('Input and output mint addresses cannot be the same');
+        }
+        if (!amount || amount <= 0) {
+            throw new Error(`Invalid amount: ${amount}. Amount must be greater than 0`);
+        }
+        if (slippageBps < 0 || slippageBps > 5000) {
+            throw new Error(`Invalid slippage: ${slippageBps}. Slippage must be between 0 and 5000 basis points`);
+        }
+
+        // Multiple API endpoints with fallback
+        const approaches = [
+            {
+                description: 'Primary Raydium API',
+                url: 'https://api.raydium.io/v2/sdk/liquidity/mainnet/quote',
+                method: 'POST',
+                data: {
+                    inputMint,
+                    outputMint,
+                    amount: amount.toString(),
+                    slippage: slippageBps
+                }
+            },
+            {
+                description: 'Alternative Raydium API',
+                url: 'https://api.raydium.io/v2/sdk/liquidity/mainnet/quote',
+                method: 'POST',
+                data: {
+                    inputMint,
+                    outputMint,
+                    amount: amount.toString(),
+                    slippage: Math.min(slippageBps * 1.1, 5000) // Slightly higher slippage
+                }
+            },
+            {
+                description: 'Fallback with reduced requirements',
+                url: 'https://api.raydium.io/v2/sdk/liquidity/mainnet/quote',
+                method: 'POST',
+                data: {
+                    inputMint,
+                    outputMint,
+                    amount: (amount * 0.95).toString(), // Slightly reduced amount
+                    slippage: Math.min(slippageBps * 1.2, 5000)
+                }
+            }
+        ];
+
+        let lastError = null;
+        const axios = require('axios');
+
+        for (let i = 0; i < approaches.length; i++) {
+            const approach = approaches[i];
+            try {
+                console.log(`[Raydium] Trying ${approach.description} (attempt ${i + 1}/${approaches.length})`);
+                
+                const response = await axios({
+                    method: approach.method,
+                    url: approach.url,
+                    data: approach.data,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'Raydium-Trading-Bot/1.0'
+                    },
+                    timeout: 10000 // 10 second timeout
+                });
+
+                if (response.status !== 200) {
+                    throw new Error(`Raydium API error: ${response.status} - ${response.statusText}`);
+                }
+
+                const data = response.data;
+                if (!data) {
+                    throw new Error('Empty response from Raydium API');
+                }
+
+                // Check for error response
+                if (data.error || data.msg) {
+                    const errorMessage = data.msg || data.error || data.message || 'Unknown error from Raydium API';
+                    
+                    // If it's a version error, try next approach
+                    if (errorMessage.includes('TX_VERSION_ERROR') || errorMessage.includes('REQ_TX_VERSION_ERROR')) {
+                        console.log(`[Raydium] Approach failed (${approach.description}): ${errorMessage}, trying next...`);
+                        lastError = new Error(errorMessage);
+                        continue;
+                    }
+
+                    // Handle specific error cases
+                    if (errorMessage.includes('pool not found') || errorMessage.includes('no route') || errorMessage.includes('ROUTE_NOT_FOUND')) {
+                        throw new Error(`No trading pool found for this token pair on Raydium: ${inputMint} -> ${outputMint}`);
+                    }
+                    if (errorMessage.includes('insufficient liquidity')) {
+                        throw new Error(`Insufficient liquidity for this trade amount on Raydium`);
+                    }
+                    if (errorMessage.includes('REQ_TX_VERSION_ERROR')) {
+                        // This is a version compatibility issue, not a route issue
+                        console.log(`[Raydium] Version error: ${errorMessage}, will try next approach`);
+                        lastError = new Error(errorMessage);
+                        continue;
+                    }
+                    throw new Error(`Raydium API error: ${errorMessage}`);
+                }
+
+                // Validate quote response
+                if (!data.outAmount || data.outAmount === '0') {
+                    throw new Error(`Invalid quote response structure from Raydium. Response: ${JSON.stringify(data)}`);
+                }
+
+                // Additional validation
+                if (!data.outAmount || parseFloat(data.outAmount) <= 0) {
+                    throw new Error('Invalid quote: output amount is zero or missing');
+                }
+
+                // Success - reset circuit breaker
+                this.circuitBreaker.failureCount = 0;
+                this.circuitBreaker.isOpen = false;
+
+                return {
+                    inputMint,
+                    outputMint,
+                    inAmount: amount.toString(),
+                    outAmount: data.outAmount,
+                    priceImpact: data.priceImpact || 0,
+                    fee: data.fee || 0,
+                    otherAmountThreshold: data.otherAmountThreshold || data.outAmount,
+                    swapMode: data.swapMode || 'ExactIn'
+                };
+
+            } catch (error) {
+                lastError = error;
+                                    console.log(`[Raydium] Failed ${approach.description}: ${error.message}`);
+                
+                // If it's a version error, continue to next approach
+                if (error.message.includes('TX_VERSION_ERROR') || error.message.includes('REQ_TX_VERSION_ERROR')) {
+                    continue;
+                }
+
+                // For other errors, wait a bit before trying next approach
+                if (i < approaches.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Progressive delay
+                }
+            }
+        }
+
+        // If all approaches failed, handle the error
+        if (lastError) {
+            this.handleRequestError(lastError);
+            throw lastError;
+        } else {
+            const fallbackError = new Error('All quote approaches failed with unknown errors');
+            this.handleRequestError(fallbackError);
+            throw fallbackError;
+        }
     }
 }
 

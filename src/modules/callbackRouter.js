@@ -104,6 +104,7 @@ class CallbackRouter {
                 callbackData.startsWith('set_condition_') ||
                 callbackData === 'confirm_rule' ||
                 callbackData === 'confirm_rule_final' ||
+                callbackData === 'strategy_validation_error' ||
                 callbackData === 'mcap_select' ||
                 callbackData === 'price_select' ||
                 callbackData === 'liquidity_select' ||

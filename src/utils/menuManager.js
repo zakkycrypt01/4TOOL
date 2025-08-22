@@ -105,7 +105,6 @@ Please create or import a wallet to get started.`;
                 inline_keyboard: [
                     [
                         { text: '📊 Portfolio', callback_data: 'view_portfolio' },
-                        { text: '🔥 Enhanced Portfolio', callback_data: 'enhanced_view_portfolio' }
                     ],
                     [
                         { text: '⚡️ Trade', callback_data: 'trade' },

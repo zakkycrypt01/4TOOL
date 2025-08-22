@@ -87,16 +87,34 @@ class ManualManagementService {
             
             for (const user of users) {
                 const rules = await this.db.getRulesByUserId(user.id);
-                const manualRules = rules.filter(rule => 
-                    rule.type === 'manual_management' && rule.is_active === 1);
+                
+                // Filter for both manual_management rules and autonomous_strategy rules with management conditions
+                const rulesWithManagement = [];
+                
+                for (const rule of rules) {
+                    if (!rule.is_active) continue;
+                    
+                    if (rule.type === 'manual_management') {
+                        rulesWithManagement.push(rule);
+                    } else if (rule.type === 'autonomous_strategy') {
+                        // Check if this autonomous rule has management conditions
+                        const conditions = await this.db.getRuleConditions(rule.id);
+                        const hasManagement = conditions.some(c => 
+                            c.condition_type.startsWith('management_'));
+                        
+                        if (hasManagement) {
+                            rulesWithManagement.push(rule);
+                        }
+                    }
+                }
 
-                this.logger.info(`User ${user.id}: Found ${manualRules.length} active manual management rules`);
+                this.logger.info(`User ${user.id}: Found ${rulesWithManagement.length} active rules with management conditions`);
 
-                for (const rule of manualRules) {
+                for (const rule of rulesWithManagement) {
                     const conditions = await this.db.getRuleConditions(rule.id);
                     const manualConditions = this.parseManualConditions(conditions);
                     
-                    this.logger.info(`Rule ${rule.id}: Parsed conditions:`, manualConditions);
+                    this.logger.info(`Rule ${rule.id} (${rule.type}): Parsed conditions:`, manualConditions);
                     
                     if (manualConditions) {
                         const activeWallet = await this.db.getActiveWallet(user.id);
@@ -128,7 +146,7 @@ class ManualManagementService {
             const stmt = this.db.db.prepare(`
                 SELECT DISTINCT u.* FROM users u 
                 INNER JOIN wallets w ON u.id = w.user_id 
-                WHERE w.is_active = 1   `);
+                WHERE w.is_active = 1`);
             return stmt.all();
         } catch (error) {
             this.logger.error('Error getting all users:', error);
@@ -148,12 +166,15 @@ class ManualManagementService {
                 
                 switch (condition.condition_type) {
                     case 'manual_take_profit':
+                    case 'management_take_profit':
                         manualConditions.takeProfit = value.percentage;
                         break;
                     case 'manual_stop_loss':
+                    case 'management_stop_loss':
                         manualConditions.stopLoss = value.percentage;
                         break;
                     case 'manual_trailing_stop':
+                    case 'management_trailing_stop':
                         manualConditions.trailingStop = value.percentage;
                         break;
                 }
@@ -170,19 +191,60 @@ class ManualManagementService {
      */
     async addTokensToMonitoring(userId, ruleId, walletAddress, conditions) {
         try {
-            // Get users token holdings
-            const PortfolioService = require('./portfolioService');
-            const portfolioService = new PortfolioService(this.config);
-            const walletBalance = await portfolioService.getWalletBalance(walletAddress);
+            this.logger.info(`Adding tokens to monitoring for user ${userId}, wallet ${walletAddress}`);
+            
+            // Try to get wallet tokens using multiple methods
+            let tokens = [];
+            
+            // Method 1: Try portfolio service
+            try {
+                const PortfolioService = require('./portfolioService');
+                const portfolioService = new PortfolioService(this.config);
+                const walletBalance = await portfolioService.getWalletBalance(walletAddress);
+                if (walletBalance && walletBalance.tokens) {
+                    tokens = walletBalance.tokens.filter(token => token.amount > 0);
+                    this.logger.info(`Portfolio service found ${tokens.length} tokens`);
+                }
+            } catch (error) {
+                this.logger.warn('Portfolio service failed, trying DexScreener API:', error.message);
+            }
+
+            // Method 2: Try DexScreener API for wallet tracking
+            if (tokens.length === 0) {
+                try {
+                    tokens = await this.getWalletTokensFromDexScreener(walletAddress);
+                    this.logger.info(`DexScreener API found ${tokens.length} tokens`);
+                } catch (error) {
+                    this.logger.warn('DexScreener API failed:', error.message);
+                }
+            }
+
+            // Method 3: Check for buy trades in database as fallback
+            if (tokens.length === 0) {
+                try {
+                    tokens = await this.getTokensFromTrades(userId);
+                    this.logger.info(`Database trades found ${tokens.length} tokens`);
+                } catch (error) {
+                    this.logger.warn('Database trades lookup failed:', error.message);
+                }
+            }
+
+            if (tokens.length === 0) {
+                this.logger.warn(`No tokens found for user ${userId}, wallet ${walletAddress}`);
+                return;
+            }
 
             // Monitor all tokens with balance >0
-            for (const token of walletBalance.tokens) {
+            for (const token of tokens) {
                 if (token.amount > 0) {
                     // --- Prevent monitoring of already sold tokens ---
-                    if (await this.isTokenSold(userId, token.mint)) {
-                        this.logger.info(`Token ${token.mint} already sold for user ${userId}, skipping monitoring.`);
+                    if (await this.isTokenSold(userId, token.mint || token.address)) {
+                        this.logger.info(`Token ${token.mint || token.address} already sold for user ${userId}, skipping monitoring.`);
                         continue;
                     }
+                    
+                    const tokenAddress = token.mint || token.address;
+                    
                     // Always fetch the most recent buy trade for this token and user
                     let buyPrice = null;
                     try {
@@ -191,40 +253,51 @@ class ManualManagementService {
                             WHERE user_id = ? AND token_address = ? AND side = 'buy'
                             ORDER BY timestamp DESC LIMIT 1
                         `);
-                        const lastBuy = stmt.get(userId, token.mint);
+                        const lastBuy = stmt.get(userId, tokenAddress);
                         if (lastBuy && lastBuy.price) {
                             buyPrice = lastBuy.price;
                         }
                     } catch (e) {
-                        this.logger.error(`Error fetching last buy price for ${token.mint}:`, e);
+                        this.logger.error(`Error fetching last buy price for ${tokenAddress}:`, e);
                     }
 
-                    // Always fetch the current price from the API
-                    const TokenDataService = require('./tokenDataService');
-                    const tokenDataService = new TokenDataService(this.config);
-                    const tokenData = await tokenDataService.getTokenData(token.mint);
+                    // Always fetch the current price from DexScreener API
+                    let currentPrice = null;
+                    try {
+                        currentPrice = await this.getCurrentPriceFromDexScreener(tokenAddress);
+                        if (!currentPrice) {
+                            // Fallback to TokenDataService
+                            const TokenDataService = require('./tokenDataService');
+                            const tokenDataService = new TokenDataService(this.config);
+                            const tokenData = await tokenDataService.getTokenData(tokenAddress);
+                            currentPrice = tokenData?.price;
+                        }
+                    } catch (error) {
+                        this.logger.warn(`Error getting current price for ${tokenAddress}:`, error.message);
+                    }
 
                     // Fallback: if no buy trade found, use current price (warn)
-                    if (!buyPrice && tokenData && tokenData.price) {
-                        buyPrice = tokenData.price;
-                        this.logger.warn(`No buy trade found for ${token.mint}, using current price (${buyPrice}) as buy price fallback`);
+                    if (!buyPrice && currentPrice) {
+                        buyPrice = currentPrice;
+                        this.logger.warn(`No buy trade found for ${tokenAddress}, using current price (${buyPrice}) as buy price fallback`);
                     }
 
                     // Only monitor if we have a buy price (from trade or fallback)
-                    if (buyPrice && tokenData && tokenData.price) {
-                        this.monitoredTokens.set(token.mint, {
+                    if (buyPrice && currentPrice) {
+                        this.monitoredTokens.set(tokenAddress, {
                             userId,
                             ruleId,
                             walletAddress,
                             conditions,
                             buyPrice, // from trade or fallback
-                            highestPrice: buyPrice,
+                            highestPrice: Math.max(buyPrice, currentPrice),
                             tokenAmount: token.amount,
-                            lastChecked: Date.now()
+                            lastChecked: Date.now(),
+                            symbol: token.symbol || 'UNKNOWN'
                         });
-                        this.logger.info(`Added token ${token.mint} to manual management monitoring (buy price: ${buyPrice}, current price: ${tokenData.price})`);
+                        this.logger.info(`Added token ${tokenAddress} (${token.symbol || 'UNKNOWN'}) to manual management monitoring (buy: ${buyPrice}, current: ${currentPrice})`);
                     } else {
-                        this.logger.warn(`Skipping token ${token.mint}: missing buy price and/or current price from API`);
+                        this.logger.warn(`Skipping token ${tokenAddress}: missing buy price and/or current price`);
                     }
                     // Throttle API calls to avoid rate limits
                     await sleep(200);
@@ -257,16 +330,31 @@ class ManualManagementService {
                 }
                 this.logger.info(`Checking token ${tokenAddress} with conditions:`, tokenData.conditions);
 
-                // Get current token price (force refresh from API)
-                const TokenDataService = require('./tokenDataService');
-                const tokenDataService = new TokenDataService(this.config);
-                const currentTokenData = await tokenDataService.getTokenData(tokenAddress, true);
-                if (!currentTokenData || !currentTokenData.price) {
-                    this.logger.warn(`No price data available for token ${tokenAddress}`);
+                // Get current token price using DexScreener API first, then fallback
+                let currentPrice = null;
+                try {
+                    currentPrice = await this.getCurrentPriceFromDexScreener(tokenAddress);
+                } catch (error) {
+                    this.logger.warn(`DexScreener API failed for ${tokenAddress}, trying TokenDataService:`, error.message);
+                }
+
+                // Fallback to TokenDataService if DexScreener fails
+                if (!currentPrice) {
+                    try {
+                        const TokenDataService = require('./tokenDataService');
+                        const tokenDataService = new TokenDataService(this.config);
+                        const currentTokenData = await tokenDataService.getTokenData(tokenAddress, true);
+                        currentPrice = currentTokenData?.price;
+                    } catch (error) {
+                        this.logger.warn(`TokenDataService also failed for ${tokenAddress}:`, error.message);
+                    }
+                }
+
+                if (!currentPrice) {
+                    this.logger.warn(`No price data available for token ${tokenAddress} from any source`);
                     continue;
                 }
 
-                const currentPrice = currentTokenData.price;
                 const buyPrice = tokenData.buyPrice;
                 const priceChange = ((currentPrice - buyPrice) / buyPrice) * 100;
 
@@ -634,6 +722,95 @@ ${sellData.conditions.trailingStop ? `• Trailing Stop: ${sellData.conditions.t
             monitoredTokensCount: this.monitoredTokens.size,
             monitoredTokens: Array.from(this.monitoredTokens.keys())
         };
+    }
+
+    /**
+     * Get wallet tokens from DexScreener API
+     */
+    async getWalletTokensFromDexScreener(walletAddress) {
+        try {
+            // DexScreener doesn't have a direct wallet endpoint, so we'll use a different approach
+            // We'll check for recent buy trades and then get current prices
+            this.logger.info(`Getting tokens for wallet ${walletAddress} from database trades`);
+            return await this.getTokensFromTrades(null, walletAddress);
+        } catch (error) {
+            this.logger.error('Error getting wallet tokens from DexScreener:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Get tokens from database trades
+     */
+    async getTokensFromTrades(userId, walletAddress = null) {
+        try {
+            let query = `
+                SELECT DISTINCT 
+                    token_address as address,
+                    token_address as mint,
+                    SUM(CASE WHEN side = 'buy' THEN amount ELSE -amount END) as amount,
+                    'UNKNOWN' as symbol
+                FROM trades 
+                WHERE 1=1
+            `;
+            const params = [];
+            
+            if (userId) {
+                query += ' AND user_id = ?';
+                params.push(userId);
+            }
+            
+            query += `
+                GROUP BY token_address 
+                HAVING amount > 0
+                ORDER BY MAX(timestamp) DESC
+            `;
+            
+            const stmt = this.db.db.prepare(query);
+            const results = stmt.all(...params);
+            
+            // Convert to expected format
+            return results.map(row => ({
+                address: row.address,
+                mint: row.mint,
+                amount: row.amount,
+                symbol: row.symbol
+            }));
+        } catch (error) {
+            this.logger.error('Error getting tokens from trades:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Get current price from DexScreener API
+     */
+    async getCurrentPriceFromDexScreener(tokenAddress) {
+        try {
+            const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
+            if (!response.ok) {
+                throw new Error(`DexScreener API responded with status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.pairs && data.pairs.length > 0) {
+                // Sort by volume and get the most liquid pair
+                const sortedPairs = data.pairs.sort((a, b) => (b.volume?.h24 || 0) - (a.volume?.h24 || 0));
+                const bestPair = sortedPairs[0];
+                
+                if (bestPair.priceUsd) {
+                    this.logger.debug(`DexScreener price for ${tokenAddress}: $${bestPair.priceUsd}`);
+                    return parseFloat(bestPair.priceUsd);
+                }
+            }
+            
+            this.logger.warn(`No price data found on DexScreener for token ${tokenAddress}`);
+            return null;
+        } catch (error) {
+            this.logger.error(`Error fetching price from DexScreener for ${tokenAddress}:`, error);
+            return null;
+        }
     }
 }
 

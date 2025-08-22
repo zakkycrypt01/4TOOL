@@ -19,6 +19,12 @@ class AutonomousTrading {
         this.monitoringInterval = null;
         this.activePositions = new Map();
         this.currentUserId = null; // Track the current user
+        
+        // Rate limiting for autonomous mode
+        this.HOURLY_BUY_LIMIT = 5;
+        this.HOUR_IN_MS = 60 * 60 * 1000;
+        this.buyRateLimit = new Map();
+        
         this.logger = winston.createLogger({
             level: 'info',
             format: winston.format.json(),
@@ -27,6 +33,61 @@ class AutonomousTrading {
                 new winston.transports.File({ filename: 'combined.log' })
             ]
         });
+    }
+
+    /**
+     * Check if user can make another buy in autonomous mode
+     */
+    canUserBuy(userId) {
+        const now = Date.now();
+        const userAttempts = this.buyRateLimit.get(userId) || [];
+        
+        // Filter out attempts older than 1 hour
+        const recentAttempts = userAttempts.filter(timestamp => 
+            now - timestamp < this.HOUR_IN_MS
+        );
+        
+        // Update the map with filtered attempts
+        if (recentAttempts.length > 0) {
+            this.buyRateLimit.set(userId, recentAttempts);
+        } else {
+            this.buyRateLimit.delete(userId);
+        }
+        
+        return recentAttempts.length < this.HOURLY_BUY_LIMIT;
+    }
+
+    /**
+     * Record a buy attempt for rate limiting
+     */
+    recordBuyAttempt(userId) {
+        const now = Date.now();
+        const userAttempts = this.buyRateLimit.get(userId) || [];
+        userAttempts.push(now);
+        this.buyRateLimit.set(userId, userAttempts);
+    }
+
+    /**
+     * Get remaining buys for a user
+     */
+    getRemainingBuys(userId) {
+        const now = Date.now();
+        const userAttempts = this.buyRateLimit.get(userId) || [];
+        const recentAttempts = userAttempts.filter(timestamp => 
+            now - timestamp < this.HOUR_IN_MS
+        );
+        return Math.max(0, this.HOURLY_BUY_LIMIT - recentAttempts.length);
+    }
+
+    /**
+     * Get next buy time for a user
+     */
+    getNextBuyTime(userId) {
+        const userAttempts = this.buyRateLimit.get(userId) || [];
+        if (userAttempts.length === 0) return null;
+        
+        const oldestAttempt = Math.min(...userAttempts);
+        return new Date(oldestAttempt + this.HOUR_IN_MS);
     }
 
     /**
@@ -140,6 +201,26 @@ class AutonomousTrading {
                         }
                         // --- AUTOBUY LOGIC ---
                         try {
+                            // Check rate limiting for autonomous mode
+                            if (!this.canUserBuy(user.id)) {
+                                const nextBuyTime = this.getNextBuyTime(user.id);
+                                const remainingBuys = this.getRemainingBuys(user.id);
+                                this.logger.warn(`Rate limit reached for user ${user.id}. Next buy available at: ${nextBuyTime}`);
+                                
+                                try {
+                                    await this.telegramBot.sendMessage(user.telegram_id, 
+                                        `⏰ *Rate Limit Reached*\n\n` +
+                                        `You've reached the limit of 5 tokens per hour in autonomous mode.\n` +
+                                        `Next buy available: ${nextBuyTime.toLocaleTimeString()}\n` +
+                                        `Remaining buys this hour: ${remainingBuys}`, 
+                                        { parse_mode: 'Markdown' }
+                                    );
+                                } catch (notifyErr) {
+                                    this.logger.error(`Failed to send rate limit notification:`, notifyErr);
+                                }
+                                continue;
+                            }
+
                             const activeWallet = await this.db.getActiveWallet(user.id);
                             if (!activeWallet || !activeWallet.encrypted_private_key) {
                                 this.logger.warn(`No active wallet for user ${user.id}, skipping autobuy.`);
@@ -181,13 +262,26 @@ class AutonomousTrading {
                             // --- END ADDRESS EXTRACTION ---
                             const buyResult = await this.tradingExecution.executeBuy(user.id, tokenAddress, autobuyAmount);
                             if (buyResult.success) {
+                                // Record the buy attempt for rate limiting
+                                this.recordBuyAttempt(user.id);
+                                
                                 // Additional verification for autonomous trading
                                 await this.verifyAutonomousBuySuccess(buyResult.signature, tokenAddress, user.id);
                                 
                                 this.logger.info(`Autobuy successful for user ${user.id}: ${tokenAddress}`);
+                                
+                                // Get remaining buys for user notification
+                                const remainingBuys = this.getRemainingBuys(user.id);
+                                
                                 // Notify user via Telegram
                                 try {
-                                    await this.telegramBot.sendMessage(user.telegram_id, `✅ *Autobuy Success!*\nToken: ${tokenAddress}\nAmount: ${autobuyAmount} SOL`, { parse_mode: 'Markdown' });
+                                    await this.telegramBot.sendMessage(user.telegram_id, 
+                                        `✅ *Autobuy Success!*\n` +
+                                        `Token: ${tokenAddress}\n` +
+                                        `Amount: ${autobuyAmount} SOL\n\n` +
+                                        `📊 Rate Limit: ${remainingBuys} buys remaining this hour`, 
+                                        { parse_mode: 'Markdown' }
+                                    );
                                 } catch (notifyErr) {
                                     this.logger.error(`Failed to send autobuy success notification:`, notifyErr);
                                     if (notifyErr && notifyErr.response) {

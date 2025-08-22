@@ -430,6 +430,12 @@ class RulesCommand {
                 return;
             }
 
+            // Handle strategy validation error
+            if (action === 'strategy_validation_error') {
+                await this.handleStrategyValidationError(ctx);
+                return;
+            }
+
             // Handle navigation
             if (action === 'main_menu') {
                 await this.handleRulesCommand(ctx);
@@ -3868,6 +3874,14 @@ Your rule creation progress has been cleared. You can now start creating a new r
             errors.push('Autonomous strategy must have at least one discovery rule or one management rule');
         }
 
+        // REQUIRED: Take Profit and Stop Loss for autonomous strategies
+        if (!ruleData.takeProfit) {
+            errors.push('Take Profit is required for autonomous strategies to secure profits');
+        }
+        if (!ruleData.stopLoss) {
+            errors.push('Stop Loss is required for autonomous strategies to limit losses');
+        }
+
         // Validate specific rule types
         if (ruleData.marketCap) this.validateRangeValue(ruleData.marketCap, 'Market cap', errors);
         if (ruleData.price) this.validateRangeValue(ruleData.price, 'Price', errors);
@@ -5497,6 +5511,42 @@ Examples:
         }
     }
 
+    // Strategy Validation Handler
+    async handleStrategyValidationError(ctx) {
+        const chatId = ctx.chat.id;
+        const userId = ctx.from.id.toString();
+        
+        const message = `
+*⚠️ Strategy Validation Error*
+
+**Required Management Rules Missing**
+
+Autonomous strategies require both Take Profit and Stop Loss settings to ensure safe trading.
+
+**Why these are required:**
+💰 **Take Profit** - Locks in gains when target is reached
+🛑 **Stop Loss** - Limits losses when trade goes against you
+
+Please configure both management rules before creating your strategy.`;
+
+        const keyboard = {
+            inline_keyboard: [
+                [
+                    { text: '💰 Configure Take Profit', callback_data: 'take_profit_select' },
+                    { text: '🛑 Configure Stop Loss', callback_data: 'stop_loss_select' }
+                ],
+                [
+                    { text: '◀️ Back to Strategy', callback_data: 'autonomous_create_strategy' }
+                ]
+            ]
+        };
+
+        await this.sendMessage(chatId, message, {
+            parse_mode: 'Markdown',
+            reply_markup: keyboard
+        });
+    }
+
     // Trading Mode Selection Handlers
     async handleTradingModeSelection(ctx, mode) {
         const chatId = ctx.chat.id;
@@ -5615,6 +5665,12 @@ Please enter a name for your manual management rules:
         // Get current selections
         const selections = this.getCurrentSelections(userState.data);
         
+        // Check if required management rules are configured
+        const hasRequiredManagement = userState.data.takeProfit && userState.data.stopLoss;
+        const managementStatus = hasRequiredManagement ? 
+            '✅ **Management Rules Complete**' : 
+            '⚠️ **Management Rules Required** (Take Profit & Stop Loss)';
+        
         const message = `
 *🤖 Configure Autonomous Strategy*
 
@@ -5627,9 +5683,12 @@ Choose criteria to find tokens to buy:
 - Volume Spike, Dip Buy, Price/Volume Change
 
 *🟩 Management Rules (Exit Strategy):*
-Define how to exit positions:
-- Take Profit, Stop Loss, Trailing Stop
-- Momentum, Volatility indicators
+${managementStatus}
+**Required:** Take Profit & Stop Loss
+**Optional:** Trailing Stop, Momentum, Volatility
+
+*⚡ Buy Amount:*
+Configure trade size per transaction
 
 Choose an option to configure:`;
 
@@ -5651,10 +5710,10 @@ Choose an option to configure:`;
                 [
                     { text: '💵 Buy Amount/Trade', callback_data: 'buy_amount_select' }
                 ],
-                // Management Rules Section
+                // Management Rules Section (Highlighted as required)
                 [
-                    { text: '💰 Take Profit', callback_data: 'take_profit_select' },
-                    { text: '🛑 Stop Loss', callback_data: 'stop_loss_select' }
+                    { text: hasRequiredManagement ? '✅ Take Profit' : '⚠️ Take Profit (Required)', callback_data: 'take_profit_select' },
+                    { text: hasRequiredManagement ? '✅ Stop Loss' : '⚠️ Stop Loss (Required)', callback_data: 'stop_loss_select' }
                 ],
                 [
                     { text: '📉 Trailing Stop', callback_data: 'trailing_stop_select' },
@@ -5662,7 +5721,7 @@ Choose an option to configure:`;
                 ],
                 // Action buttons
                 [
-                    { text: '✅ Create Strategy', callback_data: 'confirm_rule' }
+                    { text: hasRequiredManagement ? '✅ Create Strategy' : '❌ Create Strategy (Missing Required Rules)', callback_data: hasRequiredManagement ? 'confirm_rule' : 'strategy_validation_error' }
                 ],
                 [
                     { text: '◀️ Back', callback_data: 'rules_create' },

@@ -48,13 +48,10 @@ class FileExportService {
             let solPrice = 0;
             let recentTrades = [];
 
-            // Fetch SOL price
+            // Fetch SOL price (Dexscreener)
             try {
-                const axios = require('axios');
-                const cgResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
-                if (cgResp.data && cgResp.data.solana && cgResp.data.solana.usd) {
-                    solPrice = cgResp.data.solana.usd;
-                }
+                const { fetchSolUsdPrice } = require('../utils/solPrice');
+                solPrice = await fetchSolUsdPrice();
             } catch (e) {
                 console.error('Error fetching SOL price:', e);
             }

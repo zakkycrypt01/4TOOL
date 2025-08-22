@@ -64,7 +64,11 @@ class TelegramBotManager {
             // Instantiate AutonomousService with ruleEngine and pass the Telegram bot
             this.autonomousService = new AutonomousService(config, this.ruleEngine, this.bot);
             // Initialize utility classes
-            this.messageManager = new MessageManager(this.bot);
+            const MessageDispatcher = require('../utils/messageDispatcher');
+            this.dispatcher = new MessageDispatcher(this.bot, { maxConcurrent: 10, minIntervalMs: 40 });
+            this.messageManager = new MessageManager({
+                sendMessage: (chatId, message, options) => this.dispatcher.send(chatId, message, options)
+            });
             this.menuManager = new MenuManager(this.bot, this.db, this.messageManager);
             this.rulesCommand = new RulesCommand(this.bot, this.db, config); // Move this line before RulesManager
             this.rulesManager = new RulesManager(this.bot, this.db, this.messageManager, this.rulesCommand);

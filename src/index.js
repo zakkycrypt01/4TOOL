@@ -45,7 +45,11 @@ const config = {
     minimumTokenHoldings: parseInt(process.env.MINIMUM_TOKEN_HOLDINGS) || 1000,
     jupiterApiKey: process.env.JUPITER_API_KEY,
     birdEyeApiKey: process.env.BIRDEYE_API_KEY,
-    dexscreenerApiKey: process.env.DEXSCREENER_API_KEY
+    dexscreenerApiKey: process.env.DEXSCREENER_API_KEY,
+    // Trading configuration - Jupiter ONLY with Raydium fallback
+    tradingProvider: 'jupiter', // Force Jupiter as primary
+    enableFallback: true, // Keep Raydium as fallback only
+    preferJupiter: true // New flag to strongly prefer Jupiter
 };
 
 // Initialize components

@@ -351,8 +351,9 @@ class DatabaseManager {
 
     // User operations
     async createUser(telegramId) {
-        const stmt = this.db.prepare('INSERT INTO users (telegram_id) VALUES (?)');
-        const result = stmt.run(telegramId);
+        // Make user creation idempotent to avoid UNIQUE constraint errors on telegram_id
+        const stmt = this.db.prepare('INSERT OR IGNORE INTO users (telegram_id) VALUES (?)');
+        stmt.run(telegramId);
         return this.getUserByTelegramId(telegramId);
     }
 

@@ -21,18 +21,18 @@ class TradingExecution {
         this.userWallet = null;
         this.feeManager = new FeeManagement(config);
         
-        // Initialize Raydium service
+        // Initialize Raydium service (for fallback only)
         this.raydiumService = new RaydiumService(this.connection, config);
         
-        // Trading provider preference: 'raydium' or 'jupiter'
-        this.tradingProvider = config.tradingProvider || 'raydium';
+        // Trading provider: Jupiter PRIMARY, Raydium fallback only
+        this.tradingProvider = 'jupiter'; // Force Jupiter as primary
         this.enableFallback = config.enableFallback !== false; // Default to true
         
-        // Rate limiting for Jupiter API (keeping for fallback in buying only)
+        // Rate limiting for Jupiter API (primary provider)
         this.lastJupiterRequest = 0;
         this.minRequestInterval = 500; // Minimum 500ms between requests
         
-        // Circuit breaker for Jupiter API (keeping for fallback in buying only)
+        // Circuit breaker for Jupiter API (primary provider)
         this.jupiterCircuitBreaker = {
             failureCount: 0,
             lastFailureTime: 0,
@@ -43,7 +43,7 @@ class TradingExecution {
     }
 
     /**
-     * Execute swap with fallback between Raydium and Jupiter
+     * Execute swap with fallback between providers
      * @param {string} inputMint - Input token mint
      * @param {string} outputMint - Output token mint
      * @param {number} amount - Amount in smallest units
@@ -53,81 +53,26 @@ class TradingExecution {
      * @returns {Promise<Object>} Swap result
      */
     async executeSwapWithFallback(inputMint, outputMint, amount, wallet, slippageBps = 50, isSelling = false) {
-        // For selling operations, only use Raydium
-        if (isSelling) {
-            console.log(`[executeSwapWithFallback] Selling operation detected - using Raydium only`);
-            
-            // Get input token account for selling
-            let inputTokenAccount = null;
-            if (inputMint !== NATIVE_MINT.toString()) {
-                try {
-                    const tokenAccounts = await this.raydiumService.getTokenAccounts(wallet.publicKey);
-                    const inputAccount = tokenAccounts.find(acc => acc.mint === inputMint);
-                    
-                    if (inputAccount) {
-                        inputTokenAccount = inputAccount.address; // This is already a string
-                        console.log(`[executeSwapWithFallback] Found input token account for selling: ${inputTokenAccount} with balance ${inputAccount.uiAmount}`);
-                    } else {
-                        console.log(`[executeSwapWithFallback] No input token account found for ${inputMint} - this will likely fail`);
-                    }
-                } catch (error) {
-                    console.error(`[executeSwapWithFallback] Error getting token accounts for selling: ${error.message}`);
-                }
-            }
-            
-            const result = await this.raydiumService.executeSwap(
-                inputMint,
-                outputMint,
-                amount,
-                wallet,
-                slippageBps,
-                'h', // High priority
-                inputTokenAccount // Pass the input token account string for selling
-            );
-            
-            if (result.success) {
-                console.log(`[executeSwapWithFallback] Raydium sell swap successful`);
-                return {
-                    ...result,
-                    provider: 'raydium'
-                };
-            } else {
-                throw new Error(`Raydium sell failed: ${result.error || 'Unknown error'}`);
-            }
-        }
+        console.log(`[executeSwapWithFallback] ${isSelling ? 'Selling' : 'Buying'} operation - Jupiter primary, Raydium fallback only`);
         
-        // For buying operations, use the configured provider order
-        const providers = this.tradingProvider === 'raydium' ? ['raydium', 'jupiter'] : ['jupiter', 'raydium'];
+        // ALWAYS prioritize Jupiter first, Raydium as fallback only
+        const providers = ['jupiter', 'raydium'];
+        
+        let lastErrorMessage = null;
+        const providerErrors = [];
         
         for (const provider of providers) {
             try {
                 console.log(`[executeSwapWithFallback] Attempting swap with ${provider}`);
                 
-                if (provider === 'raydium') {
-                    const result = await this.raydiumService.executeSwap(
-                        inputMint,
-                        outputMint,
-                        amount,
-                        wallet,
-                        slippageBps,
-                        'h' // High priority
-                    );
-                    
-                    if (result.success) {
-                        console.log(`[executeSwapWithFallback] Raydium swap successful`);
-                        return {
-                            ...result,
-                            provider: 'raydium'
-                        };
-                    }
-                } else {
-                    // Jupiter fallback implementation (only for buying)
+                if (provider === 'jupiter') {
+                    // Jupiter implementation for both buying and selling (PRIMARY)
                     const swapResult = await this.buildJupiterSwap(
                         inputMint,
                         outputMint,
                         amount,
                         wallet.publicKey,
-                        slippageBps / 100
+                        slippageBps // Already in basis points, no need to divide
                     );
                     
                     if (swapResult) {
@@ -144,14 +89,99 @@ class TradingExecution {
                                 provider: 'jupiter'
                             };
                         }
+
+                        // If executeTransaction returned a failure object, surface its details
+                        if (signature && typeof signature === 'object' && signature.success === false) {
+                            const errorWithLogs = new Error(`Jupiter transaction failed: ${signature.error || 'Unknown error'}`);
+                            if (signature.logs) {
+                                errorWithLogs.logs = signature.logs;
+                            }
+                            throw errorWithLogs;
+                        }
+
+                        // No signature produced. Surface detailed simulation error if available
+                        const simErr = swapResult.simulationError;
+                        const dynSlip = swapResult.dynamicSlippageReport;
+                        const detailParts = [];
+                        if (simErr) {
+                            if (simErr.errorCode) detailParts.push(`code=${simErr.errorCode}`);
+                            if (simErr.error) detailParts.push(`message=${simErr.error}`);
+                        }
+                        if (dynSlip && typeof dynSlip.slippageBps !== 'undefined') {
+                            detailParts.push(`slippageBps=${dynSlip.slippageBps}`);
+                        }
+                        const detail = detailParts.length ? detailParts.join(', ') : 'unknown reason';
+                        throw new Error(`Jupiter swap failed without signature: ${detail}`);
+                    }
+
+                    // If swapResult is falsy, throw explicit error to be caught below
+                    throw new Error('Jupiter returned empty swap result');
+                    
+                } else if (provider === 'raydium') {
+                    // Raydium fallback implementation - only used when Jupiter fails
+                    console.log(`[executeSwapWithFallback] Using Raydium as fallback (Jupiter failed)`);
+                    
+                    // Get input token account for selling operations with Raydium
+                    let inputTokenAccount = null;
+                    if (isSelling && inputMint !== NATIVE_MINT.toString()) {
+                        try {
+                            const tokenAccounts = await this.raydiumService.getTokenAccounts(wallet.publicKey);
+                            const inputAccount = tokenAccounts.find(acc => acc.mint === inputMint);
+                            
+                            if (inputAccount) {
+                                inputTokenAccount = inputAccount.address;
+                                console.log(`[executeSwapWithFallback] Found input token account for Raydium fallback: ${inputTokenAccount} with balance ${inputAccount.uiAmount}`);
+                            } else {
+                                console.log(`[executeSwapWithFallback] No input token account found for ${inputMint} with Raydium - skipping fallback`);
+                                throw new Error('No suitable token account found for Raydium fallback');
+                            }
+                        } catch (error) {
+                            console.error(`[executeSwapWithFallback] Error getting token accounts for Raydium fallback: ${error.message}`);
+                            throw new Error(`Raydium fallback preparation failed: ${error.message}`);
+                        }
+                    }
+                    
+                    const result = await this.raydiumService.executeSwap(
+                        inputMint,
+                        outputMint,
+                        amount,
+                        wallet,
+                        slippageBps,
+                        'h', // High priority
+                        inputTokenAccount // Pass the input token account string for selling
+                    );
+                    
+                    if (result.success) {
+                        console.log(`[executeSwapWithFallback] Raydium fallback swap successful`);
+                        return {
+                            ...result,
+                            provider: 'raydium'
+                        };
+                    } else {
+                        throw new Error(`Raydium fallback failed: ${result.error || 'Unknown error'}`);
                     }
                 }
             } catch (error) {
                 console.error(`[executeSwapWithFallback] ${provider} failed:`, error.message);
+                lastErrorMessage = `${provider}: ${error.message}`;
+                providerErrors.push({ provider, message: error.message, logs: error.logs });
                 
                 // If this is the last provider and fallback is disabled, throw the error
                 if (!this.enableFallback || provider === providers[providers.length - 1]) {
-                    throw new Error(`All swap providers failed. Last error from ${provider}: ${error.message}`);
+                    // Build aggregated error message
+                    const parts = [];
+                    const rayErr = providerErrors.find(e => e.provider === 'raydium');
+                    const jupErr = providerErrors.find(e => e.provider === 'jupiter');
+                    if (rayErr) parts.push(`Raydium error: ${rayErr.message}`);
+                    if (jupErr) {
+                        if (jupErr.logs && Array.isArray(jupErr.logs) && jupErr.logs.length) {
+                            parts.push(`Jupiter transaction simulation logs:\n${jupErr.logs.join('\n')}`);
+                        } else {
+                            parts.push(`Jupiter error: ${jupErr.message}`);
+                        }
+                    }
+                    const combined = parts.length ? parts.join('\n\n') : `All swap providers failed. Last error from ${provider}: ${error.message}`;
+                    throw new Error(combined);
                 }
                 
                 console.log(`[executeSwapWithFallback] Trying next provider...`);
@@ -159,7 +189,22 @@ class TradingExecution {
             }
         }
         
-        throw new Error('All swap providers failed');
+        // Build aggregated error message if available
+        if (providerErrors.length) {
+            const parts = [];
+            const rayErr = providerErrors.find(e => e.provider === 'raydium');
+            const jupErr = providerErrors.find(e => e.provider === 'jupiter');
+            if (rayErr) parts.push(`Raydium error: ${rayErr.message}`);
+            if (jupErr) {
+                if (jupErr.logs && Array.isArray(jupErr.logs) && jupErr.logs.length) {
+                    parts.push(`Jupiter transaction simulation logs:\n${jupErr.logs.join('\n')}`);
+                } else {
+                    parts.push(`Jupiter error: ${jupErr.message}`);
+                }
+            }
+            throw new Error(parts.join('\n\n'));
+        }
+        throw new Error(`All swap providers failed${lastErrorMessage ? `. Last error: ${lastErrorMessage}` : ''}`);
     }
 
     setUserWallet(keypair) {

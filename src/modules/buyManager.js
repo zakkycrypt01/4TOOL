@@ -278,11 +278,35 @@ You don't have enough SOL to complete this transaction. Please ensure you have e
 • Network fees
 • Bot fees`;
             } else {
-                errorMessage = `
-*⚠️ Transaction Failed*
+                // Build a clean, modern error message with provider details
+                const raw = error.message || 'Unknown error';
+                const rayMatch = raw.match(/Raydium error:\s*([\s\S]*?)(?:\n\n|$)/);
+                const jupLogsIdx = raw.indexOf('Jupiter transaction simulation logs:');
+                let jupLogs = '';
+                if (jupLogsIdx !== -1) {
+                    jupLogs = raw.substring(jupLogsIdx + 'Jupiter transaction simulation logs:'.length).trim();
+                }
 
-Sorry, we couldn't complete your buy order:
-${error.message}
+                const raydiumLine = rayMatch ? rayMatch[1].trim() : null;
+
+                let tips = [];
+                if (jupLogs && /insufficient lamports/i.test(jupLogs)) {
+                    tips.push('Top up SOL to cover account creation and fees (~0.03 SOL).');
+                }
+                if (raydiumLine && /No trading pool found|ROUTE_NOT_FOUND/i.test(raydiumLine)) {
+                    tips.push('Route not available on Raydium. Try a smaller amount or different token.');
+                }
+
+                const tipsBlock = tips.length ? `\n\n*Suggestions:*\n- ${tips.join('\n- ')}` : '';
+
+                const jupiterBlock = jupLogs
+                    ? `\n\n*Jupiter Simulation Logs:*\n\n\`\`\`\n${jupLogs}\n\`\`\``
+                    : '';
+
+                errorMessage = `
+*❌ Trade Failed*
+
+${raydiumLine ? `*Raydium:* \`${raydiumLine}\`` : 'We could not complete your buy order.'}${tipsBlock}${jupiterBlock}
 
 You can retry with the same details or start a new order.`;
             }
