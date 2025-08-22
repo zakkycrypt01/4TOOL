@@ -54,7 +54,7 @@ class ManualManagementService {
             }
         }, 10000);
 
-        this.logger.info('Manual management monitoring started with 1s sell check and 60s buy check intervals');
+        this.logger.info('🚀 Manual management monitoring started with 1s sell check and 10s buy token discovery intervals');
     }
 
     /**
@@ -161,8 +161,21 @@ class ManualManagementService {
         const manualConditions = {};
         
         for (const condition of conditions) {
+            // Only process management-related conditions
+            if (!condition.condition_type.startsWith('manual_') && 
+                !condition.condition_type.startsWith('management_')) {
+                continue; // Skip non-management conditions
+            }
+            
             try {
-                const value = JSON.parse(condition.condition_value);
+                // Try to parse as JSON first, if that fails treat as plain value
+                let value;
+                try {
+                    value = JSON.parse(condition.condition_value);
+                } catch (jsonError) {
+                    // If JSON parsing fails, use the raw value
+                    value = { percentage: parseFloat(condition.condition_value) };
+                }
                 
                 switch (condition.condition_type) {
                     case 'manual_take_profit':
@@ -179,7 +192,7 @@ class ManualManagementService {
                         break;
                 }
             } catch (error) {
-                this.logger.error('Error parsing condition:', condition, error);
+                this.logger.warn(`Skipping condition ${condition.condition_type} due to parsing error:`, error.message);
             }
         }
 
@@ -284,7 +297,8 @@ class ManualManagementService {
 
                     // Only monitor if we have a buy price (from trade or fallback)
                     if (buyPrice && currentPrice) {
-                        this.monitoredTokens.set(tokenAddress, {
+                        const tokenKey = `${userId}-${tokenAddress}`;
+                        this.monitoredTokens.set(tokenKey, {
                             userId,
                             ruleId,
                             walletAddress,
@@ -293,7 +307,8 @@ class ManualManagementService {
                             highestPrice: Math.max(buyPrice, currentPrice),
                             tokenAmount: token.amount,
                             lastChecked: Date.now(),
-                            symbol: token.symbol || 'UNKNOWN'
+                            symbol: token.symbol || 'UNKNOWN',
+                            tokenAddress
                         });
                         this.logger.info(`Added token ${tokenAddress} (${token.symbol || 'UNKNOWN'}) to manual management monitoring (buy: ${buyPrice}, current: ${currentPrice})`);
                     } else {
@@ -321,14 +336,16 @@ class ManualManagementService {
         const TokenDataService = require('./tokenDataService');
         const tokenDataService = new TokenDataService(this.config);
 
-        for (const [tokenAddress, tokenData] of this.monitoredTokens) {
+        for (const [tokenKey, tokenData] of this.monitoredTokens) {
             try {
+                const tokenAddress = tokenData.tokenAddress;
+                
                 // Prevent duplicate sell execution for the same token
-                if (this.pendingSells.has(tokenAddress)) {
+                if (this.pendingSells.has(tokenKey)) {
                     this.logger.info(`Sell already pending for ${tokenAddress}, skipping this check.`);
                     continue;
                 }
-                this.logger.info(`Checking token ${tokenAddress} with conditions:`, tokenData.conditions);
+                this.logger.info(`Checking token ${tokenAddress} for user ${tokenData.userId} with conditions:`, tokenData.conditions);
 
                 // Get current token price using DexScreener API first, then fallback
                 let currentPrice = null;
@@ -370,21 +387,21 @@ class ManualManagementService {
                 const shouldSell = await this.checkSellConditions(tokenAddress, tokenData, currentPrice, priceChange);
                 if (shouldSell && shouldSell.shouldSell) {
                     this.logger.info(`Sell condition met for ${tokenAddress}: ${shouldSell.reason} (${shouldSell.percentage ? shouldSell.percentage.toFixed(2) : ''}%)`);
-                    this.pendingSells.add(tokenAddress); // Mark as pending
+                    this.pendingSells.add(tokenKey); // Mark as pending
                     const sellResult = await this.executeSell(tokenAddress, tokenData, currentPrice, shouldSell);
                     // Only remove from monitoring if sell was successful
                     if (sellResult && sellResult.success) {
-                        this.removeTokenFromMonitoring(tokenAddress);
+                        this.removeTokenFromMonitoring(tokenData.userId, tokenAddress);
                     }
-                    this.pendingSells.delete(tokenAddress); // Remove pending status regardless of result
+                    this.pendingSells.delete(tokenKey); // Remove pending status regardless of result
                 }
                 // Throttle API calls to avoid rate limits
                 await sleep(200);
             } catch (error) {
                 this.logger.error(`Error checking monitored token ${tokenAddress}:`, error);
                 // Remove from monitoring to avoid repeated errors
-                this.removeTokenFromMonitoring(tokenAddress);
-                this.pendingSells.delete(tokenAddress); // Clean up pending status if error
+                this.removeTokenFromMonitoring(tokenData.userId, tokenAddress);
+                this.pendingSells.delete(tokenKey); // Clean up pending status if error
             }
         }
     }
@@ -580,30 +597,56 @@ ${sellData.conditions.trailingStop ? `• Trailing Stop: ${sellData.conditions.t
     /**
      * Add a specific token to monitoring after a manual buy
      */
-    async addTokenToMonitoring(userId, tokenAddress, buyPrice, tokenAmount) {
+    async addTokenToMonitoring(userId, ruleIdOrTokenAddress, tokenAddressOrBuyPrice, buyPriceOrTokenAmount, tokenAmountOrConditions, conditionsOptional = null) {
         try {
+            // Handle different method signatures
+            let ruleId, tokenAddress, buyPrice, tokenAmount, conditions;
+            
+            if (typeof ruleIdOrTokenAddress === 'number' && conditionsOptional) {
+                // New signature: (userId, ruleId, tokenAddress, buyPrice, tokenAmount, conditions)
+                ruleId = ruleIdOrTokenAddress;
+                tokenAddress = tokenAddressOrBuyPrice;
+                buyPrice = buyPriceOrTokenAmount;
+                tokenAmount = tokenAmountOrConditions;
+                conditions = conditionsOptional;
+            } else {
+                // Old signature: (userId, tokenAddress, buyPrice, tokenAmount)
+                tokenAddress = ruleIdOrTokenAddress;
+                buyPrice = tokenAddressOrBuyPrice;
+                tokenAmount = buyPriceOrTokenAmount;
+                
+                // Get management rules and conditions
+                const rules = await this.db.getRulesByUserId(userId);
+                const manualRules = rules.filter(rule => 
+                    rule.type === 'manual_management' && rule.is_active === 1);
+
+                if (manualRules.length === 0) {
+                    this.logger.info(`No active manual management rules found for user ${userId}`);
+                    return;
+                }
+
+                // Use the first active manual management rule
+                const rule = manualRules[0];
+                ruleId = rule.id;
+                const ruleConditions = await this.db.getRuleConditions(rule.id);
+                conditions = this.parseManualConditions(ruleConditions);
+
+                if (!conditions) {
+                    this.logger.info(`No manual management conditions found for rule ${rule.id}`);
+                    return;
+                }
+            }
+
             // --- Prevent monitoring of already sold tokens ---
+            const tokenKey = `${userId}-${tokenAddress}`;
             if (await this.isTokenSold(userId, tokenAddress)) {
                 this.logger.info(`Token ${tokenAddress} already sold for user ${userId}, skipping monitoring.`);
                 return;
             }
-            // Get user's active manual management rules
-            const rules = await this.db.getRulesByUserId(userId);
-            const manualRules = rules.filter(rule => 
-                rule.type === 'manual_management' && rule.is_active === 1);
 
-            if (manualRules.length === 0) {
-                this.logger.info(`No active manual management rules found for user ${userId}`);
-                return;
-            }
-
-            // Use the first active manual management rule
-            const rule = manualRules[0];
-            const conditions = await this.db.getRuleConditions(rule.id);
-            const manualConditions = this.parseManualConditions(conditions);
-
-            if (!manualConditions) {
-                this.logger.info(`No manual management conditions found for rule ${rule.id}`);
+            // Check if already monitoring this token for this user
+            if (this.monitoredTokens.has(tokenKey)) {
+                this.logger.debug(`Token ${tokenAddress} already being monitored for user ${userId}`);
                 return;
             }
 
@@ -614,20 +657,21 @@ ${sellData.conditions.trailingStop ? `• Trailing Stop: ${sellData.conditions.t
                 return;
             }
 
-            // Add token to monitoring
-            this.monitoredTokens.set(tokenAddress, {
+            // Add token to monitoring with unique key
+            this.monitoredTokens.set(tokenKey, {
                 userId,
-                ruleId: rule.id,
+                ruleId,
                 walletAddress: activeWallet.public_key,
-                conditions: manualConditions,
+                conditions,
                 buyPrice,
                 highestPrice: buyPrice,
                 tokenAmount,
-                lastChecked: Date.now()
+                lastChecked: Date.now(),
+                tokenAddress
             });
 
-            this.logger.info(`Added token ${tokenAddress} to manual management monitoring for user ${userId}`);
-            this.logger.info(`Monitoring conditions:`, manualConditions);
+            this.logger.info(`✅ Added token ${tokenAddress} to monitoring for user ${userId}, rule ${ruleId}`);
+            this.logger.info(`📊 Monitoring conditions:`, conditions);
 
         } catch (error) {
             this.logger.error('Error adding token to monitoring:', error);
@@ -637,10 +681,11 @@ ${sellData.conditions.trailingStop ? `• Trailing Stop: ${sellData.conditions.t
     /**
      * Remove token from monitoring (called when user manually sells)
      */
-    removeTokenFromMonitoring(tokenAddress) {
-        if (this.monitoredTokens.has(tokenAddress)) {
-            this.monitoredTokens.delete(tokenAddress);
-            this.logger.info(`Removed token ${tokenAddress} from manual management monitoring`);
+    removeTokenFromMonitoring(userId, tokenAddress) {
+        const tokenKey = `${userId}-${tokenAddress}`;
+        if (this.monitoredTokens.has(tokenKey)) {
+            this.monitoredTokens.delete(tokenKey);
+            this.logger.info(`🗑️ Removed token ${tokenAddress} from monitoring for user ${userId}`);
         }
     }
 
@@ -648,37 +693,159 @@ ${sellData.conditions.trailingStop ? `• Trailing Stop: ${sellData.conditions.t
      * Periodically check for new buy trades and add new tokens to monitoring
      */
     async checkForNewBuyTokens() {
-        // Get all users with active wallets
-        const users = await this.getAllUsers();
-        const since = this.lastBuyCheck;
-        this.lastBuyCheck = Date.now();
-        for (const user of users) {
-            // Get new buy trades since last check
-            const stmt = this.db.db.prepare(`
-                SELECT * FROM trades
-                WHERE user_id = ? AND side = 'buy' AND timestamp > ?
-            `);
-            const newBuys = stmt.all(user.id, since);
-            for (const trade of newBuys) {
-                // Only add if not already monitored
-                if (!this.monitoredTokens.has(trade.token_address)) {
-                    // Get token amount from portfolio (fallback to trade.amount if needed)
-                    let tokenAmount = trade.amount;
-                    try {
-                        const PortfolioService = require('./portfolioService');
-                        const portfolioService = new PortfolioService(this.config);
-                        const wallet = await this.db.getActiveWallet(user.id);
-                        if (wallet) {
-                            const balance = await portfolioService.getWalletBalance(wallet.public_key);
-                            const token = balance.tokens.find(t => t.mint === trade.token_address);
-                            if (token) tokenAmount = token.amount;
+        try {
+            this.logger.info('🔍 Checking for new bought tokens...');
+            
+            // Get all users with active wallets and management rules
+            const users = await this.getAllUsers();
+            const since = this.lastBuyCheck;
+            this.lastBuyCheck = Date.now();
+            
+            let newTokensFound = 0;
+            
+            for (const user of users) {
+                try {
+                    // First check: Look for new buy trades since last check
+                    const stmt = this.db.db.prepare(`
+                        SELECT * FROM trades
+                        WHERE user_id = ? AND side = 'buy' AND timestamp > ?
+                    `);
+                    const newBuys = stmt.all(user.id, since);
+                    
+                    // Process new buy trades
+                    for (const trade of newBuys) {
+                        const tokenKey = `${user.id}-${trade.token_address}`;
+                        if (!this.monitoredTokens.has(tokenKey)) {
+                            await this.processNewTokenPurchase(user.id, trade.token_address, trade.price, trade.amount);
+                            newTokensFound++;
                         }
-                    } catch (e) {
-                        this.logger.warn('Could not get token amount from portfolio:', e);
                     }
-                    await this.addTokenToMonitoring(user.id, trade.token_address, trade.price, tokenAmount);
+                    
+                    // Second check: Scan wallet for new token holdings (more reliable)
+                    await this.scanWalletForNewTokens(user.id);
+                    
+                } catch (error) {
+                    this.logger.error(`Error checking new tokens for user ${user.id}:`, error);
                 }
             }
+            
+            if (newTokensFound > 0) {
+                this.logger.info(`✅ Found and added ${newTokensFound} new tokens to monitoring`);
+            } else {
+                this.logger.debug('No new tokens found in this polling cycle');
+            }
+            
+        } catch (error) {
+            this.logger.error('Error in checkForNewBuyTokens:', error);
+        }
+    }
+
+    /**
+     * Scan wallet directly for new token holdings
+     */
+    async scanWalletForNewTokens(userId) {
+        try {
+            // Get user's management rules to see if monitoring is needed
+            const rules = await this.db.getRulesByUserId(userId);
+            const hasManagementRules = rules.some(rule => {
+                if (!rule.is_active) return false;
+                return rule.type === 'manual_management' || 
+                       (rule.type === 'autonomous_strategy' && this.ruleHasManagementConditions(rule.id));
+            });
+            
+            if (!hasManagementRules) {
+                return; // Skip users without management rules
+            }
+            
+            const activeWallet = await this.db.getActiveWallet(userId);
+            if (!activeWallet) {
+                return;
+            }
+            
+            // Get current wallet holdings
+            let walletTokens = [];
+            try {
+                const PortfolioService = require('./portfolioService');
+                const portfolioService = new PortfolioService(this.config);
+                const balance = await portfolioService.getWalletBalance(activeWallet.public_key);
+                
+                if (balance && balance.tokens) {
+                    walletTokens = balance.tokens.filter(token => 
+                        token.amount > 0 && 
+                        token.mint !== 'So11111111111111111111111111111111111111112' // Exclude SOL
+                    );
+                }
+            } catch (error) {
+                this.logger.warn(`Could not fetch wallet holdings for user ${userId}:`, error.message);
+                return;
+            }
+            
+            // Check each token in wallet
+            for (const token of walletTokens) {
+                const tokenKey = `${userId}-${token.mint}`;
+                
+                // If not already monitored, add it
+                if (!this.monitoredTokens.has(tokenKey)) {
+                    this.logger.info(`🆕 New token detected in wallet: ${token.symbol || token.mint} (${token.amount})`);
+                    await this.processNewTokenPurchase(userId, token.mint, token.price || 0, token.amount);
+                }
+            }
+            
+        } catch (error) {
+            this.logger.error(`Error scanning wallet for user ${userId}:`, error);
+        }
+    }
+
+    /**
+     * Process a newly purchased token and add to monitoring
+     */
+    async processNewTokenPurchase(userId, tokenAddress, buyPrice, amount) {
+        try {
+            // Get user's management rules
+            const rules = await this.db.getRulesByUserId(userId);
+            const managementRules = [];
+            
+            for (const rule of rules) {
+                if (!rule.is_active) continue;
+                
+                if (rule.type === 'manual_management') {
+                    const conditions = await this.db.getRuleConditions(rule.id);
+                    const manualConditions = this.parseManualConditions(conditions);
+                    if (manualConditions) {
+                        managementRules.push({ rule, conditions: manualConditions });
+                    }
+                } else if (rule.type === 'autonomous_strategy') {
+                    const conditions = await this.db.getRuleConditions(rule.id);
+                    const hasManagement = conditions.some(c => c.condition_type.startsWith('management_'));
+                    if (hasManagement) {
+                        const manualConditions = this.parseManualConditions(conditions);
+                        if (manualConditions) {
+                            managementRules.push({ rule, conditions: manualConditions });
+                        }
+                    }
+                }
+            }
+            
+            // Add token to monitoring for each applicable rule
+            for (const { rule, conditions } of managementRules) {
+                await this.addTokenToMonitoring(userId, rule.id, tokenAddress, buyPrice, amount, conditions);
+                this.logger.info(`📊 Added token ${tokenAddress} to monitoring for user ${userId}, rule ${rule.id}`);
+            }
+            
+        } catch (error) {
+            this.logger.error(`Error processing new token purchase: ${error.message}`);
+        }
+    }
+
+    /**
+     * Check if a rule has management conditions (helper method)
+     */
+    async ruleHasManagementConditions(ruleId) {
+        try {
+            const conditions = await this.db.getRuleConditions(ruleId);
+            return conditions.some(c => c.condition_type.startsWith('management_'));
+        } catch (error) {
+            return false;
         }
     }
 
