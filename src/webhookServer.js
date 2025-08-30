@@ -74,26 +74,85 @@ class WebhookServer {
             });
         });
 
+        // Test webhook endpoint for debugging
+        this.app.post('/test-webhook', (req, res) => {
+            this.logger.info('Test webhook request received', {
+                headers: req.headers,
+                body: req.body,
+                ip: req.ip
+            });
+            
+            // Simulate a valid Telegram update
+            const testUpdate = {
+                update_id: 999999,
+                message: {
+                    message_id: 1,
+                    from: {
+                        id: 123456789,
+                        is_bot: false,
+                        first_name: 'Test',
+                        username: 'testuser'
+                    },
+                    chat: {
+                        id: 123456789,
+                        first_name: 'Test',
+                        username: 'testuser',
+                        type: 'private'
+                    },
+                    date: Math.floor(Date.now() / 1000),
+                    text: 'test'
+                }
+            };
+            
+            res.json({ 
+                status: 'test-success', 
+                message: 'Test webhook processed successfully',
+                update: testUpdate
+            });
+        });
+
         // Telegram webhook endpoint
         this.app.post('/webhook', async (req, res) => {
             try {
                 // Verify the request is from Telegram
-                if (!this.verifyTelegramRequest(req)) {
+                const verificationResult = this.verifyTelegramRequest(req);
+                if (!verificationResult.valid) {
                     this.logger.warn('Invalid webhook request received', {
                         ip: req.ip,
-                        headers: req.headers
+                        headers: req.headers,
+                        userAgent: req.get('User-Agent'),
+                        secretToken: req.headers['x-telegram-bot-api-secret-token'] ? 'present' : 'missing',
+                        expectedToken: process.env.TELEGRAM_WEBHOOK_SECRET || 'some-strong-secret'
                     });
                     return res.status(401).json({ error: 'Unauthorized' });
                 }
+                
+                this.logger.info('Webhook request verified successfully', {
+                    ip: req.ip,
+                    verificationMethod: verificationResult.method,
+                    userAgent: req.get('User-Agent')
+                });
 
                 // Process the update
                 const update = req.body;
+                
+                // Validate update structure
+                if (!update || typeof update !== 'object') {
+                    this.logger.warn('Invalid update structure received', { body: req.body });
+                    return res.status(400).json({ error: 'Invalid update structure' });
+                }
                 
                 // Enhanced logging for debugging callback query issues
                 this.logger.info('Received webhook update', {
                     updateId: update.update_id,
                     type: this.getUpdateType(update),
+                    hasMessage: !!update.message,
                     hasCallbackQuery: !!update.callback_query,
+                    messageStructure: update.message ? {
+                        hasChat: !!update.message.chat,
+                        hasFrom: !!update.message.from,
+                        hasText: !!update.message.text
+                    } : null,
                     callbackQueryDetails: update.callback_query ? {
                         id: update.callback_query.id,
                         hasFrom: !!update.callback_query.from,
@@ -166,14 +225,30 @@ class WebhookServer {
     }
 
     verifyTelegramRequest(req) {
-        // Basic verification - Telegram sends requests with Go-http-client/1.1 User-Agent
+        // Check for Telegram webhook secret token (most reliable method)
+        const secretToken = req.headers['x-telegram-bot-api-secret-token'];
+        const expectedToken = process.env.TELEGRAM_WEBHOOK_SECRET || 'some-strong-secret';
+        
+        if (secretToken === expectedToken) {
+            return { valid: true, method: 'secret_token' };
+        }
+        
+        // Fallback: Check User-Agent for Telegram requests
         const userAgent = req.get('User-Agent');
-        // Accept requests from Telegram (Go-http-client) or for development/testing
-        return userAgent && (
+        if (userAgent && (
             userAgent.includes('TelegramBot') || 
             userAgent.includes('Go-http-client') ||
-            process.env.NODE_ENV === 'development'
-        );
+            userAgent.includes('curl') // Allow curl for testing
+        )) {
+            return { valid: true, method: 'user_agent' };
+        }
+        
+        // Allow local development
+        if (process.env.NODE_ENV === 'development' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1') {
+            return { valid: true, method: 'local_development' };
+        }
+        
+        return { valid: false, method: 'none' };
     }
 
     getUpdateType(update) {

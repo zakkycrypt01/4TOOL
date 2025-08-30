@@ -217,12 +217,26 @@ class TelegramBotManager {
             }
         } catch (error) {
             console.error('Error handling webhook update:', error);
+            console.error('Update that caused error:', JSON.stringify(update, null, 2));
         }
     }
 
     // Handle incoming messages
     async handleMessage(msg) {
         try {
+            // Validate message structure
+            if (!msg || !msg.chat || !msg.chat.id || !msg.from || !msg.from.id) {
+                console.error('Invalid message structure received:', {
+                    hasMsg: !!msg,
+                    hasChat: !!(msg && msg.chat),
+                    hasChatId: !!(msg && msg.chat && msg.chat.id),
+                    hasFrom: !!(msg && msg.from),
+                    hasFromId: !!(msg && msg.from && msg.from.id),
+                    message: msg
+                });
+                return;
+            }
+            
             // Check for commands
             if (msg.text && msg.text.startsWith('/')) {
                 await this.handleCommand(msg);
@@ -308,9 +322,22 @@ I'm your automated trading assistant for Solana tokens. To get started, you'll n
     // Handle regular messages
     async handleRegularMessage(msg) {
         try {
+            // Additional validation for message structure
+            if (!msg || !msg.chat || !msg.chat.id || !msg.from || !msg.from.id) {
+                console.error('Invalid message structure in handleRegularMessage:', {
+                    hasMsg: !!msg,
+                    hasChat: !!(msg && msg.chat),
+                    hasChatId: !!(msg && msg.chat && msg.chat.id),
+                    hasFrom: !!(msg && msg.from),
+                    hasFromId: !!(msg && msg.from && msg.from.id),
+                    message: msg
+                });
+                return;
+            }
+            
             const chatId = msg.chat.id;
             const telegramId = msg.from.id.toString();
-            const messageText = msg.text;
+            const messageText = msg.text || '';
             
             console.log('Regular message received:', messageText);
             
