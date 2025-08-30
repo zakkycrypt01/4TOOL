@@ -7,7 +7,7 @@ module.exports = {
     exec_mode: 'cluster',
     autorestart: true,
     watch: false,
-    max_memory_restart: '1G',
+    max_memory_restart: '2G',
     env: {
       NODE_ENV: 'development'
     },
@@ -20,8 +20,8 @@ module.exports = {
     log_file: './logs/pm2-combined.log',
     time: true,
     
-    // Performance settings
-    node_args: '--max-old-space-size=1024',
+    // Performance settings - Increased memory limits
+    node_args: '--max-old-space-size=2048 --max-semi-space-size=512 --optimize-for-size',
     kill_timeout: 5000,
     wait_ready: true,
     listen_timeout: 10000,

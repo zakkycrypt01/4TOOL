@@ -190,15 +190,16 @@ class PerformanceMiddleware {
                 
                 // Store original send method
                 const originalSend = res.json;
+                const self = this;
                 
                 // Override send method to cache response
                 res.json = function(data) {
                     // Cache the response
-                    this.setCachedResponse(cacheKey, data, ttl);
+                    self.setCachedResponse(cacheKey, data, ttl);
                     
                     // Call original send method
                     return originalSend.call(this, data);
-                }.bind(this);
+                };
                 
                 // Add cache headers
                 res.set('X-Cache-Status', 'MISS');
@@ -218,7 +219,7 @@ class PerformanceMiddleware {
                     this.logSlowResponse(req.path, responseTime);
                 }
             }
-        }.bind(this);
+        };
     }
     
     /**
@@ -379,4 +380,60 @@ class PerformanceMiddleware {
     }
 }
 
-module.exports = PerformanceMiddleware; 
+// Memory monitoring middleware
+const memoryMonitor = (req, res, next) => {
+    const memUsage = process.memoryUsage();
+    const heapUsedMB = Math.round(memUsage.heapUsed / 1024 / 1024);
+    const heapTotalMB = Math.round(memUsage.heapTotal / 1024 / 1024);
+    
+    // Log memory usage for high-traffic endpoints
+    if (req.path.includes('/webhook') || req.path.includes('/api')) {
+        console.log(`[MEMORY] ${req.method} ${req.path} - Heap: ${heapUsedMB}MB/${heapTotalMB}MB`);
+    }
+    
+    // Trigger garbage collection if memory usage is high
+    if (heapUsedMB > 1024 && global.gc) { // 1GB threshold
+        console.warn(`[WARNING] High memory usage (${heapUsedMB}MB), triggering GC`);
+        global.gc();
+    }
+    
+    next();
+};
+
+// Response time monitoring
+const responseTime = (req, res, next) => {
+    const start = Date.now();
+    
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        if (duration > 1000) { // Log slow requests (>1s)
+            console.log(`[SLOW] ${req.method} ${req.path} took ${duration}ms`);
+        }
+    });
+    
+    next();
+};
+
+// Memory cleanup on response end
+const memoryCleanup = (req, res, next) => {
+    res.on('finish', () => {
+        // Clear any large objects that might be held in memory
+        if (req.body && req.body.data) {
+            req.body.data = null;
+        }
+        
+        // Trigger GC for long-running requests
+        if (global.gc && req.headers['content-length'] > 1024 * 1024) { // >1MB requests
+            global.gc();
+        }
+    });
+    
+    next();
+};
+
+module.exports = {
+    PerformanceMiddleware,
+    memoryMonitor,
+    responseTime,
+    memoryCleanup
+}; 

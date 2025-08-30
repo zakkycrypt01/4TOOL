@@ -43,30 +43,60 @@ class AutonomousService {
 
     async checkAllUsersAutonomousMode() {
         try {
+            // Memory cleanup before processing
+            if (global.gc) {
+                global.gc();
+                console.log('[DEBUG] Garbage collection triggered');
+            }
+
+            // Log current memory usage
+            const memUsage = process.memoryUsage();
+            console.log('[DEBUG] Memory usage before processing:', {
+                rss: `${Math.round(memUsage.rss / 1024 / 1024)}MB`,
+                heapUsed: `${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`,
+                heapTotal: `${Math.round(memUsage.heapTotal / 1024 / 1024)}MB`
+            });
+
+            // Check if memory usage is too high
+            if (memUsage.heapUsed > 1024 * 1024 * 1024) { // 1GB
+                console.warn('[WARNING] High memory usage detected, triggering cleanup');
+                if (global.gc) global.gc();
+            }
+
             const users = await this.db.getAllUsers();
+            console.log(`[DEBUG] Processing ${users.length} users for autonomous mode check`);
+            
             for (const user of users) {
-                const settings = await this.db.getUserSettings(user.id);
-                const enabled = settings.autonomous_enabled === 1 || settings.autonomous_enabled === true;
-                const currentlyRunning = this.userAutonomousStates.get(user.id) === true;
-                
-                // Check if autonomous mode is enabled but there are no active autonomous strategy rules
-                if (enabled) {
-                    const wasDisabled = await this.autonomousTrading.checkAndDisableAutonomousModeIfNoRules(user.id);
-                    if (wasDisabled) {
-                        // Update the running state
+                try {
+                    const enabled = user.autonomous_enabled === 1;
+                    const currentlyRunning = this.userAutonomousStates.get(user.id) || false;
+                    
+                    if (enabled && !currentlyRunning) {
+                        await this.startAutonomousMode(user.id);
+                        this.userAutonomousStates.set(user.id, true);
+                    } else if (!enabled && currentlyRunning) {
+                        await this.stopAutonomousMode(user.id);
                         this.userAutonomousStates.set(user.id, false);
-                        continue; // Skip to next user
                     }
-                }
-                
-                if (enabled && !currentlyRunning) {
-                    await this.startAutonomousMode(user.id);
-                    this.userAutonomousStates.set(user.id, true);
-                } else if (!enabled && currentlyRunning) {
-                    await this.stopAutonomousMode(user.id);
-                    this.userAutonomousStates.set(user.id, false);
+                } catch (error) {
+                    this.logger.error(`Error processing user ${user.id}: ${error.message}`);
                 }
             }
+
+            // Memory cleanup after processing
+            if (global.gc) {
+                global.gc();
+                console.log('[DEBUG] Garbage collection triggered after processing');
+            }
+
+            // Log final memory usage
+            const finalMemUsage = process.memoryUsage();
+            console.log('[DEBUG] Memory usage after processing:', {
+                rss: `${Math.round(finalMemUsage.rss / 1024 / 1024)}MB`,
+                heapUsed: `${Math.round(finalMemUsage.heapUsed / 1024 / 1024)}MB`,
+                heapTotal: `${Math.round(finalMemUsage.heapTotal / 1024 / 1024)}MB`
+            });
+
         } catch (error) {
             this.logger.error(`Error in global autonomous mode check: ${error.message}`);
         }

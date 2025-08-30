@@ -333,17 +333,30 @@ class AutonomousTrading {
 
         // Fetch initial data
         try {
-            // Fetch top traded tokens from Jupiter
+            // Fetch top traded tokens from Jupiter with memory optimization
             try {
-                const response = await axios.get('https://price.jup.ag/v4/price?ids=SOL');
-                console.log('[DEBUG] Jupiter price response:', JSON.stringify(response.data));
+                const response = await axios.get('https://price.jup.ag/v4/price?ids=SOL', {
+                    timeout: 10000,
+                    maxContentLength: 1024 * 1024 // 1MB limit
+                });
+                // Only log essential data to prevent memory bloat
+                console.log('[DEBUG] Jupiter SOL price:', response.data?.data?.SOL?.price || 'N/A');
+                // Clear response data from memory
+                response.data = null;
             } catch (err) {
                 console.error('[DEBUG] Exception in Jupiter price fetch:', err.message);
             }
 
             try {
-                const response = await axios.get('https://price.jup.ag/v4/toptraded');
-                console.log('[DEBUG] Jupiter toptraded response:', JSON.stringify(response.data));
+                const response = await axios.get('https://price.jup.ag/v4/toptraded', {
+                    timeout: 10000,
+                    maxContentLength: 1024 * 1024 // 1MB limit
+                });
+                // Only log count to prevent memory bloat
+                const tokenCount = response.data?.data?.length || 0;
+                console.log('[DEBUG] Jupiter toptraded tokens count:', tokenCount);
+                // Clear response data from memory immediately
+                response.data = null;
             } catch (err) {
                 console.error('[DEBUG] Exception in Jupiter toptraded fetch:', err.message);
             }
