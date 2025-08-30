@@ -31,54 +31,49 @@ const RulesManager = require('../utils/rulesManager');
 
 class TelegramBotManager {
     constructor(config, manualManagementService) {
+        this.config = config;
         if (!config.telegram || !config.telegram.token) {
             throw new Error('Telegram token is required');
         }
 
         try {
-            this.bot = new TelegramBot(config.telegram.token, { polling: true });
-            this.bot.userStates = new Map(); // Ensure userStates is available on the bot instance
+            // Webhook-only: bot is provided by the webhook server
+            this.bot = null;
+            this.webhookMode = true;
 
-            // Add error handling for polling
-            this.bot.on('polling_error', (error) => {
-                console.error('Polling error:', error.message);
-                
-                if (error.code === 'EFATAL' || error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT') {
-                    console.error('Connection error detected. Attempting to reconnect...');
-                    this.reconnectBot();
-                }
-            });
-
-            // Add connection error handling
-            this.bot.on('error', (error) => {
-                console.error('Telegram bot error:', error.message);
-                this.reconnectBot();
-            });
-
+            // Initialize components that do NOT depend on bot instance
             this.db = new DatabaseManager();
             this.feeManager = new FeeManagement(config);
             this.tradingExecution = new TradingExecution(config);
             this.rugCheck = new RugCheck();
             this.tokenAnalysis = new TokenAnalysis();
             this.ruleEngine = new RuleEngine(this.db, config);
-            // Instantiate AutonomousService with ruleEngine and pass the Telegram bot
+            this.buyManager = new BuyManager(config, this.tradingExecution, this.db, manualManagementService);
+            this.fileExportService = new FileExportService();
+            this.tempStorage = new Map();
+            this.activeRules = new Map();
+
+            // If we already have a bot (polling mode), finish bot-dependent initialization
+            // In webhook-only mode, initialization with bot occurs in setBot()
+        } catch (error) {
+            console.error('Failed to initialize Telegram bot:', error.message);
+            throw new Error(`Failed to initialize Telegram bot: ${error.message}`);
+        }
+    }
+
+    initializeWithBot(config) {
+        // Instantiate services and handlers that require a live bot instance
             this.autonomousService = new AutonomousService(config, this.ruleEngine, this.bot);
-            // Initialize utility classes
             const MessageDispatcher = require('../utils/messageDispatcher');
             this.dispatcher = new MessageDispatcher(this.bot, { maxConcurrent: 10, minIntervalMs: 40 });
             this.messageManager = new MessageManager({
                 sendMessage: (chatId, message, options) => this.dispatcher.send(chatId, message, options)
             });
             this.menuManager = new MenuManager(this.bot, this.db, this.messageManager);
-            this.rulesCommand = new RulesCommand(this.bot, this.db, config); // Move this line before RulesManager
+        this.rulesCommand = new RulesCommand(this.bot, this.db, config);
             this.rulesManager = new RulesManager(this.bot, this.db, this.messageManager, this.rulesCommand);
-            this.buyManager = new BuyManager(config, this.tradingExecution, this.db, manualManagementService);
             this.sellManager = new SellManager(config, this.tradingExecution, this.db, this.messageManager);
-            this.fileExportService = new FileExportService();
-            this.tempStorage = new Map();
-            this.activeRules = new Map();
 
-            // Initialize handler classes
             this.walletHandlers = new WalletHandlers(this.bot, this.db, config);
             this.portfolioHandlers = new PortfolioHandlers(this.bot, this.db, config);
             this.tradingHandlers = new TradingHandlers(this.bot, this.db, config, this.sellManager);
@@ -102,50 +97,366 @@ class TelegramBotManager {
                 rulesCommand: this.rulesCommand,
                 bot: this 
             });
-
-            this.setupCommands();
-        } catch (error) {
-            console.error('Failed to initialize Telegram bot:', error.message);
-            throw new Error(`Failed to initialize Telegram bot: ${error.message}`);
-        }
     }
 
     async reconnectBot() {
-        try {
-            console.log('Attempting to reconnect to Telegram...');
-            
-            // Stop current polling
-            await this.bot.stopPolling();
-            
-            // Wait for 5 seconds before reconnecting
-            await new Promise(resolve => setTimeout(resolve, 5000));
-            
-            // Start polling again
-            await this.bot.startPolling();
-            console.log('Successfully reconnected to Telegram');
-            
-            // Reinitialize the bot with error handlers
-            this.bot.on('polling_error', (error) => {
-                console.error('Polling error:', error.message);
-                
-                if (error.code === 'EFATAL' || error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT') {
-                    console.error('Connection error detected. Attempting to reconnect...');
-                    this.reconnectBot();
-                }
-            });
+        console.log('Reconnection logic not applicable in webhook-only mode');
+    }
 
-            this.bot.on('error', (error) => {
-                console.error('Telegram bot error:', error.message);
-                this.reconnectBot();
+    // Method to set bot instance from webhook server
+    setBot(bot) {
+        this.bot = bot;
+        this.bot.userStates = new Map();
+        // Finish bot-dependent initialization now that bot exists
+        // Reuse existing config by reading from bot options if needed
+        this.initializeWithBot(this.config);
+            this.setupCommands();
+    }
+
+    // Get update type for logging
+    getUpdateType(update) {
+        if (update.message) return 'message';
+        if (update.callback_query) return 'callback_query';
+        if (update.inline_query) return 'inline_query';
+        if (update.chosen_inline_result) return 'chosen_inline_result';
+        if (update.channel_post) return 'channel_post';
+        if (update.edited_message) return 'edited_message';
+        if (update.edited_channel_post) return 'edited_channel_post';
+        if (update.shipping_query) return 'shipping_query';
+        if (update.pre_checkout_query) return 'pre_checkout_query';
+        if (update.poll) return 'poll';
+        if (update.poll_answer) return 'poll_answer';
+        if (update.my_chat_member) return 'my_chat_member';
+        if (update.chat_member) return 'chat_member';
+        if (update.chat_join_request) return 'chat_join_request';
+        return 'unknown';
+    }
+
+    // Handle webhook updates
+    async handleWebhookUpdate(update) {
+        try {
+            // Log the update structure for debugging
+            console.log('Processing webhook update:', {
+                updateId: update.update_id,
+                type: this.getUpdateType(update),
+                hasMessage: !!update.message,
+                hasCallbackQuery: !!update.callback_query,
+                callbackQueryStructure: update.callback_query ? {
+                    hasId: !!update.callback_query.id,
+                    hasFrom: !!update.callback_query.from,
+                    hasMessage: !!update.callback_query.message,
+                    hasData: !!update.callback_query.data,
+                    messageHasChat: !!(update.callback_query.message && update.callback_query.message.chat)
+                } : null,
+                fullUpdate: JSON.stringify(update, null, 2)
             });
+            
+            // Handle different types of updates
+            if (update.message) {
+                await this.handleMessage(update.message);
+            } else if (update.callback_query) {
+                try {
+                    // Additional safety check for callback query structure
+                    if (!update.callback_query.message || !update.callback_query.message.chat || !update.callback_query.from) {
+                        console.error('Invalid callback query structure:', {
+                            hasMessage: !!update.callback_query.message,
+                            hasChat: !!(update.callback_query.message && update.callback_query.message.chat),
+                            hasFrom: !!update.callback_query.from,
+                            callbackQuery: update.callback_query
+                        });
+                        return;
+                    }
+                    
+                    // Additional check for required properties
+                    if (!update.callback_query.message.chat.id || !update.callback_query.from.id || !update.callback_query.data) {
+                        console.error('Missing required callback query properties:', {
+                            hasChatId: !!update.callback_query.message.chat.id,
+                            hasFromId: !!update.callback_query.from.id,
+                            hasData: !!update.callback_query.data,
+                            callbackQuery: update.callback_query
+                        });
+                        return;
+                    }
+                    
+                    // Create a context-like object for callback queries from webhook updates
+                    const ctx = {
+                        chat: update.callback_query.message.chat,
+                        from: update.callback_query.from,
+                        callbackQuery: update.callback_query
+                    };
+                    
+                    // Validate the context object before passing it
+                    if (!ctx.chat || !ctx.chat.id || !ctx.from || !ctx.from.id || !ctx.callbackQuery) {
+                        console.error('Invalid callback query context:', {
+                            hasChat: !!ctx.chat,
+                            hasChatId: !!(ctx.chat && ctx.chat.id),
+                            hasFrom: !!ctx.from,
+                            hasFromId: !!(ctx.from && ctx.from.id),
+                            hasCallbackQuery: !!ctx.callbackQuery,
+                            callbackQuery: update.callback_query
+                        });
+                        return;
+                    }
+                    
+                    // Additional logging for successful context creation
+                    console.log('Successfully created callback query context:', {
+                        chatId: ctx.chat.id,
+                        fromId: ctx.from.id,
+                        callbackData: ctx.callbackQuery.data
+                    });
+                    
+                    await this.handleCallbackQuery(ctx);
+                } catch (error) {
+                    console.error('Error processing callback query from webhook:', error);
+                    console.error('Callback query data:', update.callback_query);
+                }
+            } else if (update.inline_query) {
+                await this.handleInlineQuery(update.inline_query);
+            } else if (update.chosen_inline_result) {
+                await this.handleChosenInlineResult(update.chosen_inline_result);
+            }
         } catch (error) {
-            console.error('Failed to reconnect to Telegram:', error.message);
-            // Try again after 30 seconds
-            setTimeout(() => this.reconnectBot(), 30000);
+            console.error('Error handling webhook update:', error);
         }
     }
 
+    // Handle incoming messages
+    async handleMessage(msg) {
+        try {
+            // Check for commands
+            if (msg.text && msg.text.startsWith('/')) {
+                await this.handleCommand(msg);
+            } else {
+                // Handle regular messages
+                await this.handleRegularMessage(msg);
+            }
+        } catch (error) {
+            console.error('Error handling message:', error);
+        }
+    }
+
+    // Handle commands
+    async handleCommand(msg) {
+        const chatId = msg.chat.id;
+        const command = msg.text.split(' ')[0];
+
+        try {
+            switch (command) {
+                case '/start':
+                    await this.handleStartCommand(msg);
+                    break;
+                case '/help':
+                    await this.bot.sendMessage(chatId, 'Help command - coming soon!');
+                    break;
+                default:
+                    await this.bot.sendMessage(chatId, 'Unknown command. Use /start to begin.');
+            }
+        } catch (error) {
+            console.error('Error handling command:', error);
+            await this.bot.sendMessage(chatId, 'Sorry, something went wrong. Please try again later.');
+        }
+    }
+
+    // Handle start command
+    async handleStartCommand(msg) {
+        const chatId = msg.chat.id;
+        const telegramId = msg.from.id.toString();
+        
+        try {
+            let user = await this.db.getUserByTelegramId(telegramId);
+            if (!user) {
+                user = await this.db.createUser(telegramId);
+            }
+
+            const wallets = await this.db.getWalletsByUserId(user.id);
+            const activeWallet = await this.db.getActiveWallet(user.id);
+            
+            if (!activeWallet) {
+                // New user - show wallet creation options
+                const welcomeMessage = `
+🎉 *Welcome to 4T-Bot!* 🚀
+
+I'm your automated trading assistant for Solana tokens. To get started, you'll need a Solana wallet.
+
+*Choose an option:*`;
+
+                const keyboard = {
+                    inline_keyboard: [
+                        [
+                            { text: '👛 Create New Wallet', callback_data: 'create_wallet' },
+                            { text: '📝 Import Wallet', callback_data: 'import_wallet' }
+                        ]
+                    ]
+                };
+
+                const sentMessage = await this.bot.sendMessage(chatId, welcomeMessage, {
+                    parse_mode: 'Markdown',
+                    reply_markup: keyboard
+                });
+
+                // Store welcome message ID for later deletion
+                this.messageManager.lastWelcomeMessageId = sentMessage.message_id;
+            } else {
+                await this.menuManager.showMainMenu(chatId, activeWallet, this.ruleEngine);
+            }
+        } catch (error) {
+            console.error('Error in /start command:', error);
+            await this.bot.sendMessage(chatId, 'Sorry, something went wrong. Please try again later.');
+        }
+    }
+
+    // Handle regular messages
+    async handleRegularMessage(msg) {
+        try {
+            const chatId = msg.chat.id;
+            const telegramId = msg.from.id.toString();
+            const messageText = msg.text;
+            
+            console.log('Regular message received:', messageText);
+            
+            // Create context object for handlers
+            const ctx = {
+                chat: msg.chat,
+                from: msg.from,
+                message: msg
+            };
+            
+            // Get user state
+            const userState = this.bot.userStates.get(telegramId);
+            
+            // Try to handle message through various handlers
+            let handled = false;
+            
+            // Try wallet handlers first (for wallet addresses, private keys, etc.)
+            if (this.walletHandlers && this.walletHandlers.handleMessage) {
+                try {
+                    const walletResult = await this.walletHandlers.handleMessage(ctx, userState);
+                    if (walletResult && (walletResult.handled || walletResult === true)) {
+                        handled = true;
+                        console.log('Message handled by wallet handlers');
+                        
+                        // Clear user state if requested
+                        if (walletResult.clearState && userState) {
+                            this.bot.userStates.delete(telegramId);
+                            console.log('User state cleared');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error in wallet handlers:', error);
+                }
+            }
+            
+            // Try settings handlers
+            if (!handled && this.settingsHandlers && this.settingsHandlers.handleMessage) {
+                try {
+                    const settingsResult = await this.settingsHandlers.handleMessage(ctx, userState);
+                    if (settingsResult && (settingsResult.handled || settingsResult === true)) {
+                        handled = true;
+                        console.log('Message handled by settings handlers');
+                    }
+                } catch (error) {
+                    console.error('Error in settings handlers:', error);
+                }
+            }
+            
+            // Try trading handlers
+            if (!handled && this.tradingHandlers && this.tradingHandlers.handleMessage) {
+                try {
+                    await this.tradingHandlers.handleMessage(ctx, userState);
+                    handled = true;
+                    console.log('Message handled by trading handlers');
+                } catch (error) {
+                    console.error('Error in trading handlers:', error);
+                }
+            }
+            
+            // Try strategy handlers
+            if (!handled && this.strategyHandlers && this.strategyHandlers.handleMessage) {
+                try {
+                    const strategyResult = await this.strategyHandlers.handleMessage(ctx, userState);
+                    if (strategyResult && (strategyResult.handled || strategyResult === true)) {
+                        handled = true;
+                        console.log('Message handled by strategy handlers');
+                    }
+                } catch (error) {
+                    console.error('Error in strategy handlers:', error);
+                }
+            }
+            
+            // If no handler processed the message, check if it looks like a token address
+            if (!handled && messageText && messageText.length > 30 && messageText.length < 50) {
+                // This might be a Solana token address
+                console.log('Potential token address detected, checking with trading handlers...');
+                
+                // Try to handle as a token address
+                if (this.tradingHandlers && this.tradingHandlers.handleTokenAddress) {
+                    try {
+                        await this.tradingHandlers.handleTokenAddress(chatId, telegramId, messageText);
+                        handled = true;
+                        console.log('Token address handled by trading handlers');
+                    } catch (error) {
+                        console.error('Error handling token address:', error);
+                    }
+                }
+            }
+            
+            // If still not handled, provide helpful response
+            if (!handled) {
+                const helpMessage = `
+🤖 *Message Received*
+
+I received your message: \`${messageText}\`
+
+*What you can do:*
+• Send a Solana token address to analyze it
+• Use /start to see the main menu
+• Use /help for available commands
+
+*Need help?* Use /start to begin!`;
+
+                await this.bot.sendMessage(chatId, helpMessage, {
+                    parse_mode: 'Markdown'
+                });
+            }
+            
+        } catch (error) {
+            console.error('Error handling regular message:', error);
+            try {
+                await this.bot.sendMessage(msg.chat.id, 'Sorry, something went wrong while processing your message. Please try again.');
+            } catch (sendError) {
+                console.error('Error sending error message:', sendError);
+            }
+        }
+    }
+
+    // Handle callback queries
+    async handleCallbackQuery(callbackQuery) {
+        try {
+            await this.callbackRouter.handleCallbackQuery(callbackQuery);
+        } catch (error) {
+            console.error('Error handling callback query:', error);
+            await this.bot.answerCallbackQuery(callbackQuery.id, 'Sorry, something went wrong.');
+        }
+    }
+
+    // Handle inline queries
+    async handleInlineQuery(inlineQuery) {
+        // Implement inline query handling if needed
+        console.log('Inline query received:', inlineQuery.query);
+    }
+
+    // Handle chosen inline results
+    async handleChosenInlineResult(chosenInlineResult) {
+        // Implement chosen inline result handling if needed
+        console.log('Chosen inline result:', chosenInlineResult);
+    }
+
     setupCommands() {
+        // Only set up event listeners if we have a bot instance and we're in polling mode
+        if (!this.bot || this.webhookMode) {
+            return;
+        }
+
         // Start command
         this.bot.onText(/\/start/, async (msg) => {
             const chatId = msg.chat.id;

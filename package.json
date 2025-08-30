@@ -10,7 +10,9 @@
     "wallet-api:dev": "nodemon wallet-api-server.js",
     "test": "jest",
     "test:wallet": "node test-wallet-holdings.js",
-    "test:integration": "node test-integration.js"
+    "test:integration": "node test-integration.js",
+    "test:webhook": "node test_webhook.js",
+    "validate:webhook": "node validate_webhook_config.js"
   },
   "dependencies": {
     "@project-serum/anchor": "^0.26.0",

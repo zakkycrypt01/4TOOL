@@ -7,11 +7,34 @@ class CallbackRouter {
     }
 
     async handleCallbackQuery(ctx) {
-        const chatId = ctx.chat.id;
-        const telegramId = ctx.from.id.toString();
-        const callbackData = ctx.callbackQuery.data;
-
         try {
+            // Validate the context object
+            if (!ctx || !ctx.chat || !ctx.chat.id || !ctx.from || !ctx.from.id || !ctx.callbackQuery || !ctx.callbackQuery.data) {
+                console.error('Invalid callback query context:', {
+                    hasCtx: !!ctx,
+                    hasChat: !!(ctx && ctx.chat),
+                    hasChatId: !!(ctx && ctx.chat && ctx.chat.id),
+                    hasFrom: !!(ctx && ctx.from),
+                    hasFromId: !!(ctx && ctx.from && ctx.from.id),
+                    hasCallbackQuery: !!(ctx && ctx.callbackQuery),
+                    hasData: !!(ctx && ctx.callbackQuery && ctx.callbackQuery.data),
+                    ctx: ctx
+                });
+                return;
+            }
+            
+            const chatId = ctx.chat.id;
+            const telegramId = ctx.from.id.toString();
+            const callbackData = ctx.callbackQuery.data;
+
+            // Log the callback data for debugging
+            console.log('Processing callback query:', {
+                chatId,
+                telegramId,
+                callbackData,
+                timestamp: new Date().toISOString()
+            });
+
             // Handle rule configuration callbacks
             if (callbackData.startsWith('rule_config_')) {
                 const configType = callbackData.replace('rule_config_', '');
@@ -392,6 +415,9 @@ class CallbackRouter {
                 callbackData.startsWith('confirm_sell_execute_') ||
                 callbackData.startsWith('confirm_sell_') ||
                 callbackData.startsWith('token_details_') ||
+                callbackData.startsWith('token_info_') || // Token info callbacks
+                callbackData.startsWith('rug_check_') || // Rug check callbacks
+                callbackData.startsWith('price_chart_') || // Price chart callbacks
                 callbackData === 'cancel_buy' ||
                 callbackData === 'cancel_sell') {
                 // sell_percent_ and sell_custom_ are routed to tradingHandlers.handleTradeActions
@@ -860,11 +886,19 @@ class CallbackRouter {
 
             // If no handler found, log and notify user
             console.warn('Unhandled callback action:', callbackData);
-            await this.bot.sendMessage(chatId, 'Sorry, this action is not supported. Please try again.');
+            try {
+                await this.bot.sendMessage(chatId, 'Sorry, this action is not supported. Please try again.');
+            } catch (sendError) {
+                console.error('Error sending unhandled callback message:', sendError);
+            }
 
         } catch (error) {
             console.error('Error handling callback query:', error);
-            await this.bot.sendMessage(chatId, 'Sorry, there was an error processing your request. Please try again.');
+            try {
+                await this.bot.sendMessage(chatId, 'Sorry, there was an error processing your request. Please try again.');
+            } catch (sendError) {
+                console.error('Error sending error message:', sendError);
+            }
         }
     }
 

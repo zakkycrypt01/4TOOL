@@ -19,6 +19,13 @@ class TradingHandlers {
         this.pendingTokenCheck = null;
     }
 
+    // Helper function to detect if a message looks like a token address
+    isTokenAddress(message) {
+        // Solana token addresses are base58 encoded and typically 32-44 characters long
+        const trimmed = message.trim();
+        return trimmed.length >= 32 && trimmed.length <= 44 && /^[1-9A-HJ-NP-Za-km-z]+$/.test(trimmed);
+    }
+
     // Handle input messages for trading-related waiting states
     async handleMessage(ctx, userState) {
         const chatId = ctx.chat.id;
@@ -38,20 +45,36 @@ class TradingHandlers {
                     await this.handleTokenCheck(chatId, telegramId, tokenAddress);
                 } else if (checkType === 'report') {
                     await this.handleTokenCheck(chatId, telegramId, tokenAddress);
+                } else if (checkType === 'buy') {
+                    await this.handleBuyToken(chatId, telegramId, tokenAddress);
                 }
+                return { handled: true, clearState: true };
+            }
+
+            // Check if message looks like a token address and automatically analyze it
+            if (this.isTokenAddress(message)) {
+                const tokenAddress = message.trim();
+                console.log(`Auto-detected token address: ${tokenAddress}`);
+                
+                // Automatically analyze the token and show buy options
+                await this.handleBuyToken(chatId, telegramId, tokenAddress);
                 return { handled: true, clearState: true };
             }
 
             if (userState && userState.state) {
                 switch (userState.state) {
-                    case 'awaiting_token_address': {
-                        // Used for buy token flow
-                        const tokenAddress = message.trim();
-                        // Optionally validate token address here
-                        await this.handleBuyToken(chatId, telegramId, tokenAddress);
-                        return { handled: true, clearState: true };
-                    }
+                    // Note: awaiting_token_address is now handled by pendingTokenCheck for consistency
                     case 'awaiting_custom_buy_amount': {
+                        // Check if user sent a token address instead of amount
+                        if (this.isTokenAddress(message)) {
+                            const newTokenAddress = message.trim();
+                            console.log(`User changed token from ${userState.data.tokenAddress} to ${newTokenAddress}`);
+                            
+                            // Clear the current state and analyze the new token
+                            await this.handleBuyToken(chatId, telegramId, newTokenAddress);
+                            return { handled: true, clearState: true };
+                        }
+                        
                         // Handle custom buy amount input
                         const amount = parseFloat(message.trim());
                         if (isNaN(amount) || amount <= 0) {
@@ -233,43 +256,90 @@ Please unlock your wallet first to start trading.`;
             }
 
             if (tokenAddress) {
-                // If token address is provided, show buy options for that token
-                const message = `
-*🛒 Buy Token*
+                // If token address is provided, first analyze the token like check token does
+                try {
+                    const report = await this.rugCheck.getTokenReport(tokenAddress);
+                    
+                    // Format the token information using the TokenAnalysis module
+                    const analysisMessage = await this.tokenAnalysis.formatTokenInfo(report);
+                    
+                    // Check if message is too long for Telegram (max 4096 characters)
+                    let displayMessage = analysisMessage;
+                    if (analysisMessage.length > 4000) {
+                        // If message is too long, send a shorter version
+                        displayMessage = `🔹 *${report.tokenMeta?.name || 'Unknown Token'}*\n📍 \`${tokenAddress}\`\n\n⚠️ Risk Score: ${report.score_normalised || 0}/100\n📊 Supply: ${this.tokenAnalysis.formatNumber(report.token?.supply || 0)}\n\nFull analysis available - message was too long to display.`;
+                    }
+                    
+                    // Add buy options below the analysis
+                    const buyOptionsMessage = `
 
-*Token Address:* \`${tokenAddress}\`
+*🛒 Buy Options*
 
 Select buy amount:`;
 
-                const keyboard = {
-                    inline_keyboard: [
-                        [
-                            { text: '0.1 SOL', callback_data: `buy_amount_0.1_${tokenAddress}` },
-                            { text: '0.5 SOL', callback_data: `buy_amount_0.5_${tokenAddress}` }
-                        ],
-                        [
-                            { text: '1 SOL', callback_data: `buy_amount_1_${tokenAddress}` },
-                            { text: '5 SOL', callback_data: `buy_amount_5_${tokenAddress}` }
-                        ],
-                        [
-                            { text: 'Custom Amount', callback_data: `custom_buy_${tokenAddress}` }
-                        ],
-                        [
-                            { text: '◀️ Back to Trade', callback_data: 'trade' }
+                    const fullMessage = displayMessage + buyOptionsMessage;
+
+                    const keyboard = {
+                        inline_keyboard: [
+                            [
+                                { text: '0.1 SOL', callback_data: `buy_amount_0.1_${tokenAddress}` },
+                                { text: '0.5 SOL', callback_data: `buy_amount_0.5_${tokenAddress}` }
+                            ],
+                            [
+                                { text: '1 SOL', callback_data: `buy_amount_1_${tokenAddress}` },
+                                { text: '5 SOL', callback_data: `buy_amount_5_${tokenAddress}` }
+                            ],
+                            [
+                                { text: 'Custom Amount', callback_data: `custom_buy_${tokenAddress}` }
+                            ],
+                            [
+                                { text: '◀️ Back to Trade', callback_data: 'trade' }
+                            ]
                         ]
-                    ]
-                };
+                    };
 
-                // Set user state to allow custom input if needed
-                this.userStates.set(telegramId, {
-                    state: 'awaiting_buy_amount_selection',
-                    data: { tokenAddress }
-                });
+                    await this.sendAndStoreMessage(chatId, fullMessage, {
+                        parse_mode: 'Markdown',
+                        reply_markup: keyboard
+                    });
+                } catch (error) {
+                    console.error('Error analyzing token for buy:', error);
+                    // If analysis fails, still show buy options but with a warning
+                    const message = `
+*⚠️ Token Analysis Failed*
 
-                await this.sendAndStoreMessage(chatId, message, {
-                    parse_mode: 'Markdown',
-                    reply_markup: keyboard
-                });
+*Token Address:* \`${tokenAddress}\`
+
+Could not analyze token details. Proceed with caution.
+
+*🛒 Buy Options*
+
+Select buy amount:`;
+
+                    const keyboard = {
+                        inline_keyboard: [
+                            [
+                                { text: '0.1 SOL', callback_data: `buy_amount_0.1_${tokenAddress}` },
+                                { text: '0.5 SOL', callback_data: `buy_amount_0.5_${tokenAddress}` }
+                            ],
+                            [
+                                { text: '1 SOL', callback_data: `buy_amount_1_${tokenAddress}` },
+                                { text: '5 SOL', callback_data: `buy_amount_5_${tokenAddress}` }
+                            ],
+                            [
+                                { text: 'Custom Amount', callback_data: `custom_buy_${tokenAddress}` }
+                            ],
+                            [
+                                { text: '◀️ Back to Trade', callback_data: 'trade' }
+                            ]
+                        ]
+                    };
+
+                    await this.sendAndStoreMessage(chatId, message, {
+                        parse_mode: 'Markdown',
+                        reply_markup: keyboard
+                    });
+                }
             } else {
                 // If no token address, show token input prompt
                 const message = `
@@ -290,11 +360,11 @@ Please enter the token address you want to buy:`;
                     reply_markup: keyboard
                 });
 
-                // Set user state to await token address and recognize custom input
-                this.userStates.set(telegramId, {
-                    state: 'awaiting_token_address',
-                    data: { action: 'buy', allowCustomInput: true }
-                });
+                // Use the same pattern as check token for consistency
+                this.pendingTokenCheck = {
+                    type: 'buy',
+                    telegramId
+                };
             }
         } catch (error) {
             console.error('Error handling buy token:', error);
@@ -1028,6 +1098,27 @@ Choose your preferred trail threshold:`;
                 return;
             }
 
+            // Handle token info callback
+            if (action.startsWith('token_info_')) {
+                const tokenAddress = action.replace('token_info_', '');
+                await this.handleTokenInfo(chatId, telegramId, tokenAddress);
+                return;
+            }
+
+            // Handle rug check callback
+            if (action.startsWith('rug_check_')) {
+                const tokenAddress = action.replace('rug_check_', '');
+                await this.handleRugCheck(chatId, telegramId, tokenAddress);
+                return;
+            }
+
+            // Handle price chart callback
+            if (action.startsWith('price_chart_')) {
+                const tokenAddress = action.replace('price_chart_', '');
+                await this.handlePriceChart(chatId, telegramId, tokenAddress);
+                return;
+            }
+
             // Handle other trade-related actions
             console.warn('Unhandled trade action:', action);
             await this.bot.sendMessage(chatId, 'Sorry, this trade action is not supported. Please try again.');
@@ -1038,6 +1129,286 @@ Choose your preferred trail threshold:`;
             if (this.buyManager && typeof this.buyManager.clearPendingBuy === 'function') {
                 this.buyManager.clearPendingBuy(telegramId);
             }
+        }
+    }
+
+    // Handle token info callback
+    async handleTokenInfo(chatId, telegramId, tokenAddress) {
+        try {
+            console.log(`Handling token info for: ${tokenAddress}`);
+            
+            // Show loading message
+            const loadingMsg = await this.sendAndStoreMessage(chatId, 
+                '📊 *Gathering Token Information...*\n\nPlease wait while I fetch detailed information.', 
+                { parse_mode: 'Markdown' }
+            );
+            
+            try {
+                // Get detailed token information
+                const detailedInfo = await this.tokenAnalysis.getDetailedTokenInfo(tokenAddress);
+                
+                // Delete loading message
+                if (loadingMsg && loadingMsg.message_id) {
+                    try {
+                        await this.bot.deleteMessage(chatId, loadingMsg.message_id);
+                    } catch (deleteError) {
+                        console.log('Could not delete loading message:', deleteError.message);
+                    }
+                }
+                
+                // Show detailed token information
+                const message = `
+📊 *Detailed Token Information*
+
+*Token Address:* \`${tokenAddress}\`
+*Name:* ${detailedInfo.name || 'Unknown'}
+*Symbol:* ${detailedInfo.symbol || 'Unknown'}
+*Decimals:* ${detailedInfo.decimals || 'Unknown'}
+*Total Supply:* ${detailedInfo.totalSupply ? this.formatNumber(detailedInfo.totalSupply) : 'Unknown'}
+*Circulating Supply:* ${detailedInfo.circulatingSupply ? this.formatNumber(detailedInfo.circulatingSupply) : 'Unknown'}
+*Market Cap:* ${detailedInfo.marketCap ? `$${this.formatNumber(detailedInfo.marketCap)}` : 'Unknown'}
+*Price:* ${detailedInfo.price ? `$${this.formatNumber(detailedInfo.price)}` : 'Unknown'}
+*24h Change:* ${detailedInfo.priceChange24h ? `${detailedInfo.priceChange24h > 0 ? '+' : ''}${detailedInfo.priceChange24h.toFixed(2)}%` : 'Unknown'}
+*24h Volume:* ${detailedInfo.volume24h ? `$${this.formatNumber(detailedInfo.volume24h)}` : 'Unknown'}
+*Liquidity:* ${detailedInfo.liquidity ? `$${this.formatNumber(detailedInfo.liquidity)}` : 'Unknown'}
+*Holders:* ${detailedInfo.holders ? this.formatNumber(detailedInfo.holders) : 'Unknown'}
+
+*Contract Info:*
+• *Verified:* ${detailedInfo.verified ? '✅ Yes' : '❌ No'}
+• *Creator:* ${detailedInfo.creator ? `\`${detailedInfo.creator}\`` : 'Unknown'}
+• *Created:* ${detailedInfo.createdAt ? new Date(detailedInfo.createdAt).toLocaleDateString() : 'Unknown'}`;
+
+                const keyboard = {
+                    inline_keyboard: [
+                        [
+                            { text: '🛒 Buy Token', callback_data: `buy_token_${tokenAddress}` },
+                            { text: '🔍 Rug Check', callback_data: `rug_check_${tokenAddress}` }
+                        ],
+                        [
+                            { text: '📈 Price Chart', callback_data: `price_chart_${tokenAddress}` },
+                            { text: '📊 Market Data', callback_data: `market_data_${tokenAddress}` }
+                        ],
+                        [
+                            { text: '🏠 Main Menu', callback_data: 'main_menu' }
+                        ]
+                    ]
+                };
+
+                await this.sendAndStoreMessage(chatId, message, {
+                    parse_mode: 'Markdown',
+                    reply_markup: keyboard
+                });
+                
+            } catch (error) {
+                console.error('Error getting detailed token info:', error);
+                
+                // Delete loading message
+                if (loadingMsg && loadingMsg.message_id) {
+                    try {
+                        await this.bot.deleteMessage(chatId, loadingMsg.message_id);
+                    } catch (deleteError) {
+                        console.log('Could not delete loading message:', deleteError.message);
+                    }
+                }
+                
+                await this.sendAndStoreMessage(chatId, 
+                    '❌ Could not fetch detailed token information. Please try again later.'
+                );
+            }
+            
+        } catch (error) {
+            console.error('Error handling token info:', error);
+            await this.sendAndStoreMessage(chatId, 
+                'Sorry, something went wrong while processing the token info request.'
+            );
+        }
+    }
+
+    // Handle rug check callback
+    async handleRugCheck(chatId, telegramId, tokenAddress) {
+        try {
+            console.log(`Handling rug check for: ${tokenAddress}`);
+            
+            // Show loading message
+            const loadingMsg = await this.sendAndStoreMessage(chatId, 
+                '🔍 *Performing Rug Check...*\n\nPlease wait while I analyze this token for potential risks.', 
+                { parse_mode: 'Markdown' }
+            );
+            
+            try {
+                // Perform rug check
+                const rugCheckResult = await this.rugCheck.checkToken(tokenAddress);
+                
+                // Delete loading message
+                if (loadingMsg && loadingMsg.message_id) {
+                    try {
+                        await this.bot.deleteMessage(chatId, loadingMsg.message_id);
+                    } catch (deleteError) {
+                        console.log('Could not delete loading message:', deleteError.message);
+                    }
+                }
+                
+                // Show rug check results
+                const riskLevel = rugCheckResult.riskLevel || 'Unknown';
+                const riskColor = riskLevel === 'Low' ? '🟢' : riskLevel === 'Medium' ? '🟡' : '🔴';
+                
+                const message = `
+🔍 *Rug Check Results*
+
+*Token Address:* \`${tokenAddress}\`
+*Risk Level:* ${riskColor} ${riskLevel}
+
+*Security Analysis:*
+• *Liquidity Locked:* ${rugCheckResult.liquidityLocked ? '✅ Yes' : '❌ No'}
+• *Contract Verified:* ${rugCheckResult.contractVerified ? '✅ Yes' : '❌ No'}
+• *Owner Balance:* ${rugCheckResult.ownerBalance ? `${rugCheckResult.ownerBalance}%` : 'Unknown'}
+• *Honeypot Risk:* ${rugCheckResult.honeypotRisk ? '⚠️ High' : '✅ Low'}
+• *Sell Tax:* ${rugCheckResult.sellTax ? `${rugCheckResult.sellTax}%` : 'Unknown'}
+• *Buy Tax:* ${rugCheckResult.buyTax ? `${rugCheckResult.buyTax}%` : 'Unknown'}
+
+*Warnings:* ${rugCheckResult.warnings && rugCheckResult.warnings.length > 0 ? 
+    rugCheckResult.warnings.join('\n') : 'No major warnings detected'}
+
+*Recommendation:* ${rugCheckResult.recommendation || 'Analysis complete'}`;
+
+                const keyboard = {
+                    inline_keyboard: [
+                        [
+                            { text: '🛒 Buy Token', callback_data: `buy_token_${tokenAddress}` },
+                            { text: '📊 Token Info', callback_data: `token_info_${tokenAddress}` }
+                        ],
+                        [
+                            { text: '📈 Price Chart', callback_data: `price_chart_${tokenAddress}` },
+                            { text: '⚠️ Report Issue', callback_data: `report_token_${tokenAddress}` }
+                        ],
+                        [
+                            { text: '🏠 Main Menu', callback_data: 'main_menu' }
+                        ]
+                    ]
+                };
+
+                await this.sendAndStoreMessage(chatId, message, {
+                    parse_mode: 'Markdown',
+                    reply_markup: keyboard
+                });
+                
+            } catch (error) {
+                console.error('Error performing rug check:', error);
+                
+                // Delete loading message
+                if (loadingMsg && loadingMsg.message_id) {
+                    try {
+                        await this.bot.deleteMessage(chatId, loadingMsg.message_id);
+                    } catch (deleteError) {
+                        console.log('Could not delete loading message:', deleteError.message);
+                    }
+                }
+                
+                await this.sendAndStoreMessage(chatId, 
+                    '❌ Could not complete the rug check. Please try again later.'
+                );
+            }
+            
+        } catch (error) {
+            console.error('Error handling rug check:', error);
+            await this.sendAndStoreMessage(chatId, 
+                'Sorry, something went wrong while processing the rug check request.'
+            );
+        }
+    }
+
+    // Handle price chart callback
+    async handlePriceChart(chatId, telegramId, tokenAddress) {
+        try {
+            console.log(`Handling price chart for: ${tokenAddress}`);
+            
+            // Show loading message
+            const loadingMsg = await this.sendAndStoreMessage(chatId, 
+                '📈 *Generating Price Chart...*\n\nPlease wait while I create a price chart for this token.', 
+                { parse_mode: 'Markdown' }
+            );
+            
+            try {
+                // Get price chart data
+                const chartData = await this.tokenAnalysis.getPriceChart(tokenAddress);
+                
+                // Delete loading message
+                if (loadingMsg && loadingMsg.message_id) {
+                    try {
+                        await this.bot.deleteMessage(chatId, loadingMsg.message_id);
+                    } catch (deleteError) {
+                        console.log('Could not delete loading message:', deleteError.message);
+                    }
+                }
+                
+                // Show price chart information
+                const message = `
+📈 *Price Chart Information*
+
+*Token Address:* \`${tokenAddress}\`
+*Symbol:* ${chartData.symbol || 'Unknown'}
+
+*Price Data:*
+• *Current Price:* ${chartData.currentPrice ? `$${this.formatNumber(chartData.currentPrice)}` : 'Unknown'}
+• *24h High:* ${chartData.high24h ? `$${this.formatNumber(chartData.high24h)}` : 'Unknown'}
+• *24h Low:* ${chartData.low24h ? `$${this.formatNumber(chartData.low24h)}` : 'Unknown'}
+• *7d Change:* ${chartData.change7d ? `${chartData.change7d > 0 ? '+' : ''}${chartData.change7d.toFixed(2)}%` : 'Unknown'}
+• *30d Change:* ${chartData.change30d ? `${chartData.change30d > 0 ? '+' : ''}${chartData.change30d.toFixed(2)}%` : 'Unknown'}
+
+*Volume Analysis:*
+• *24h Volume:* ${chartData.volume24h ? `$${this.formatNumber(chartData.volume24h)}` : 'Unknown'}
+• *Volume Trend:* ${chartData.volumeTrend || 'Unknown'}
+
+*Chart Timeframes Available:*
+• 1 Hour, 4 Hours, 1 Day, 1 Week, 1 Month`;
+
+                const keyboard = {
+                    inline_keyboard: [
+                        [
+                            { text: '🛒 Buy Token', callback_data: `buy_token_${tokenAddress}` },
+                            { text: '📊 Token Info', callback_data: `token_info_${tokenAddress}` }
+                        ],
+                        [
+                            { text: '🔍 Rug Check', callback_data: `rug_check_${tokenAddress}` },
+                            { text: '📈 1H Chart', callback_data: `chart_1h_${tokenAddress}` }
+                        ],
+                        [
+                            { text: '📈 1D Chart', callback_data: `chart_1d_${tokenAddress}` },
+                            { text: '📈 1W Chart', callback_data: `chart_1w_${tokenAddress}` }
+                        ],
+                        [
+                            { text: '🏠 Main Menu', callback_data: 'main_menu' }
+                        ]
+                    ]
+                };
+
+                await this.sendAndStoreMessage(chatId, message, {
+                    parse_mode: 'Markdown',
+                    reply_markup: keyboard
+                });
+                
+            } catch (error) {
+                console.error('Error generating price chart:', error);
+                
+                // Delete loading message
+                if (loadingMsg && loadingMsg.message_id) {
+                    try {
+                        await this.bot.deleteMessage(chatId, loadingMsg.message_id);
+                    } catch (deleteError) {
+                        console.log('Could not delete loading message:', deleteError.message);
+                    }
+                }
+                
+                await this.sendAndStoreMessage(chatId, 
+                    '❌ Could not generate the price chart. Please try again later.'
+                );
+            }
+            
+        } catch (error) {
+            console.error('Error handling price chart:', error);
+            await this.sendAndStoreMessage(chatId, 
+                'Sorry, something went wrong while processing the price chart request.'
+            );
         }
     }
 

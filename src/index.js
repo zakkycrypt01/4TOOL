@@ -1,5 +1,6 @@
 require('dotenv').config();
 const TelegramBotManager = require('./modules/telegramBot');
+const WebhookServer = require('./webhookServer');
 const StrategyEngine = require('./modules/strategyEngine');
 const DatabaseManager = require('./modules/database');
 const FeeManagement = require('./modules/feeManagement');
@@ -29,8 +30,10 @@ if (process.env.NODE_ENV !== 'production') {
 const config = {
     telegram: {
         token: process.env.TELEGRAM_BOT_TOKEN,
-        polling: true,
-        webhook: process.env.TELEGRAM_WEBHOOK_URL
+        // Webhook-only mode enforced
+        polling: false,
+        webhook: process.env.TELEGRAM_WEBHOOK_URL,
+        webhookPort: parseInt(process.env.TELEGRAM_WEBHOOK_PORT) || 3000
     },
     redis: {
         host: process.env.REDIS_HOST || 'localhost',
@@ -57,8 +60,12 @@ const db = new DatabaseManager();
 const feeManager = new FeeManagement(config);
 const tradingExecution = new TradingExecution(config);
 const strategyEngine = new StrategyEngine(config);
-// Step 1: create telegramBot with null for manualManagementService
+
+// Initialize Telegram bot manager (webhook-only)
 const telegramBotManager = new TelegramBotManager(config, null);
+const webhookServer = new WebhookServer(config, telegramBotManager);
+telegramBotManager.setBot(webhookServer.getBot());
+
 // Step 2: create manualManagementService with the real telegramBot
 const manualManagementService = new ManualManagementService(config, db, tradingExecution, telegramBotManager.bot);
 // Step 3: set manualManagementService on telegramBot
@@ -126,6 +133,10 @@ process.on('unhandledRejection', (reason, promise) => {
 async function start() {
     try {
         logger.info('Starting 4T-Bot application...');
+        
+        logger.info('Starting webhook server...');
+        await webhookServer.start(config.telegram.webhookPort);
+        logger.info(`Webhook server started on port ${config.telegram.webhookPort}`);
         
         // Initialize background jobs
         initializeBackgroundJobs();
