@@ -124,7 +124,7 @@ class WebhookServer {
 
                 const result = await this.bot.setWebHook(url, {
                     secret_token: secret_token || process.env.TELEGRAM_WEBHOOK_SECRET,
-                    max_connections: 4000000000000,
+                    max_connections: 40,
                     allowed_updates: ['message', 'callback_query', 'inline_query', 'chosen_inline_result']
                 });
 
@@ -226,7 +226,7 @@ class WebhookServer {
             
             const result = await this.bot.setWebHook(webhookUrl, {
                 secret_token: secretToken,
-                max_connections: 4000000000000,
+                max_connections: 40,
                 allowed_updates: ['message', 'callback_query', 'inline_query', 'chosen_inline_result']
             });
 
