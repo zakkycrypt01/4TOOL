@@ -410,6 +410,19 @@ I'm your automated trading assistant for Solana tokens. To get started, you'll n
                 }
             }
             
+            // Try rule handlers for rule creation and management
+            if (!handled && this.ruleHandlers && this.ruleHandlers.handleTextInput) {
+                try {
+                    const ruleResult = await this.ruleHandlers.handleTextInput(chatId, telegramId, messageText);
+                    if (ruleResult) {
+                        handled = true;
+                        console.log('Message handled by rule handlers');
+                    }
+                } catch (error) {
+                    console.error('Error in rule handlers:', error);
+                }
+            }
+            
             // If no handler processed the message, check if it looks like a token address
             if (!handled && messageText && messageText.length > 30 && messageText.length < 50) {
                 // This might be a Solana token address

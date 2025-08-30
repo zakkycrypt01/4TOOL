@@ -111,6 +111,28 @@ class WebhookServer {
             });
         });
 
+        // Debug endpoint to show current configuration
+        this.app.get('/debug', (req, res) => {
+            res.json({
+                config: {
+                    hasTelegramToken: !!this.config.telegram.token,
+                    hasWebhookUrl: !!this.config.telegram.webhook,
+                    webhookUrl: this.config.telegram.webhook,
+                    webhookPort: this.config.telegram.webhookPort,
+                    polling: this.config.telegram.polling
+                },
+                environment: {
+                    nodeEnv: process.env.NODE_ENV,
+                    skipWebhook: process.env.TELEGRAM_SKIP_SET_WEBHOOK,
+                    webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET ? 'set' : 'not set'
+                },
+                bot: {
+                    initialized: !!this.bot,
+                    hasWebhook: this.bot ? 'checking...' : 'not initialized'
+                }
+            });
+        });
+
         // Telegram webhook endpoint
         this.app.post('/webhook', async (req, res) => {
             try {
