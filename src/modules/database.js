@@ -594,50 +594,24 @@ class DatabaseManager {
             throw new Error('Rule name is required');
         }
 
+        // Handle new rule types properly
+        const ruleType = ruleData.type || 'filter';
+        
         const stmt = this.db.prepare(`
-            INSERT INTO rules (user_id, name, type)
-            VALUES (?, ?, ?)
+            INSERT INTO rules (user_id, name, type, description)
+            VALUES (?, ?, ?, ?)
         `);
-        const result = stmt.run(userId, ruleData.name, ruleData.type || 'filter');
+        
+        const description = ruleData.description || `Rule: ${ruleData.name}`;
+        const result = stmt.run(userId, ruleData.name, ruleType, description);
         const ruleId = result.lastInsertRowid;
 
-        // Insert rule conditions
-        const conditionStmt = this.db.prepare(`
-            INSERT INTO rule_conditions (rule_id, condition_type, condition_value)
-            VALUES (?, ?, ?)
-        `);
-
-        // Add market cap condition
-        if (ruleData.marketCap) {
-            conditionStmt.run(ruleId, 'market_cap', JSON.stringify(ruleData.marketCap.value));
-        }
-
-        // Add price condition
-        if (ruleData.price) {
-            conditionStmt.run(ruleId, 'price', JSON.stringify(ruleData.price.value));
-        }
-
-        // Add volume condition
-        if (ruleData.volume) {
-            conditionStmt.run(ruleId, 'volume', JSON.stringify(ruleData.volume.value));
-        }
-
-        // Add liquidity condition
-        if (ruleData.liquidity) {
-            conditionStmt.run(ruleId, 'liquidity', JSON.stringify(ruleData.liquidity.value));
-        }
-
-        // Add category condition
-        if (ruleData.category) {
-            conditionStmt.run(ruleId, 'category', ruleData.category);
-        }
-
-        // Add timeframe condition
-        if (ruleData.timeframe) {
-            conditionStmt.run(ruleId, 'timeframe', ruleData.timeframe);
-        }
-
-        return result;
+        // Return the expected structure that RulesCommand expects
+        return {
+            lastInsertRowid: ruleId,
+            ruleId: ruleId,
+            success: true
+        };
     }
 
     async getRulesByUserId(userId) {

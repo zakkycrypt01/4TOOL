@@ -310,10 +310,25 @@ class WebhookServer {
             }
 
             this.logger.info('Webhook bot initialized successfully');
+            this.botInitialized = true;
         } catch (error) {
             this.logger.error('Failed to initialize webhook bot:', error);
             throw error;
         }
+    }
+
+    // Method to wait for bot initialization
+    async waitForBotInitialization() {
+        if (this.botInitialized) {
+            return this.bot;
+        }
+        
+        // Wait for bot to be initialized
+        while (!this.botInitialized) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        return this.bot;
     }
 
     async setWebhook() {
@@ -388,6 +403,9 @@ class WebhookServer {
     }
 
     getBot() {
+        if (!this.bot || !this.botInitialized) {
+            throw new Error('Bot not yet initialized. Call waitForBotInitialization() first.');
+        }
         return this.bot;
     }
 }

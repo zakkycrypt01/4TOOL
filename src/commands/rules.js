@@ -873,6 +873,8 @@ Select buy amount:`;
         const chatId = ctx.chat.id;
         const userId = ctx.from.id.toString();
 
+        console.log('[RulesCommand.startRuleCreation] Creating user state for:', userId);
+
         // Initialize user state for trading mode selection
         this.userStates.set(userId, {
             step: 'trading_mode_selection',
@@ -906,6 +908,8 @@ Select buy amount:`;
                 stopLoss: null
             }
         });
+
+        console.log('[RulesCommand.startRuleCreation] User state created. Current states:', Array.from(this.userStates.keys()));
 
         const message = `
 *🎯 Create New Trading Rule*
@@ -2016,8 +2020,18 @@ ${stats.recentActivity.length > 0 ? stats.recentActivity.join('\n') : 'No recent
         const text = ctx.message.text;
         const userState = this.userStates.get(userId);
 
+        console.log('[RulesCommand.handleMessage] Debug:', {
+            chatId,
+            userId,
+            text,
+            userState,
+            userStatesKeys: Array.from(this.userStates.keys()),
+            hasUserState: !!userState
+        });
+
         // If user is not in a rules state, ignore the message
         if (!userState) {
+            console.log('[RulesCommand.handleMessage] No user state found, ignoring message');
             return;
         }
 

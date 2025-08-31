@@ -64,7 +64,21 @@ const strategyEngine = new StrategyEngine(config);
 // Initialize Telegram bot manager (webhook-only)
 const telegramBotManager = new TelegramBotManager(config, null);
 const webhookServer = new WebhookServer(config, telegramBotManager);
-telegramBotManager.setBot(webhookServer.getBot());
+
+// Wait for bot initialization and then set it
+async function initializeBot() {
+    try {
+        await webhookServer.waitForBotInitialization();
+        telegramBotManager.setBot(webhookServer.getBot());
+        console.log('Telegram bot manager initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize telegram bot manager:', error);
+        process.exit(1);
+    }
+}
+
+// Initialize bot asynchronously
+initializeBot();
 
 // Step 2: create manualManagementService with the real telegramBot
 const manualManagementService = new ManualManagementService(config, db, tradingExecution, telegramBotManager.bot);

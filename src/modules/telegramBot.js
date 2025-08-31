@@ -105,12 +105,14 @@ class TelegramBotManager {
 
     // Method to set bot instance from webhook server
     setBot(bot) {
+        console.log('[TelegramBotManager] Setting bot instance and initializing handlers...');
         this.bot = bot;
         this.bot.userStates = new Map();
         // Finish bot-dependent initialization now that bot exists
         // Reuse existing config by reading from bot options if needed
         this.initializeWithBot(this.config);
-            this.setupCommands();
+        console.log('[TelegramBotManager] Handlers initialized successfully');
+        this.setupCommands();
     }
 
     // Get update type for logging
@@ -389,9 +391,11 @@ I'm your automated trading assistant for Solana tokens. To get started, you'll n
             // Try trading handlers
             if (!handled && this.tradingHandlers && this.tradingHandlers.handleMessage) {
                 try {
-                    await this.tradingHandlers.handleMessage(ctx, userState);
-                    handled = true;
-                    console.log('Message handled by trading handlers');
+                    const tradingResult = await this.tradingHandlers.handleMessage(ctx, userState);
+                    if (tradingResult && (tradingResult.handled || tradingResult === true)) {
+                        handled = true;
+                        console.log('Message handled by trading handlers');
+                    }
                 } catch (error) {
                     console.error('Error in trading handlers:', error);
                 }
@@ -407,6 +411,18 @@ I'm your automated trading assistant for Solana tokens. To get started, you'll n
                     }
                 } catch (error) {
                     console.error('Error in strategy handlers:', error);
+                }
+            }
+            
+            // Try RulesCommand for autonomous strategy creation and rule creation
+            if (!handled && this.rulesCommand && this.rulesCommand.userStates && this.rulesCommand.userStates.has(telegramId)) {
+                try {
+                    console.log('User has RulesCommand state, routing to RulesCommand handler');
+                    await this.rulesCommand.handleMessage(ctx);
+                    handled = true;
+                    console.log('Message handled by RulesCommand');
+                } catch (error) {
+                    console.error('Error in RulesCommand handler:', error);
                 }
             }
             
@@ -607,6 +623,15 @@ I'm your automated trading assistant for Solana tokens. To get started, you'll n
                         return;
                     }
                 }
+
+                // Debug logging for user state routing
+                console.log('[MessageHandler] Debug - User states check:', {
+                    telegramId,
+                    hasRulesCommandState: this.rulesCommand.userStates.has(telegramId),
+                    hasRuleHandlersState: this.ruleHandlers.userStates.has(telegramId),
+                    rulesCommandStates: Array.from(this.rulesCommand.userStates.keys()),
+                    ruleHandlersStates: Array.from(this.ruleHandlers.userStates.keys())
+                });
 
                 const userState = this.bot.userStates.get(telegramId);
                 if (userState) {
