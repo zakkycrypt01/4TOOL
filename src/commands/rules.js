@@ -2051,6 +2051,7 @@ ${stats.recentActivity.length > 0 ? stats.recentActivity.join('\n') : 'No recent
                             enabled: true
                         };
                         userState.waitingFor = null; // Clear waiting state
+                        userState.step = null; // Clear step
                         
                         await this.sendMessage(chatId, `✅ Custom stop loss set to ${stopLossPercentage}%`);
                         await this.showUnifiedRuleOptions(ctx);
@@ -2068,6 +2069,7 @@ ${stats.recentActivity.length > 0 ? stats.recentActivity.join('\n') : 'No recent
                             enabled: true
                         };
                         userState.waitingFor = null; // Clear waiting state
+                        userState.step = null; // Clear step
                         
                         await this.sendMessage(chatId, `✅ Custom take profit set to ${takeProfitPercentage}%`);
                         await this.showUnifiedRuleOptions(ctx);
@@ -2085,6 +2087,7 @@ ${stats.recentActivity.length > 0 ? stats.recentActivity.join('\n') : 'No recent
                             enabled: true
                         };
                         userState.waitingFor = null; // Clear waiting state
+                        userState.step = null; // Clear step
                         
                         await this.sendMessage(chatId, `✅ Custom trailing stop set to ${trailingStopPercentage}%`);
                         await this.showUnifiedRuleOptions(ctx);
@@ -2270,6 +2273,34 @@ ${stats.recentActivity.length > 0 ? stats.recentActivity.join('\n') : 'No recent
                     await this.showUnifiedRuleOptions(ctx);
                     break;
 
+                case 'volume_custom_input':
+                    // Parse custom volume range input in the format: min-max
+                    const volumeInput = text.trim();
+                    const volumeRangeMatch = volumeInput.match(/^(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
+
+                    if (!volumeRangeMatch) {
+                        await this.sendMessage(chatId, '❌ Please enter volume range in format: min-max (e.g., 50000-500000)');
+                        return;
+                    }
+
+                    const minVolume = parseFloat(volumeRangeMatch[1]);
+                    const maxVolume = parseFloat(volumeRangeMatch[2]);
+
+                    if (isNaN(minVolume) || isNaN(maxVolume) || minVolume < 0 || maxVolume <= minVolume) {
+                        await this.sendMessage(chatId, '❌ Invalid volume range. Min must be ≥ 0 and max must be > min');
+                        return;
+                    }
+
+                    userState.data.volume = {
+                        value: { min: minVolume, max: maxVolume },
+                        operator: 'between'
+                    };
+                    userState.step = null; // Clear step
+
+                    await this.sendMessage(chatId, `✅ Custom volume range set: $${minVolume.toLocaleString()} - $${maxVolume.toLocaleString()}`);
+                    await this.showUnifiedRuleOptions(ctx);
+                    break;
+
                 case 'volatility_custom_input':
                     const volatilityThreshold = parseFloat(text);
                     if (isNaN(volatilityThreshold) || volatilityThreshold <= 0) {
@@ -2328,6 +2359,7 @@ ${stats.recentActivity.length > 0 ? stats.recentActivity.join('\n') : 'No recent
                         return;
                     }
                     userState.data.volumeSpike.maxSlippage = spikeSlippage;
+                    userState.step = null;
                     await this.showUnifiedRuleOptions(ctx);
                     break;
 
@@ -2369,6 +2401,7 @@ ${stats.recentActivity.length > 0 ? stats.recentActivity.join('\n') : 'No recent
                         return;
                     }
                     userState.data.dipBuy.maxSlippage = dipSlippage;
+                    userState.step = null;
                     await this.showUnifiedRuleOptions(ctx);
                     break;
 
@@ -2400,6 +2433,7 @@ ${stats.recentActivity.length > 0 ? stats.recentActivity.join('\n') : 'No recent
                         return;
                     }
                     userState.data.narrative.maxSlippage = narrativeSlippage;
+                    userState.step = null;
                     await this.showUnifiedRuleOptions(ctx);
                     break;
 
@@ -2441,6 +2475,7 @@ ${stats.recentActivity.length > 0 ? stats.recentActivity.join('\n') : 'No recent
                         return;
                     }
                     userState.data.momentum.maxSlippage = momentumSlippage;
+                    userState.step = null;
                     await this.showUnifiedRuleOptions(ctx);
                     break;
 
@@ -2482,6 +2517,7 @@ ${stats.recentActivity.length > 0 ? stats.recentActivity.join('\n') : 'No recent
                         return;
                     }
                     userState.data.volatility.maxSlippage = volatilitySlippage;
+                    userState.step = null;
                     await this.showUnifiedRuleOptions(ctx);
                     break;
 

@@ -187,6 +187,16 @@ class SettingsHandlers {
             // try to handle it anyway (user might have lost state)
             const possibleSlippage = parseFloat(message);
             if (!isNaN(possibleSlippage) && possibleSlippage >= 0 && possibleSlippage <= 50 && message.trim().length <= 5) {
+                // Guard: do not hijack if rules flow is active
+                try {
+                    const rulesStates = this.telegramBotManager?.rulesCommand?.userStates;
+                    if (rulesStates && rulesStates.has(telegramId)) {
+                        console.log('🛑 Skipping slippage auto-handle: rules flow active for user', telegramId);
+                        return false;
+                    }
+                } catch (e) {
+                    console.warn('Guard check failed, continuing with caution:', e?.message);
+                }
                 console.log('🔧 Message looks like slippage value, attempting to handle without state...');
                 // Set the state and process the message
                 if (!this.bot.userStates) {
