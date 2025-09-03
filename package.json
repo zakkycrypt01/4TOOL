@@ -12,7 +12,9 @@
     "test:wallet": "node test-wallet-holdings.js",
     "test:integration": "node test-integration.js",
     "test:webhook": "node test_webhook.js",
-    "validate:webhook": "node validate_webhook_config.js"
+    "validate:webhook": "node validate_webhook_config.js",
+    "wallet:test": "node test-helius-wallet.js",
+    "wallet:cli": "node wallet-cli.js"
   },
   "dependencies": {
     "@project-serum/anchor": "^0.26.0",
