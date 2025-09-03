@@ -32,12 +32,25 @@ class AutonomousService {
     }
 
     startGlobalAutonomousMonitor() {
-        // Run every 5 minutes
-        if (this.globalMonitorInterval) {
-            clearInterval(this.globalMonitorInterval);
-        }
-        this.globalMonitorInterval = setInterval(() => this.checkAllUsersAutonomousMode(), 300000);
-        // Also run immediately on startup
+        // Event-driven approach: Only check when triggered
+        this.logger.info('Starting event-driven autonomous monitor (no polling)');
+        
+        // Set up event listeners for portfolio updates
+        this.portfolioService.on('portfolioUpdated', async (data) => {
+            try {
+                const { userId, balance } = data;
+                const user = await this.db.getUserById(userId);
+                
+                if (user && user.autonomous_enabled === 1) {
+                    this.logger.info(`Portfolio updated for autonomous user ${userId}, checking conditions`);
+                    await this.checkUserAutonomousConditions(userId, balance);
+                }
+            } catch (error) {
+                this.logger.error(`Error handling portfolio update for autonomous mode: ${error.message}`);
+            }
+        });
+        
+        // Initial check for all users (only once on startup)
         this.checkAllUsersAutonomousMode();
     }
 
@@ -123,6 +136,28 @@ class AutonomousService {
         } catch (error) {
             this.logger.error(`Error starting autonomous mode: ${error.message}`);
             throw error;
+        }
+    }
+
+    async checkUserAutonomousConditions(userId, balance) {
+        try {
+            // Check if user has sufficient balance for autonomous trading
+            if (balance.sol < 0.01) { // Minimum SOL required
+                this.logger.info(`User ${userId} has insufficient SOL balance (${balance.sol}) for autonomous trading`);
+                return;
+            }
+
+            // Check if user has any tokens to trade
+            if (balance.tokens.length === 0) {
+                this.logger.info(`User ${userId} has no tokens for autonomous trading`);
+                return;
+            }
+
+            // Trigger autonomous trading evaluation
+            await this.autonomousTrading.evaluateTradingOpportunities(userId, balance);
+            
+        } catch (error) {
+            this.logger.error(`Error checking autonomous conditions for user ${userId}: ${error.message}`);
         }
     }
 

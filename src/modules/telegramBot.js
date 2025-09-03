@@ -313,11 +313,20 @@ I'm your automated trading assistant for Solana tokens. To get started, you'll n
                 // Store welcome message ID for later deletion
                 this.messageManager.lastWelcomeMessageId = sentMessage.message_id;
             } else {
-                await this.menuManager.showMainMenu(chatId, activeWallet, this.ruleEngine);
+                if (this.menuManager) {
+                    await this.menuManager.showMainMenu(chatId, activeWallet, this.ruleEngine);
+                } else {
+                    console.error('MenuManager not initialized');
+                    await this.bot.sendMessage(chatId, 'Sorry, the menu system is not available. Please try again later.');
+                }
             }
         } catch (error) {
             console.error('Error in /start command:', error);
-            await this.bot.sendMessage(chatId, 'Sorry, something went wrong. Please try again later.');
+            if (this.bot) {
+                await this.bot.sendMessage(chatId, 'Sorry, something went wrong. Please try again later.');
+            } else {
+                console.error('Bot instance not available for error message');
+            }
         }
     }
 
@@ -553,11 +562,20 @@ I'm your automated trading assistant for Solana tokens. To get started, you'll n
                     // Store welcome message ID for later deletion
                     this.messageManager.lastWelcomeMessageId = sentMessage.message_id;
                 } else {
-                    await this.menuManager.showMainMenu(chatId, activeWallet, this.ruleEngine);
+                    if (this.menuManager) {
+                        await this.menuManager.showMainMenu(chatId, activeWallet, this.ruleEngine);
+                    } else {
+                        console.error('MenuManager not initialized');
+                        await this.bot.sendMessage(chatId, 'Sorry, the menu system is not available. Please try again later.');
+                    }
                 }
             } catch (error) {
                 console.error('Error in /start command:', error);
-                await this.bot.sendMessage(chatId, 'Sorry, something went wrong. Please try again later.');
+                if (this.bot) {
+                    await this.bot.sendMessage(chatId, 'Sorry, something went wrong. Please try again later.');
+                } else {
+                    console.error('Bot instance not available for error message');
+                }
             }
         });
 
@@ -745,18 +763,38 @@ I'm your automated trading assistant for Solana tokens. To get started, you'll n
 
     // Menu management delegated to MenuManager
     async showMainMenu(chatId, activeWallet, ruleEngine = null, telegramId = null) {
+        if (!this.menuManager) {
+            console.error('MenuManager not initialized');
+            await this.bot.sendMessage(chatId, 'Sorry, the menu system is not available. Please try again later.');
+            return;
+        }
         return await this.menuManager.showMainMenu(chatId, activeWallet, ruleEngine || this.ruleEngine, telegramId);
     }
 
     async showSettings(chatId, telegramId) {
+        if (!this.menuManager) {
+            console.error('MenuManager not initialized');
+            await this.bot.sendMessage(chatId, 'Sorry, the menu system is not available. Please try again later.');
+            return;
+        }
         return await this.menuManager.showSettings(chatId, telegramId);
     }
 
     async showWalletManagement(chatId, telegramId) {
+        if (!this.menuManager) {
+            console.error('MenuManager not initialized');
+            await this.bot.sendMessage(chatId, 'Sorry, the menu system is not available. Please try again later.');
+            return;
+        }
         return await this.menuManager.showWalletManagement(chatId, telegramId);
     }
 
     async handleHelp(chatId) {
+        if (!this.menuManager) {
+            console.error('MenuManager not initialized');
+            await this.bot.sendMessage(chatId, 'Sorry, the menu system is not available. Please try again later.');
+            return;
+        }
         return await this.menuManager.showHelp(chatId);
     }
 
@@ -1006,6 +1044,11 @@ The wallet has been added to your monitored list. You can now enable copy tradin
     }
 
     async showTradeMenu(chatId) {
+        if (!this.menuManager) {
+            console.error('MenuManager not initialized');
+            await this.bot.sendMessage(chatId, 'Sorry, the menu system is not available. Please try again later.');
+            return;
+        }
         return await this.menuManager.showTradeMenu(chatId);
     }
 

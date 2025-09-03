@@ -211,7 +211,18 @@ class HeliusWalletService {
         }
 
         let items = result.items || [];
-        let nativeBalance = result.nativeBalance || 0;
+        
+        // Handle native balance - it can be a number or an object with lamports
+        let nativeBalance = 0;
+        if (result.nativeBalance) {
+            if (typeof result.nativeBalance === 'object' && result.nativeBalance.lamports) {
+                nativeBalance = parseInt(result.nativeBalance.lamports) || 0;
+            } else if (typeof result.nativeBalance === 'number') {
+                nativeBalance = result.nativeBalance;
+            } else if (typeof result.nativeBalance === 'string') {
+                nativeBalance = parseInt(result.nativeBalance) || 0;
+            }
+        }
 
         // Apply filters based on options
         if (options.showFungible !== undefined) {
@@ -221,11 +232,21 @@ class HeliusWalletService {
         }
 
         if (options.showZeroBalance === false) {
-            items = items.filter(item => 
-                item.interface === 'FungibleToken' ? 
-                (item.token_info?.balance_info?.current_balance || 0) > 0 :
-                true
-            );
+            items = items.filter(item => {
+                if (item.interface === 'FungibleToken') {
+                    // Handle different balance structures
+                    let balance = 0;
+                    if (item.token_info?.balance_info?.current_balance) {
+                        // Old structure
+                        balance = parseInt(item.token_info.balance_info.current_balance) || 0;
+                    } else if (item.token_info?.balance) {
+                        // New structure
+                        balance = parseInt(item.token_info.balance) || 0;
+                    }
+                    return balance > 0;
+                }
+                return true; // Keep non-fungible items
+            });
         }
 
         return {
@@ -252,9 +273,21 @@ class HeliusWalletService {
 
         // Add fungible token values (placeholder)
         fungibleTokens.forEach(token => {
+            let balance = 0;
+            let decimals = 0;
+            
+            // Handle different balance structures
             if (token.token_info?.balance_info?.current_balance) {
-                const balance = token.token_info.balance_info.current_balance;
-                const decimals = token.token_info.decimals || 0;
+                // Old structure
+                balance = token.token_info.balance_info.current_balance;
+                decimals = token.token_info.decimals || 0;
+            } else if (token.token_info?.balance) {
+                // New structure
+                balance = token.token_info.balance;
+                decimals = token.token_info.decimals || 0;
+            }
+            
+            if (balance > 0) {
                 const actualBalance = balance / Math.pow(10, decimals);
                 
                 // Placeholder value calculation - should use real price data

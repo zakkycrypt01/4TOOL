@@ -65,9 +65,16 @@ Please create or import a wallet first to view your portfolio.`;
             // Fetch SOL price once
             try {
                 const axios = require('axios');
-                const cgResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
-                if (cgResp.data && cgResp.data.solana && cgResp.data.solana.usd) solPrice = cgResp.data.solana.usd;
-            } catch (e) {}
+                const cgResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd', {
+                    timeout: 5000
+                });
+                if (cgResp.data && cgResp.data.solana && cgResp.data.solana.usd) {
+                    solPrice = cgResp.data.solana.usd;
+                    console.log(`[Portfolio Debug] Fetched SOL price: $${solPrice}`);
+                }
+            } catch (e) {
+                console.error('[Portfolio Debug] Error fetching SOL price:', e.message);
+            }
 
             for (const wallet of wallets) {
                 const walletBalance = await portfolioService.getWalletBalance(wallet.public_key);
@@ -132,8 +139,15 @@ Please create or import a wallet first to view your portfolio.`;
             // Add SOL as a holding
             allHoldings['SOL'] = { amount: solTotal, symbol: 'SOL', price: solPrice, marketCap: null, volume24h: null, name: 'Solana' };
 
+            // Debug: Log SOL calculation
+            console.log(`[Portfolio Debug] SOL Total: ${solTotal}, SOL Price: ${solPrice}, SOL Value: ${solTotal * solPrice}`);
+
             // Calculate total value
-            const totalValue = Object.values(allHoldings).reduce((sum, h) => sum + (h.amount * (h.price || 0)), 0);
+            const totalValue = Object.values(allHoldings).reduce((sum, h) => {
+                const value = h.amount * (h.price || 0);
+                console.log(`[Portfolio Debug] ${h.symbol}: ${h.amount} × $${h.price} = $${value.toFixed(2)}`);
+                return sum + value;
+            }, 0);
 
             // Save snapshot for 24h change
             const { PortfolioOperations } = require('../database/operations');
@@ -150,7 +164,12 @@ Please create or import a wallet first to view your portfolio.`;
             // Format holdings with market cap and volume
             const holdingsList = Object.values(allHoldings)
                 .filter(h => h.amount > 0)
-                .map(h => `- ${h.symbol}: ${h.amount} ($${((h.amount || 0) * (h.price || 0)).toFixed(2)})`)
+                .map(h => {
+                    const value = (h.amount || 0) * (h.price || 0);
+                    // Format SOL balance with 4 decimal places, other tokens with 6
+                    const formattedAmount = h.symbol === 'SOL' ? h.amount.toFixed(4) : h.amount.toFixed(6);
+                    return `- ${h.symbol}: ${formattedAmount} ($${value.toFixed(2)})`;
+                })
                 .join('\n') || 'No tokens found';
 
             // Sort and format recent trades (show last 5)

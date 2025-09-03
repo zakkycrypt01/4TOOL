@@ -3,17 +3,26 @@ const DatabaseManager = require('../modules/database');
 const TokenDataService = require('./tokenDataService');
 const TradingService = require('./tradingService');
 const WalletHoldingsService = require('./walletHoldingsService');
+const HeliusWalletService = require('./heliusWalletService');
 const solanaWeb3 = require('@solana/web3.js');
 const { Connection, PublicKey, LAMPORTS_PER_SOL, clusterApiUrl } = require('@solana/web3.js');
 const { TOKEN_PROGRAM_ID } = require('@solana/spl-token');
+const EventEmitter = require('events');
 
-class PortfolioService {
+class PortfolioService extends EventEmitter {
     constructor(config) {
+        super();
         this.config = config;
         this.db = new DatabaseManager();
         this.tokenDataService = new TokenDataService(config);
         this.tradingService = new TradingService(config);
         this.walletHoldingsService = new WalletHoldingsService(config);
+        this.heliusService = new HeliusWalletService(config);
+        
+        // Cache for wallet balances to avoid repeated API calls
+        this.balanceCache = new Map();
+        this.cacheTimeout = 30000; // 30 seconds cache
+        
         this.logger = winston.createLogger({
             level: 'info',
             format: winston.format.json(),
@@ -22,6 +31,96 @@ class PortfolioService {
                 new winston.transports.File({ filename: 'combined.log' })
             ]
         });
+        
+        // Set up event listeners for external triggers
+        this.setupEventListeners();
+    }
+
+    /**
+     * Set up event listeners for external triggers
+     */
+    setupEventListeners() {
+        // Listen for wallet balance refresh requests
+        this.on('refreshWalletBalance', async (walletAddress) => {
+            try {
+                this.logger.info(`Event triggered: Refreshing wallet balance for ${walletAddress}`);
+                await this.refreshWalletBalance(walletAddress);
+            } catch (error) {
+                this.logger.error(`Error refreshing wallet balance for ${walletAddress}:`, error);
+            }
+        });
+
+        // Listen for portfolio update requests
+        this.on('updatePortfolio', async (userId) => {
+            try {
+                this.logger.info(`Event triggered: Updating portfolio for user ${userId}`);
+                await this.updateUserPortfolio(userId);
+            } catch (error) {
+                this.logger.error(`Error updating portfolio for user ${userId}:`, error);
+            }
+        });
+
+        // Listen for balance check requests (for trading decisions)
+        this.on('checkBalanceForTrade', async (walletAddress) => {
+            try {
+                this.logger.info(`Event triggered: Checking balance for trade on ${walletAddress}`);
+                const balance = await this.getWalletBalance(walletAddress);
+                this.emit('balanceChecked', { walletAddress, balance });
+            } catch (error) {
+                this.logger.error(`Error checking balance for trade on ${walletAddress}:`, error);
+            }
+        });
+    }
+
+    /**
+     * Refresh wallet balance and clear cache
+     */
+    async refreshWalletBalance(walletAddress) {
+        // Clear cache for this wallet
+        this.balanceCache.delete(walletAddress);
+        
+        // Fetch fresh data
+        const balance = await this.getWalletBalance(walletAddress);
+        
+        // Emit event with updated balance
+        this.emit('walletBalanceUpdated', { walletAddress, balance });
+        
+        return balance;
+    }
+
+    /**
+     * Update user portfolio (triggered by events)
+     */
+    async updateUserPortfolio(userId) {
+        try {
+            const user = await this.db.getUserById(userId);
+            if (!user) {
+                throw new Error(`User ${userId} not found`);
+            }
+
+            const activeWallet = await this.db.getActiveWallet(userId);
+            if (!activeWallet) {
+                throw new Error(`No active wallet for user ${userId}`);
+            }
+
+            // Refresh wallet balance
+            const balance = await this.refreshWalletBalance(activeWallet.public_key);
+            
+            // Update user's portfolio data in database
+            await this.db.updateUserPortfolioData(userId, {
+                last_updated: new Date(),
+                total_value: balance.totalValue,
+                sol_balance: balance.sol,
+                token_count: balance.tokens.length
+            });
+
+            this.emit('portfolioUpdated', { userId, balance });
+            
+            return balance;
+        } catch (error) {
+            this.logger.error(`Error updating portfolio for user ${userId}:`, error);
+            throw error;
+        }
     }
 
     async rebalancePortfolio(userId) {
@@ -294,42 +393,64 @@ class PortfolioService {
         return true;
     }
 
+    /**
+     * Get wallet balance with caching
+     */
     async getWalletBalance(walletAddress) {
+        // Check cache first
+        const cached = this.balanceCache.get(walletAddress);
+        if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+            this.logger.info(`Using cached balance for ${walletAddress}`);
+            return cached.data;
+        }
+
         try {
-            // Use the new comprehensive wallet holdings service
-            const holdings = await this.walletHoldingsService.getAllHoldings(walletAddress);
+            // Use Helius service for comprehensive wallet data
+            const walletSummary = await this.heliusService.getWalletSummary(walletAddress);
             
             // Extract SOL balance
-            const solHolding = holdings.holdings.find(h => h.isNative);
-            const solBalance = solHolding ? solHolding.balance : 0;
+            const solBalance = walletSummary.summary.nativeBalance / 1e9; // Convert from lamports to SOL
             
-            // Extract SPL tokens (exclude SOL)
-            const tokens = holdings.holdings
-                .filter(h => !h.isNative)
-                .map(h => ({
-                    mint: h.mint,
-                    address: h.tokenAccount || h.mint,
-                    amount: h.uiAmount,
-                    decimals: h.decimals,
-                    rawAmount: h.rawBalance,
-                    symbol: h.symbol,
-                    name: h.name,
-                    usdValue: h.value.usd,
-                    price: h.price.usd
-                }));
+            // Extract fungible tokens
+            const tokens = walletSummary.details.fungibleTokens.fungibleTokens.map(token => {
+                const balance = token.token_info?.balance || 0;
+                const decimals = token.token_info?.decimals || 0;
+                const actualBalance = balance / Math.pow(10, decimals);
+                
+                return {
+                    mint: token.id || token.content?.metadata?.symbol,
+                    address: token.token_info?.associated_token_address || token.id,
+                    amount: actualBalance,
+                    decimals: decimals,
+                    rawAmount: balance,
+                    symbol: token.content?.metadata?.symbol || 'Unknown',
+                    name: token.content?.metadata?.name || 'Unknown',
+                    usdValue: 0, // Will be calculated separately if needed
+                    price: 0 // Will be fetched separately if needed
+                };
+            });
 
-            return {
-                lamports: solBalance * LAMPORTS_PER_SOL,
+            const result = {
+                lamports: walletSummary.summary.nativeBalance,
                 sol: solBalance,
                 tokens: tokens,
-                totalValue: holdings.totalValue.usd,
-                totalHoldings: holdings.totalHoldings,
-                enhanced: true // Flag to indicate this is using the enhanced service
+                totalValue: walletSummary.summary.totalEstimatedValue,
+                totalHoldings: walletSummary.summary.fungibleTokenCount + 1, // +1 for SOL
+                enhanced: true, // Flag to indicate this is using the Helius service
+                heliusData: walletSummary // Include full Helius data for advanced usage
             };
+
+            // Cache the result
+            this.balanceCache.set(walletAddress, {
+                data: result,
+                timestamp: Date.now()
+            });
+
+            return result;
         } catch (error) {
-            this.logger.error('Error fetching enhanced wallet balance:', error);
+            this.logger.error('Error fetching Helius wallet balance:', error);
             
-            // Fallback to original method if enhanced service fails
+            // Fallback to legacy method if Helius service fails
             return this.getWalletBalanceLegacy(walletAddress);
         }
     }
@@ -382,6 +503,30 @@ class PortfolioService {
             this.logger.error('Error fetching wallet balance:', error);
             return { lamports: 0, sol: 0, tokens: [] };
         }
+    }
+
+    /**
+     * Clear cache for specific wallet or all wallets
+     */
+    clearCache(walletAddress = null) {
+        if (walletAddress) {
+            this.balanceCache.delete(walletAddress);
+            this.logger.info(`Cache cleared for wallet ${walletAddress}`);
+        } else {
+            this.balanceCache.clear();
+            this.logger.info('All wallet balance cache cleared');
+        }
+    }
+
+    /**
+     * Get cache status
+     */
+    getCacheStatus() {
+        return {
+            cacheSize: this.balanceCache.size,
+            cachedWallets: Array.from(this.balanceCache.keys()),
+            cacheTimeout: this.cacheTimeout
+        };
     }
 
     /**

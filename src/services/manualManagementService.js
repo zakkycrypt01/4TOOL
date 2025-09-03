@@ -209,13 +209,30 @@ class ManualManagementService {
             // Try to get wallet tokens using multiple methods
             let tokens = [];
             
-            // Method 1: Try portfolio service
+            // Method 1: Try portfolio service (event-driven)
             try {
                 const PortfolioService = require('./portfolioService');
                 const portfolioService = new PortfolioService(this.config);
-                const walletBalance = await portfolioService.getWalletBalance(walletAddress);
-                if (walletBalance && walletBalance.tokens) {
-                    tokens = walletBalance.tokens.filter(token => token.amount > 0);
+                
+                // Trigger portfolio refresh event instead of direct call
+                portfolioService.emit('refreshWalletBalance', walletAddress);
+                
+                // Wait for the balance update event
+                const balance = await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('Portfolio refresh timeout'));
+                    }, 10000);
+                    
+                    portfolioService.once('walletBalanceUpdated', (data) => {
+                        clearTimeout(timeout);
+                        if (data.walletAddress === walletAddress) {
+                            resolve(data.balance);
+                        }
+                    });
+                });
+                
+                if (balance && balance.tokens) {
+                    tokens = balance.tokens.filter(token => token.amount > 0);
                     this.logger.info(`Portfolio service found ${tokens.length} tokens`);
                 }
             } catch (error) {

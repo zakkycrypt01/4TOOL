@@ -1,10 +1,12 @@
 const axios = require('axios');
+const HeliusWalletService = require('../services/heliusWalletService');
 
 class MenuManager {
     constructor(bot, db, messageManager) {
         this.bot = bot;
         this.db = db;
         this.messageManager = messageManager;
+        this.heliusService = new HeliusWalletService();
     }
 
     async showMainMenu(chatId, activeWallet = null, ruleEngine = null, telegramId = null) {
@@ -56,35 +58,80 @@ Please create or import a wallet to get started.`;
 
             let portfolioValue = 0;
             let totalValue = 0;
-            let solBalance = null;
-            let solPriceDisplay = 'Unavailable'; // Ensure always defined
+            let solBalance = 0;
+            let tokenCount = 0;
+            let tokenValue = 0;
+            let solPrice = 0;
+            
             try {
-                solBalance = await getWalletBalance(currentActiveWallet.public_key);
-                console.log('User balance:', solBalance); // Log the user balance
-                // Prepare holdings array
-                const holdings = [];
-                // Add SOL holding
-                holdings.push({ symbol: 'SOL', amount: solBalance.sol, price: 0 }); // Price will be fetched below
-                // Fetch SOL price from CoinGecko
-                let solPrice = 0;
+                // Get comprehensive wallet data using Helius service
+                const walletSummary = await this.heliusService.getWalletSummary(currentActiveWallet.public_key);
+                console.log('Wallet summary:', walletSummary);
+                
+                // Extract native SOL balance
+                solBalance = walletSummary.summary.nativeBalance / 1e9; // Convert from lamports to SOL
+                
+                // Get fungible token count and estimated value
+                tokenCount = walletSummary.summary.fungibleTokenCount;
+                
+                // Fetch SOL price from CoinGecko for accurate USD calculation
                 try {
-                    const cgResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+                    const cgResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd', {
+                        timeout: 5000 // 5 second timeout
+                    });
                     if (cgResp.data && cgResp.data.solana && cgResp.data.solana.usd) {
                         solPrice = cgResp.data.solana.usd;
-                        solPriceDisplay = `$${solPrice}`;
+                        
+                        // Calculate accurate SOL value using real-time price
+                        const solValue = solBalance * solPrice;
+                        
+                        // For now, use only SOL value since Helius total includes SOL
+                        // TODO: Implement proper token price fetching for accurate token values
+                        totalValue = solValue;
+                        portfolioValue = totalValue;
                     } else {
-                        solPriceDisplay = 'Unavailable';
+                        // Fallback to Helius estimated value if CoinGecko fails
+                        totalValue = walletSummary.summary.totalEstimatedValue;
+                        portfolioValue = totalValue;
                     }
-                } catch (e) {
-                    console.error('Error fetching SOL price from CoinGecko:', e);
-                    solPrice = 0; // fallback value
-                    solPriceDisplay = 'Unavailable';
+                } catch (priceError) {
+                    console.error('Error fetching SOL price from CoinGecko:', priceError.message);
+                    // Fallback to Helius estimated value
+                    totalValue = walletSummary.summary.totalEstimatedValue;
+                    portfolioValue = totalValue;
                 }
-                holdings[0].price = solPrice;
-                portfolioValue = holdings.reduce((sum, h) => sum + (h.amount * h.price), 0);
-                totalValue = portfolioValue;
+                
             } catch (e) {
-                console.error('Error in wallet balance block:', e);
+                console.error('Error fetching wallet data from Helius:', e);
+                // Fallback to basic balance check
+                try {
+                    const basicBalance = await getWalletBalance(currentActiveWallet.public_key);
+                    solBalance = basicBalance.sol;
+                    tokenCount = 0;
+                    tokenValue = 0;
+                    
+                    // Try to get SOL price for basic calculation
+                    try {
+                        const cgResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd', {
+                            timeout: 5000 // 5 second timeout
+                        });
+                        if (cgResp.data && cgResp.data.solana && cgResp.data.solana.usd) {
+                            solPrice = cgResp.data.solana.usd;
+                            totalValue = solBalance * solPrice;
+                        } else {
+                            totalValue = 0;
+                        }
+                    } catch (priceError) {
+                        console.error('Error fetching SOL price in fallback:', priceError.message);
+                        totalValue = 0;
+                    }
+                } catch (fallbackError) {
+                    console.error('Error in fallback balance check:', fallbackError);
+                    solBalance = 0;
+                    tokenCount = 0;
+                    tokenValue = 0;
+                    totalValue = 0;
+                }
             }
 
             const message = `
@@ -94,9 +141,11 @@ Please create or import a wallet to get started.`;
 *Status:* ${currentActiveWallet.is_locked ? '🔒 Locked' : '🔓 Unlocked'}
 *Autonomous Mode:* ${isAutonomousMode ? '🟢 ON' : '🔴 OFF'}
 
-*Quick Stats:*
-📊 SOL Portfolio Value: $${totalValue.toFixed(2)}
-💰 SOL Price: ${solPriceDisplay}
+*Portfolio Overview:*
+💰 SOL Balance: ${solBalance.toFixed(4)} SOL
+💵 SOL Price: ${solPrice > 0 ? `$${solPrice.toFixed(2)}` : 'Unavailable'}
+🪙 Token Count: ${tokenCount} tokens
+📊 Total Value: $${totalValue.toFixed(2)}
 📈 24h Change: 0.00%
 
 *Quick Actions:*`;
